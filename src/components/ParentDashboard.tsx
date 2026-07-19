@@ -28,6 +28,9 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
   const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null);
   const [isQuestBuilderOpen, setIsQuestBuilderOpen] = useState(false);
   
+  // 탭 상태 ('home' | 'quest' | 'store')
+  const [activeTab, setActiveTab] = useState<'home' | 'quest' | 'store'>('home');
+  
   // 퀘스트 독려 어조 전송 상태
   const [cheeringStatus, setCheeringStatus] = useState<string | null>(null);
 
@@ -134,263 +137,286 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-16">
       
       {/* 헤더 네비게이션 */}
-      <header className="sticky top-0 z-40 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 py-4 px-6 flex justify-between items-center shadow-lg">
+      <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 py-3 px-6 flex justify-between items-center shadow-lg">
         <div className="flex items-center gap-3">
           <div className="text-2xl select-none">🧙‍♀️</div>
           <div>
-            <h1 className="text-lg font-black tracking-tight text-white flex items-center gap-1.5">
-              Family Dungeon <span className="text-indigo-400 font-medium text-xs bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded-full">Master Mode</span>
+            <h1 className="text-sm md:text-md font-black tracking-tight text-white flex items-center gap-1.5">
+              패밀리 던전 타이쿤 <span className="text-indigo-400 font-bold text-[9px] bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded-full">길드마스터 모드</span>
             </h1>
-            <p className="text-[10px] text-slate-400 font-semibold">{user.name} 로그인 중</p>
+            <p className="text-[9px] text-slate-400 font-semibold">{user.name}</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+
+        {/* 대시보드 메인 탭 전환 버튼 구역 (기획안 6페이지 준수) */}
+        <nav className="flex items-center bg-slate-950 border border-slate-850 p-1.5 rounded-2xl gap-1">
+          <button
+            onClick={() => setActiveTab('home')}
+            className={`px-4 py-1.5 rounded-xl text-xs font-bold transition ${
+              activeTab === 'home'
+                ? 'bg-indigo-600 text-white shadow-md'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            홈 (타이쿤 성장)
+          </button>
+          <button
+            onClick={() => setActiveTab('quest')}
+            className={`px-4 py-1.5 rounded-xl text-xs font-bold transition ${
+              activeTab === 'quest'
+                ? 'bg-indigo-600 text-white shadow-md'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            퀘스트
+          </button>
+          <button
+            onClick={() => setActiveTab('store')}
+            className={`px-4 py-1.5 rounded-xl text-xs font-bold transition ${
+              activeTab === 'store'
+                ? 'bg-indigo-600 text-white shadow-md'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            상점
+          </button>
+        </nav>
+
+        <div className="flex items-center gap-2">
           <button
             onClick={() => setIsQuestBuilderOpen(true)}
-            className="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-3 py-2 rounded-xl transition shadow-md"
+            className="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg transition shadow-md"
           >
-            <Plus className="w-3.5 h-3.5" /> 퀘스트 설계
+            <Plus className="w-3 h-3" /> 설계
           </button>
           <button
             onClick={onLogout}
-            className="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white text-xs font-bold px-3 py-2 rounded-xl transition border border-slate-750"
+            className="bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg transition border border-slate-750"
           >
-            <LogOut className="w-3.5 h-3.5" /> 로그아웃
+            로그아웃
           </button>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 mt-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <main className="max-w-4xl mx-auto px-4 mt-6">
         
-        {/* 왼쪽 섹션 (Lg 기준 7칸): 자녀 타이쿤 리포트 및 스탯 */}
-        <section className="lg:col-span-7 space-y-6">
-          
-          {/* 타이쿤 성장 리포트 */}
-          <div className="bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-600/5 blur-3xl rounded-full" />
-            <h3 className="text-md font-bold text-white mb-6 flex items-center gap-2 border-b border-slate-850 pb-3">
-              <TrendingUp className="w-4 h-4 text-indigo-400" /> 타이쿤 성장 리포트
-            </h3>
-
-            {child ? (
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-                {/* 수치 정보 */}
-                <div className="md:col-span-5 space-y-4">
-                  <div className="flex items-center gap-3 bg-slate-950/40 p-3 rounded-2xl border border-slate-850">
-                    <span className="text-3xl select-none">{child.avatar}</span>
-                    <div>
-                      <h4 className="text-sm font-extrabold text-slate-100">{child.name}</h4>
-                      <p className="text-[10px] text-slate-400 font-bold">{child.title || '성향 진단 미완료'}</p>
-                    </div>
-                  </div>
-
-                  {/* 경험치 바 */}
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between text-xs font-bold text-slate-400">
-                      <span>캐릭터 레벨 (Lv.{child.level})</span>
-                      <span className="text-indigo-400">{child.exp} / {child.level * 100} EXP</span>
-                    </div>
-                    <div className="w-full bg-slate-950 h-2.5 rounded-full overflow-hidden border border-slate-850">
-                      <div
-                        className="bg-gradient-to-r from-indigo-500 to-purple-500 h-full transition-all duration-500"
-                        style={{ width: `${(child.exp / (child.level * 100)) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* 소지 골드 */}
-                  <div className="flex justify-between items-center bg-slate-950/60 p-3.5 rounded-2xl border border-slate-850">
-                    <span className="text-xs font-bold text-slate-400 flex items-center gap-1.5">
-                      🪙 현재 누적 골드
-                    </span>
-                    <span className="text-md font-black text-amber-400 tracking-tight">{child.gold.toLocaleString()} G</span>
-                  </div>
-
-                  {/* 스트레스 게이지 */}
-                  <div className="space-y-1.5 bg-slate-950/30 p-3 rounded-2xl border border-slate-850/60">
-                    <div className="flex justify-between text-xs font-bold text-slate-400">
-                      <span className="flex items-center gap-1">
-                        💥 아바타 피로도 (스트레스)
-                      </span>
-                      <span className={child.stress >= 70 ? 'text-red-400' : 'text-slate-300'}>{child.stress} / 100</span>
-                    </div>
-                    <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full transition-all duration-500 ${
-                          child.stress >= 80 ? 'bg-red-500' : child.stress >= 50 ? 'bg-orange-500' : 'bg-emerald-500'
-                        }`}
-                        style={{ width: `${child.stress}%` }}
-                      />
-                    </div>
-                    {child.stress >= 80 && (
-                      <p className="text-[10px] text-red-400 font-bold flex items-center gap-1 mt-1">
-                        <ShieldAlert className="w-3 h-3" /> 아바타 일탈 임박! 퀘스트 효율 50% 반감
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/* 오각형 레이더 차트 */}
-                <div className="md:col-span-7 flex justify-center">
-                  <RadarChart stats={child.stats!} size={220} />
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-12 text-slate-500 font-bold text-sm">
-                등록된 자녀 모험가가 없습니다. 프로필 화면에서 자녀를 생성하세요.
-              </div>
-            )}
-          </div>
-
-          {/* 퀘스트 제어 목록 (실시간 인증 요청 우선순위 정렬) */}
-          <div className="bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-xl">
-            <div className="flex justify-between items-center mb-6 border-b border-slate-850 pb-3">
-              <h3 className="text-md font-bold text-white flex items-center gap-2">
-                <Clock className="w-4 h-4 text-indigo-400" /> 실시간 완료 심사 & 퀘스트 제어
+        {/* 1. 홈 탭 (타이쿤 성장 분석 리포트 + 실시간 검수 통지) */}
+        {activeTab === 'home' && (
+          <div className="space-y-6">
+            {/* 타이쿤 성장 리포트 */}
+            <div className="bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-xl relative overflow-hidden">
+              <h3 className="text-sm font-bold text-white mb-6 flex items-center gap-2 border-b border-slate-850 pb-3">
+                <TrendingUp className="w-4 h-4 text-indigo-400" /> 타이쿤 성장 리포트
               </h3>
-              <span className="text-[10px] text-indigo-400 font-bold bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded-full">
-                실시간
-              </span>
+
+              {child ? (
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                  <div className="md:col-span-5 space-y-4">
+                    <div className="flex items-center gap-3 bg-slate-950/40 p-3 rounded-2xl border border-slate-850">
+                      <span className="text-3xl select-none">{child.avatar}</span>
+                      <div>
+                        <h4 className="text-sm font-extrabold text-slate-100">{child.name}</h4>
+                        <p className="text-[10px] text-slate-400 font-bold">{child.title || '성향 진단 미완료'}</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between text-xs font-bold text-slate-400">
+                        <span>캐릭터 레벨 (Lv.{child.level})</span>
+                        <span className="text-indigo-400">{child.exp} / {child.level * 100} EXP</span>
+                      </div>
+                      <div className="w-full bg-slate-950 h-2.5 rounded-full overflow-hidden border border-slate-850">
+                        <div
+                          className="bg-gradient-to-r from-indigo-500 to-purple-500 h-full transition-all duration-500"
+                          style={{ width: `${(child.exp / (child.level * 100)) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center bg-slate-950/60 p-3.5 rounded-2xl border border-slate-850">
+                      <span className="text-xs font-bold text-slate-400">🪙 누적 보상 골드</span>
+                      <span className="text-md font-black text-amber-400">{child.gold.toLocaleString()} G</span>
+                    </div>
+
+                    <div className="space-y-1.5 bg-slate-950/30 p-3 rounded-2xl border border-slate-850/60">
+                      <div className="flex justify-between text-xs font-bold text-slate-400">
+                        <span>💥 아바타 피로도 (스트레스)</span>
+                        <span>{child.stress} / 100</span>
+                      </div>
+                      <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full transition-all duration-500 ${
+                            child.stress >= 80 ? 'bg-red-500' : child.stress >= 50 ? 'bg-orange-500' : 'bg-emerald-500'
+                          }`}
+                          style={{ width: `${child.stress}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="md:col-span-7 flex justify-center">
+                    <RadarChart stats={child.stats!} size={240} />
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-12 text-slate-500 font-bold">
+                  등록된 자녀 모험가가 없습니다. 프로필 화면에서 자녀를 생성하세요.
+                </div>
+              )}
             </div>
 
-            <div className="space-y-3">
-              {quests.map((q) => (
-                <div
-                  key={q.id}
-                  className={`p-4 rounded-2xl border transition-all duration-300 ${
-                    q.status === 'request_approval'
-                      ? 'bg-indigo-950/20 border-indigo-500/40 shadow-indigo-900/10'
-                      : 'bg-slate-950/60 border-slate-850 hover:bg-slate-900'
-                  }`}
-                >
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
+            {/* 실시간 퀘스트 인증 요청 센터 */}
+            <div className="bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-xl">
+              <h3 className="text-sm font-bold text-white mb-4 border-b border-slate-850 pb-3">
+                🔔 실시간 인증 요청 센터
+              </h3>
+              <div className="space-y-3">
+                {quests.filter(q => q.status === 'request_approval').length === 0 ? (
+                  <div className="text-center py-8 text-slate-500 text-xs font-bold">
+                    현재 자녀가 승인 대기 중인 퀘스트 요청이 없습니다.
+                  </div>
+                ) : (
+                  quests.filter(q => q.status === 'request_approval').map(q => (
+                    <div key={q.id} className="p-4 bg-indigo-950/20 border border-indigo-500/30 rounded-2xl flex justify-between items-center">
+                      <div>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-indigo-400 border border-indigo-900/30">
                           {q.category}
                         </span>
-                        {q.status === 'request_approval' && (
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-500 text-white animate-pulse">
-                            검수 대기중
-                          </span>
-                        )}
-                        {q.status === 'completed' && (
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                            완료됨
-                          </span>
-                        )}
+                        <h4 className="text-sm font-extrabold text-slate-200 mt-1">{q.title}</h4>
                       </div>
-                      <h4 className="text-sm font-extrabold text-slate-200">{q.title}</h4>
-                      <p className="text-[10px] text-slate-500 font-bold">
+                      <button
+                        onClick={() => handleQuestAction(q)}
+                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition shadow-md"
+                      >
+                        {q.category === '독서' ? '✨ AI 독서 치트키' : '완료 승인'}
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* 실시간 활동 알림창 로그 */}
+            <div className="bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-xl">
+              <h3 className="text-sm font-bold text-white mb-4 border-b border-slate-850 pb-3 flex justify-between items-center">
+                <span>알림창 히스토리 로그</span>
+                <button 
+                  onClick={() => {
+                    localStorage.removeItem('ff_notifications');
+                    setNotifications([]);
+                  }} 
+                  className="text-[10px] text-slate-500 hover:text-slate-300 font-bold"
+                >전체 비우기</button>
+              </h3>
+              <div className="space-y-2 max-h-40 overflow-y-auto">
+                {notifications.map(n => (
+                  <div key={n.id} className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-850/60 text-[11px]">
+                    <span className="text-slate-500 text-[9px] block mb-0.5">{new Date(n.createdAt).toLocaleTimeString()}</span>
+                    {n.message}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 2. 퀘스트 탭 (퀘스트 컨트롤 타워 & 독려 전송) */}
+        {activeTab === 'quest' && (
+          <div className="space-y-6">
+            <div className="bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-xl">
+              <div className="flex justify-between items-center mb-6 border-b border-slate-850 pb-3">
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  ⚔️ 퀘스트 컨트롤 타워
+                </h3>
+                <button
+                  onClick={() => setIsQuestBuilderOpen(true)}
+                  className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition"
+                >
+                  ➕ 신규 퀘스트 설계
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {quests.map(q => (
+                  <div key={q.id} className="p-4 bg-slate-950/60 border border-slate-850 rounded-2xl flex justify-between items-center">
+                    <div>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-400">
+                        {q.category} | {q.type === 'main' ? '메인' : '돌발'}
+                      </span>
+                      <h4 className="text-sm font-extrabold text-slate-200 mt-1">{q.title}</h4>
+                      <p className="text-[10px] text-slate-500 mt-0.5">
                         보상: {q.rewardType === 'exp' ? `➕ ${q.rewardExp} EXP` : `🪙 ${q.rewardGold} G`}
                       </p>
                     </div>
 
-                    {/* 제어 영역 */}
-                    <div className="flex items-center gap-2 self-end md:self-center">
-                      {q.status === 'request_approval' ? (
-                        <button
-                          onClick={() => handleQuestAction(q)}
-                          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition shadow-md flex items-center gap-1"
-                        >
-                          ✨ {q.category === '독서' ? 'AI 독서 치트키' : '완료 승인'}
-                        </button>
-                      ) : q.status === 'active' ? (
-                        <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-2">
+                      {q.status === 'completed' ? (
+                        <span className="text-xs text-emerald-400 font-bold">✓ 완료됨</span>
+                      ) : (
+                        <div className="flex items-center gap-1.5">
                           <button
                             onClick={() => handleCheer('sweet', q.title)}
-                            className="px-2 py-1 bg-slate-800 hover:bg-slate-750 text-slate-300 text-[10px] font-extrabold rounded-lg border border-slate-700 transition"
+                            className="px-2 py-1 bg-slate-850 hover:bg-slate-800 text-[10px] font-bold text-slate-300 rounded-lg transition"
                           >
                             😊 다정하게
                           </button>
                           <button
                             onClick={() => handleCheer('strict', q.title)}
-                            className="px-2 py-1 bg-slate-800 hover:bg-slate-750 text-slate-300 text-[10px] font-extrabold rounded-lg border border-slate-700 transition"
+                            className="px-2 py-1 bg-slate-850 hover:bg-slate-800 text-[10px] font-bold text-slate-300 rounded-lg transition"
                           >
                             🔥 단호하게
                           </button>
                           <button
                             onClick={() => handleCheer('funny', q.title)}
-                            className="px-2 py-1 bg-slate-800 hover:bg-slate-750 text-slate-300 text-[10px] font-extrabold rounded-lg border border-slate-700 transition"
+                            className="px-2 py-1 bg-slate-850 hover:bg-slate-800 text-[10px] font-bold text-slate-300 rounded-lg transition"
                           >
                             🤠 유머러스
                           </button>
                         </div>
-                      ) : (
-                        <span className="text-xs text-slate-500 font-bold flex items-center gap-1">
-                          <CheckCircle className="w-3.5 h-3.5 text-emerald-400" /> 지급완료
-                        </span>
                       )}
                     </div>
                   </div>
-
-                  {cheeringStatus === q.title && (
-                    <div className="mt-2.5 text-[10px] text-indigo-400 font-bold bg-indigo-500/5 p-2 rounded-xl border border-indigo-500/10 text-center animate-pulse">
-                      🚀 자녀 계정으로 독려 알림이 전송되었습니다!
-                    </div>
-                  )}
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
-        </section>
+        )}
 
-        {/* 오른쪽 섹션 (Lg 기준 5칸): 실시간 알림, 골드 전송 및 교환 정산 센터 */}
-        <section className="lg:col-span-5 space-y-6">
-          
-          {/* 골드 전송 & 정산 관리 센터 */}
-          <div className="bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-20 h-20 bg-amber-500/5 blur-3xl rounded-full" />
-            <h3 className="text-md font-bold text-white mb-6 flex items-center gap-2 border-b border-slate-850 pb-3">
-              <ShoppingBag className="w-4 h-4 text-amber-400" /> 골드 정산 & 이용권 심사
-            </h3>
+        {/* 3. 상점 탭 (골드 정산 & 이용권 결재 관리) */}
+        {activeTab === 'store' && (
+          <div className="space-y-6">
+            <div className="bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-xl">
+              <h3 className="text-sm font-bold text-white mb-6 border-b border-slate-850 pb-3">
+                🪙 상점 교환 & 이용권 심사 센터
+              </h3>
 
-            {/* 골드 현금화 전환 */}
-            <div className="space-y-4">
-              <div className="bg-slate-950/80 rounded-2xl p-4 border border-slate-850 space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-bold text-slate-400">🪙 골드 전환율</span>
-                  <span className="text-xs font-bold text-slate-200 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded-lg">1G = 1원</span>
-                </div>
-                <div className="flex justify-between items-center text-sm font-extrabold text-slate-300">
-                  <span>자녀 요청 레벨 제한</span>
-                  <span className="text-indigo-400">Lv.5 이상 가능</span>
-                </div>
-              </div>
-
-              {/* 이용권 결재 및 골드 전송 대기 통지 격자 */}
               <div className="space-y-3">
-                <h4 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">교환/정산 대기 목록</h4>
-                
-                {notifications.filter(n => !n.resolved && (n.type === 'gold_request' || n.type === 'self_quest_proposal' || n.type === 'item_request')).length === 0 ? (
-                  <div className="text-center py-8 text-slate-600 text-xs font-bold border-2 border-dashed border-slate-850 rounded-2xl">
-                    대기 중인 결재/협상 내역이 없습니다.
+                {notifications.filter(n => !n.resolved && (n.type === 'gold_request' || n.type === 'item_request' || n.type === 'self_quest_proposal')).length === 0 ? (
+                  <div className="text-center py-12 text-slate-500 text-xs font-bold border-2 border-dashed border-slate-850 rounded-2xl">
+                    현재 대기 중인 구매 결재나 현금화 신청 내역이 없습니다.
                   </div>
                 ) : (
-                  notifications.filter(n => !n.resolved && (n.type === 'gold_request' || n.type === 'self_quest_proposal' || n.type === 'item_request')).map(noti => (
-                    <div key={noti.id} className="p-3.5 bg-slate-950 border border-slate-850 rounded-2xl space-y-3">
-                      <div className="flex items-start gap-2">
-                        <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                        <p className="text-xs font-bold text-slate-200 leading-relaxed">{noti.message}</p>
-                      </div>
+                  notifications.filter(n => !n.resolved && (n.type === 'gold_request' || n.type === 'item_request' || n.type === 'self_quest_proposal')).map(noti => (
+                    <div key={noti.id} className="p-4 bg-slate-950 border border-slate-850 rounded-2xl space-y-3">
+                      <p className="text-xs font-bold text-slate-200">{noti.message}</p>
                       
-                      {noti.type === 'self_quest_proposal' && (
-                        <div className="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800/80 text-[10px] text-indigo-400 font-bold flex items-center justify-between">
-                          <span>자녀 제시 가격:</span>
-                          <span className="text-amber-400 font-black text-xs">{noti.meta?.proposedGold} G</span>
+                      {noti.meta?.proposedGold && (
+                        <div className="bg-slate-900 p-2.5 rounded-xl text-[10px] text-indigo-400 font-bold flex justify-between">
+                          <span>자녀 역제안가:</span>
+                          <span className="text-amber-400 font-black">{noti.meta.proposedGold} G</span>
                         </div>
                       )}
 
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="flex gap-2 justify-end">
                         <button
                           onClick={() => handleResolveNotification(noti, 'reject')}
-                          className="py-2 bg-slate-800 hover:bg-slate-750 text-slate-300 text-xs font-bold rounded-lg transition"
+                          className="px-3 py-1.5 bg-slate-800 hover:bg-slate-750 text-slate-300 text-xs font-bold rounded-lg transition"
                         >
                           거절 / 협상
                         </button>
                         <button
                           onClick={() => handleResolveNotification(noti, 'approve')}
-                          className="py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg transition shadow-md"
+                          className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg transition shadow-md"
                         >
                           승인 수락
                         </button>
@@ -401,42 +427,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
               </div>
             </div>
           </div>
-
-          {/* 알림창 히스토리 로그 */}
-          <div className="bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-xl">
-            <h3 className="text-md font-bold text-white mb-6 border-b border-slate-850 pb-3 flex items-center justify-between">
-              <span>🔔 알림창 히스토리 로그</span>
-              <button
-                onClick={() => {
-                  localStorage.removeItem('ff_notifications');
-                  setNotifications([]);
-                }}
-                className="text-[10px] text-slate-500 hover:text-slate-300 font-bold"
-              >
-                전체 삭제
-              </button>
-            </h3>
-
-            <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-              {notifications.length === 0 ? (
-                <div className="text-center py-10 text-slate-600 text-xs font-bold">
-                  기록된 알림이 존재하지 않습니다.
-                </div>
-              ) : (
-                notifications.map((n) => (
-                  <div key={n.id} className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-850/60 text-[11px] leading-relaxed text-slate-300 font-medium">
-                    <div className="flex justify-between items-center text-[9px] text-slate-500 mb-1">
-                      <span>{new Date(n.createdAt).toLocaleTimeString()}</span>
-                      <span className="text-indigo-500/70 font-semibold">{n.type}</span>
-                    </div>
-                    {n.message}
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-        </section>
+        )}
 
       </main>
 
