@@ -11,14 +11,8 @@ export default function Home() {
   const [currentUser, setCurrentUser] = useState<Profile | null>(null);
 
   const loadUser = () => {
-    const user = api.getCurrentUser();
-    // 로컬 스토리지에 세션 유저가 등록되어 있으면 불러오고, 없으면 프로필 선택 페이지를 보게 함
-    const sessionUserId = localStorage.getItem('ff_current_user_id');
-    if (sessionUserId) {
-      setCurrentUser(user);
-    } else {
-      setCurrentUser(null);
-    }
+    // 자동 진입 대신 사용자가 명시적으로 프로필을 탭하여 로그인 상태를 바꿀 때만 동작하도록 세션 자동 로드 로직 제거
+    setCurrentUser(null);
   };
 
   useEffect(() => {
