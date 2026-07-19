@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: "패밀리 길드 타이쿤 - 자녀 생활습관 메이커",

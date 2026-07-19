@@ -229,9 +229,9 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
             <div className="bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-xl relative overflow-hidden">
               <div className="flex flex-col md:flex-row gap-6 items-center">
                 <div className="flex flex-col items-center space-y-3">
-                  <div className="w-24 h-24 rounded-3xl bg-emerald-950/20 border-2 border-emerald-500/30 flex items-center justify-center text-6xl shadow-inner relative">
-                    🛡️
-                    <span className="absolute -bottom-1.5 bg-emerald-500 text-white font-extrabold text-[10px] px-2.5 py-0.5 rounded-full shadow-md border border-slate-900">
+                  <div className="w-24 h-24 rounded-3xl bg-slate-950 border border-slate-800 overflow-hidden flex items-center justify-center shadow-inner relative">
+                    <img src="/lowpoly_character.jpg" alt="Lowpoly Character" className="w-full h-full object-cover" />
+                    <span className="absolute -bottom-1.5 bg-emerald-500 text-white font-extrabold text-[10px] px-2.5 py-0.5 rounded-full shadow-md border border-slate-900 z-10">
                       Lv.{child.level}
                     </span>
                   </div>

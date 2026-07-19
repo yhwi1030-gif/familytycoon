@@ -138,6 +138,33 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
         </p>
       </div>
 
+      {/* 타이쿤 게임 맵 및 그래픽 컨셉 비주얼 배너 */}
+      <div className="max-w-4xl mx-auto w-full mt-8">
+        <div className="bg-slate-900 border border-slate-850 rounded-3xl p-5 shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center gap-6">
+          <div className="w-full md:w-2/5 aspect-[16/9] rounded-2xl bg-slate-950 border border-slate-800 overflow-hidden relative group">
+            <img 
+              src="/family_tycoon_map.jpg" 
+              alt="Family Tycoon Map Concept" 
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent flex items-end p-3">
+              <span className="text-[10px] font-black text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-md border border-indigo-500/20">
+                🏰 2D 로우폴리 월드맵 프리뷰
+              </span>
+            </div>
+          </div>
+          <div className="flex-1 space-y-2 text-left">
+            <h4 className="text-sm font-extrabold text-white flex items-center gap-1.5">
+              👾 타이쿤 네온 컨셉 팩 활성화됨
+            </h4>
+            <p className="text-xs text-slate-400 leading-relaxed font-semibold">
+              네온 핑크와 딥 블랙 테마의 로우폴리(Low-Poly) 스타일이 적용된 웹 타이쿤 스킨이 로드되었습니다. 
+              보호자와 모험가가 함께 가족 전용 던전의 율법 퀘스트를 달성하여 길드를 육성하고, 레벨 제한 해제 상점을 정복해 나가세요!
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* 본문 프로필 격자 그리드 */}
       <div className="max-w-4xl mx-auto w-full my-12">
         <div className="bg-slate-900/60 backdrop-blur-md rounded-3xl border border-slate-800 p-8 shadow-2xl">
