@@ -160,7 +160,7 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
               패밀리 던전 타이쿤
             </h1>
             <p className="text-sm font-semibold text-slate-400">
-              보호자 모드(길드마스터) & 자녀 플레이어 연동 게임
+              보호자 마스터 & 자녀 플레이어 연동 게임
             </p>
           </div>
 
