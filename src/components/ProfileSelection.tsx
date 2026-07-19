@@ -21,9 +21,30 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
   const [editPin, setEditPin] = useState('');
   const [onboardingRole, setOnboardingRole] = useState<'parent' | 'child' | null>(null);
 
+  // 인트로 시작 페이지 대기 유무
+  const [showIntro, setShowIntro] = useState(true);
+  const [loadingPercent, setLoadingPercent] = useState(0);
+  const [showLoading, setShowLoading] = useState(false);
+
   useEffect(() => {
     setProfiles(api.getProfiles());
   }, []);
+
+  const handleStartAdventure = () => {
+    setShowLoading(true);
+    let current = 0;
+    const interval = setInterval(() => {
+      current += 10;
+      setLoadingPercent(current);
+      if (current >= 100) {
+        clearInterval(interval);
+        setTimeout(() => {
+          setShowIntro(false);
+          setShowLoading(false);
+        }, 300);
+      }
+    }, 150);
+  };
 
   const handleProfileClick = (p: Profile) => {
     setSelectedProfile(p);
@@ -118,6 +139,69 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
           onComplete={handleOnboardingComplete}
           onCancel={() => setOnboardingRole(null)}
         />
+      </div>
+    );
+  }
+
+  // --- 기획서 1페이지 인트로 대기 시작화면 렌더링 ---
+  if (showIntro) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-6 select-none relative overflow-hidden">
+        {/* 네온 배경 장식 */}
+        <div className="absolute top-1/4 left-1/4 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-pink-500/10 rounded-full blur-3xl" />
+
+        <div className="max-w-md w-full text-center space-y-8 z-10">
+          <div className="space-y-4">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
+              🏆 자녀생활습관 만들기 타이쿤
+            </span>
+            <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-tight">
+              패밀리 던전 타이쿤
+            </h1>
+            <p className="text-sm font-semibold text-slate-400">
+              보호자 모드(길드마스터) & 자녀 플레이어 연동 게임
+            </p>
+          </div>
+
+          {/* 로우폴리 프리뷰 박스 */}
+          <div className="aspect-[16/9] w-full rounded-3xl overflow-hidden border border-slate-800 bg-slate-900/60 shadow-2xl relative group">
+            <img src="/family_tycoon_map.jpg" alt="Family Tycoon Map" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[1px] flex items-center justify-center">
+              <span className="text-xl font-extrabold text-white tracking-widest bg-slate-900/90 px-6 py-3 rounded-2xl border border-slate-800 shadow-md">
+                모험을 시작하시겠습니까?
+              </span>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {!showLoading ? (
+              <button
+                onClick={handleStartAdventure}
+                className="w-full py-4 bg-pink-600 hover:bg-pink-500 text-white font-extrabold text-sm rounded-2xl transition duration-300 transform active:scale-95 shadow-lg shadow-pink-500/20 tracking-wider"
+              >
+                🎮 입장하기 (로그인)
+              </button>
+            ) : (
+              <div className="space-y-3 p-4 bg-slate-900 border border-slate-850 rounded-2xl animate-pulse">
+                <div className="flex justify-between text-xs font-bold text-slate-400">
+                  <span>LOADING ADVENTURE...</span>
+                  <span className="text-indigo-400">{loadingPercent}%</span>
+                </div>
+                <div className="w-full bg-slate-950 h-3 rounded-full overflow-hidden border border-slate-800">
+                  <div
+                    className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 h-full transition-all duration-150"
+                    style={{ width: `${loadingPercent}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            <p className="text-[10px] text-slate-500 font-bold">
+              * 입장하기 버튼을 누르면 캐릭터 선택 및 프로필 로드 화면으로 진입합니다.
+            </p>
+          </div>
+        </div>
       </div>
     );
   }
