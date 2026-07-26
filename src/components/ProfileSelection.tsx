@@ -175,7 +175,7 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
 
           {/* 로우폴리 프리뷰 박스 */}
           <div className="aspect-[16/9] w-full rounded-3xl overflow-hidden border border-slate-800 bg-slate-900/60 shadow-2xl relative">
-            <img src="/start-01.jfif" alt="Family Tycoon Map" className="w-full h-full object-cover" />
+            <img src="/familyguildtycoon_start.jfif" alt="Family Tycoon Map" className="w-full h-full object-cover" />
           </div>
 
           <div className="space-y-4">
