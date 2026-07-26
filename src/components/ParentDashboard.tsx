@@ -31,14 +31,32 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
   // 탭 상태 ('home' | 'quest' | 'store')
   const [activeTab, setActiveTab] = useState<'home' | 'quest' | 'store'>('home');
   
+  // 다자녀 개별 확인을 위한 선택 상태
+  const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
+  
   // 퀘스트 독려 어조 전송 상태
   const [cheeringStatus, setCheeringStatus] = useState<string | null>(null);
 
   const loadData = () => {
     const pList = api.getProfiles();
     setProfiles(pList);
-    const targetChild = pList.find(p => p.role === 'child');
-    if (targetChild) setChild(targetChild);
+    
+    const children = pList.filter(p => p.role === 'child');
+    if (children.length > 0) {
+      // 선택된 자녀 ID가 없거나 유효하지 않으면 첫 번째 자녀를 기본값으로 선택
+      setSelectedChildId(prev => {
+        if (prev && children.some(c => c.id === prev)) return prev;
+        return children[0].id;
+      });
+      
+      // 현재 선택된 자녀의 최신 객체 가져오기
+      const currentSelectedId = selectedChildId || children[0].id;
+      const targetChild = children.find(c => c.id === currentSelectedId);
+      if (targetChild) setChild(targetChild);
+    } else {
+      setChild(null);
+    }
+    
     setQuests(api.getQuests());
     setNotifications(api.getNotifications());
   };
@@ -205,9 +223,33 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
           <div className="space-y-6">
             {/* 타이쿤 성장 리포트 */}
             <div className="bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-xl relative overflow-hidden">
-              <h3 className="text-sm font-bold text-white mb-6 flex items-center gap-2 border-b border-slate-850 pb-3">
-                <TrendingUp className="w-4 h-4 text-indigo-400" /> 타이쿤 성장 리포트
-              </h3>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-slate-850 pb-4">
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-indigo-400" /> 타이쿤 성장 리포트
+                </h3>
+                {/* 다자녀 선택 탭 (지시사항 반영) */}
+                {profiles.filter(p => p.role === 'child').length > 1 && (
+                  <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-850 gap-1 self-stretch sm:self-auto overflow-x-auto">
+                    {profiles.filter(p => p.role === 'child').map(c => (
+                      <button
+                        key={c.id}
+                        onClick={() => {
+                          setSelectedChildId(c.id);
+                          setChild(c);
+                        }}
+                        className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-black transition whitespace-nowrap ${
+                          selectedChildId === c.id
+                            ? 'bg-indigo-600 text-white shadow-sm'
+                            : 'text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        <span>{c.avatar}</span>
+                        <span>{c.name.split(' ')[0]}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
 
               {child ? (
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
