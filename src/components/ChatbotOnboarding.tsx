@@ -216,7 +216,7 @@ export const ChatbotOnboarding: React.FC<ChatbotProps> = ({ role, onComplete, on
             {role === 'parent' ? '🧙‍♀️ 길드 마스터 성향 분석 챗봇' : '🧚‍♀️ 모험가 클래스 판타지 성향 진단'}
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            {role === 'parent' ? '바움린드 양육 이론 기반 진단' : '대한민국 교육부 핵심 역량 연계형'}
+            {role === 'parent' ? '바움린드 양육 이론 기반 진단' : '왕실 교육 과정 연계 · 모험가 역량 진단'}
           </p>
         </div>
         <button
