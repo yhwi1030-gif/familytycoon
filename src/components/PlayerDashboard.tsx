@@ -223,7 +223,7 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
             onClick={() => setIsSelfQuestOpen(true)}
             className="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg transition shadow-md"
           >
-            <Plus className="w-3 h-3" /> 모험
+            <Plus className="w-3 h-3" /> 내 마음대로 모험
           </button>
           <button
             onClick={onLogout}
