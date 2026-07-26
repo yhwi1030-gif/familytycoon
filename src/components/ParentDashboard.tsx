@@ -491,11 +491,16 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
                 ))}
               </div>
             </div>
+          </div>
+        )}
 
+        {/* 3. 상점 탭 (골드 정산 & 이용권 결재 관리) */}
+        {activeTab === 'store' && (
+          <div className="space-y-6">
             {/* 대기중인 구매/이용권 심사 대기열 */}
-              <div className="bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-xl">
-              <h3 className="text-sm font-bold text-white mb-4 border-b border-slate-850 pb-3">
-                ⚖️ 심사 대기열
+            <div className="bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-xl">
+              <h3 className="text-sm font-bold text-white mb-4 border-b border-slate-850 pb-3 flex items-center gap-2">
+                ⚖️ 상점 교환 & 이용권 심사 센터
               </h3>
               <div className="space-y-3">
                 {notifications.filter(n => !n.resolved && (n.type === 'gold_request' || n.type === 'item_request' || n.type === 'item_use_request' || n.type === 'self_quest_proposal')).length === 0 ? (
@@ -543,7 +548,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
               </div>
             </div>
 
-            {/* 승인한 완료 이력 로그 (지시사항 반영) */}
+            {/* 승인한 완료 이력 로그 */}
             <div className="bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-xl">
               <h3 className="text-sm font-bold text-slate-200 mb-4 border-b border-slate-850 pb-3 flex items-center gap-2">
                 📋 승인/반려 완료 이력 로그
@@ -570,7 +575,6 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
                 )}
               </div>
             </div>
-
           </div>
         )}
 
