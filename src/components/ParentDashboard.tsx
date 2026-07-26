@@ -37,21 +37,21 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
   // 퀘스트 독려 어조 전송 상태
   const [cheeringStatus, setCheeringStatus] = useState<string | null>(null);
 
-  const loadData = () => {
+  const loadData = (overrideId?: string) => {
     const pList = api.getProfiles();
     setProfiles(pList);
     
     const children = pList.filter(p => p.role === 'child');
     if (children.length > 0) {
-      // 선택된 자녀 ID가 없거나 유효하지 않으면 첫 번째 자녀를 기본값으로 선택
-      setSelectedChildId(prev => {
-        if (prev && children.some(c => c.id === prev)) return prev;
-        return children[0].id;
-      });
+      // 전달된 overrideId가 있으면 그것을 사용하고 없으면 selectedChildId 상태값 조회
+      let activeId = overrideId || selectedChildId;
+      if (!activeId || !children.some(c => c.id === activeId)) {
+        activeId = children[0].id;
+      }
       
-      // 현재 선택된 자녀의 최신 객체 가져오기
-      const currentSelectedId = selectedChildId || children[0].id;
-      const targetChild = children.find(c => c.id === currentSelectedId);
+      setSelectedChildId(activeId);
+      
+      const targetChild = children.find(c => c.id === activeId);
       if (targetChild) setChild(targetChild);
     } else {
       setChild(null);
@@ -236,6 +236,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
                         onClick={() => {
                           setSelectedChildId(c.id);
                           setChild(c);
+                          loadData(c.id);
                         }}
                         className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-black transition whitespace-nowrap ${
                           selectedChildId === c.id
