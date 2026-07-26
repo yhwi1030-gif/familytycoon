@@ -37,6 +37,10 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
   // 퀘스트 독려 어조 전송 상태
   const [cheeringStatus, setCheeringStatus] = useState<string | null>(null);
 
+  // 퀘스트 컨트롤 타워 섹션 접기/펼치기 상태 제어 (기획 추가 사항)
+  const [isMainQuestsCollapsed, setIsMainQuestsCollapsed] = useState(false);
+  const [isFlashQuestsCollapsed, setIsFlashQuestsCollapsed] = useState(false);
+
   // setInterval 클로저 내부에서 최신 selectedChildId 상태값을 캡처하기 위한 Ref 참조
   const selectedChildIdRef = React.useRef<string | null>(null);
   
@@ -447,99 +451,202 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
 
         {/* 2. 퀘스트 탭 (퀘스트 컨트롤 타워 & 독려 전송) */}
         {activeTab === 'quest' && (
-          <div className="space-y-6">
-            <div className="bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-xl">
-              <div className="flex justify-between items-center mb-6 border-b border-slate-850 pb-3">
+          <div className="space-y-6 animate-in fade-in duration-200">
+            {/* 상단 퀘스트 공통 헤더 */}
+            <div className="flex justify-between items-center bg-slate-900/60 p-4 border border-slate-850 rounded-2xl">
+              <div>
                 <h3 className="text-sm font-bold text-white flex items-center gap-2">
                   ⚔️ 퀘스트 컨트롤 타워
                 </h3>
-                <button
-                  onClick={() => setIsQuestBuilderOpen(true)}
-                  className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition"
-                >
-                  ➕ 신규 퀘스트 설계
-                </button>
+                <p className="text-[10px] text-slate-500 font-semibold mt-0.5">자녀의 활동 루틴과 일시적인 미션을 총괄 통제합니다.</p>
+              </div>
+              <button
+                onClick={() => setIsQuestBuilderOpen(true)}
+                className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition shadow active:scale-95"
+              >
+                ➕ 신규 퀘스트 설계
+              </button>
+            </div>
+
+            {/* SECTION 1: 메인 퀘스트 (일일 루틴) 섹션 */}
+            <div className="bg-slate-900 border border-slate-850 rounded-3xl p-5 shadow-xl transition-all duration-300">
+              <div 
+                onClick={() => setIsMainQuestsCollapsed(!isMainQuestsCollapsed)}
+                className="flex justify-between items-center cursor-pointer pb-3 border-b border-slate-850"
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="text-xs text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded font-black">
+                    {quests.filter(q => q.type === 'main').length}
+                  </span>
+                  <h4 className="text-sm font-extrabold text-white flex items-center gap-1.5">
+                    📅 메인 퀘스트 섹션 (일일 루틴)
+                  </h4>
+                </div>
+                <div className="flex items-center gap-1.5 text-slate-400 hover:text-slate-200 text-xs font-bold">
+                  <span>{isMainQuestsCollapsed ? '펼치기 🔓' : '접기 🔒'}</span>
+                  <span className="text-md">{isMainQuestsCollapsed ? '▼' : '▲'}</span>
+                </div>
               </div>
 
-              {/* 테이블 헤더 형태 헤드라인 */}
-              <div className="hidden sm:grid grid-cols-12 gap-4 px-4 py-2 text-[10px] font-black text-slate-500 border-b border-slate-850">
-                <div className="col-span-4">활동명</div>
-                <div className="col-span-3 text-center">퀘스트 마감시간 / 정보</div>
-                <div className="col-span-5 text-right">퀘스트 완료 독려 메시지 전송</div>
-              </div>
+              {!isMainQuestsCollapsed && (
+                <div className="mt-4 space-y-3 animate-in fade-in duration-200">
+                  {/* 테이블 헤더 */}
+                  <div className="hidden sm:grid grid-cols-12 gap-4 px-4 py-2 text-[10px] font-black text-slate-500 border-b border-slate-850/60">
+                    <div className="col-span-4">활동명 (메인 루틴)</div>
+                    <div className="col-span-3 text-center">리셋 / 정보</div>
+                    <div className="col-span-5 text-right">퀘스트 완료 독려 메시지 전송</div>
+                  </div>
 
-              <div className="space-y-3 mt-2">
-                {quests.map(q => (
-                  <div key={q.id} className="p-4 bg-slate-950/60 border border-slate-850 rounded-2xl grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
-                    {/* 활동명 */}
-                    <div className="col-span-1 sm:col-span-4">
-                      <div className="flex items-center gap-2">
-                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded ${q.type === 'main' ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>
-                          {q.category} | {q.type === 'main' ? '메인' : '돌발'}
-                        </span>
-                      </div>
-                      <h4 className="text-sm font-extrabold text-slate-200 mt-1.5">{q.title}</h4>
-                      <p className="text-[10px] text-slate-500 mt-0.5">
-                        보상: {q.rewardType === 'exp' ? `➕ ${q.rewardExp} EXP` : `🪙 ${q.rewardGold} G`}
-                      </p>
+                  {quests.filter(q => q.type === 'main').length === 0 ? (
+                    <div className="text-center py-8 text-slate-600 text-xs font-bold italic">
+                      등록된 메인 퀘스트가 없습니다.
                     </div>
-
-                    {/* 퀘스트 마감시간 (돌발 퀘스트 마감시간 필수 표시) */}
-                    <div className="col-span-1 sm:col-span-3 text-left sm:text-center">
-                      {q.type === 'flash' ? (
-                        <div className="inline-flex flex-col items-center">
-                          <span className="text-[10px] font-bold text-rose-400 bg-rose-500/10 px-2.5 py-1 rounded-lg border border-rose-500/20 flex items-center gap-1">
-                            ⏱️ {q.dueTime || '18:00'} 마감
+                  ) : (
+                    quests.filter(q => q.type === 'main').map(q => (
+                      <div key={q.id} className="p-4 bg-slate-950/60 border border-slate-850 rounded-2xl grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
+                        <div className="col-span-1 sm:col-span-4">
+                          <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                            {q.category}
                           </span>
-                          <span className="text-[8px] text-slate-500 mt-1 font-semibold">
-                            (미수행 시 골드 소멸)
+                          <h4 className="text-sm font-extrabold text-slate-200 mt-1.5">{q.title}</h4>
+                          <p className="text-[10px] text-slate-500 mt-0.5">보상: ➕ {q.rewardExp} EXP</p>
+                        </div>
+                        <div className="col-span-1 sm:col-span-3 text-left sm:text-center">
+                          <span className="text-[10px] font-bold text-slate-400 bg-slate-850 px-2.5 py-1 rounded-lg border border-slate-800">
+                            📅 일일 루틴
                           </span>
                         </div>
-                      ) : (
-                        <span className="text-[10px] font-bold text-slate-400 bg-slate-850 px-2.5 py-1 rounded-lg border border-slate-800">
-                          📅 일일 루틴
-                        </span>
-                      )}
-                    </div>
-
-                    {/* 독려 메시지 전송 및 조치 */}
-                    <div className="col-span-1 sm:col-span-5 flex flex-wrap gap-1.5 justify-start sm:justify-end items-center">
-                      {q.status === 'completed' ? (
-                        <span className="text-xs text-emerald-400 font-bold px-3 py-1 bg-emerald-500/10 rounded-lg border border-emerald-500/20">✓ 완료됨</span>
-                      ) : (
-                        <>
-                          <button
-                            onClick={() => handleCheer('sweet', q.title)}
-                            className="px-2 py-1.5 bg-slate-900 hover:bg-slate-800 text-[10px] font-bold text-emerald-400 rounded-lg transition border border-slate-850 flex items-center gap-1 active:scale-95"
-                          >
-                            😊 다정하게
-                          </button>
-                          <button
-                            onClick={() => handleCheer('strict', q.title)}
-                            className="px-2 py-1.5 bg-slate-900 hover:bg-slate-800 text-[10px] font-bold text-rose-400 rounded-lg transition border border-slate-850 flex items-center gap-1 active:scale-95"
-                          >
-                            🔥 단호하게
-                          </button>
-                          <button
-                            onClick={() => handleCheer('funny', q.title)}
-                            className="px-2 py-1.5 bg-slate-900 hover:bg-slate-800 text-[10px] font-bold text-amber-400 rounded-lg transition border border-slate-850 flex items-center gap-1 active:scale-95"
-                          >
-                            🤠 유머러스
-                          </button>
-                          {q.status === 'request_approval' && (
-                            <button
-                              onClick={() => handleQuestAction(q)}
-                              className="px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-[10px] font-bold text-white rounded-lg transition shadow active:scale-95 ml-1"
-                            >
-                              검수하기
-                            </button>
+                        <div className="col-span-1 sm:col-span-5 flex flex-wrap gap-1.5 justify-start sm:justify-end items-center">
+                          {q.status === 'completed' ? (
+                            <span className="text-xs text-emerald-400 font-bold px-3 py-1 bg-emerald-500/10 rounded-lg border border-emerald-500/20">✓ 완료됨</span>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => handleCheer('sweet', q.title)}
+                                className="px-2 py-1.5 bg-slate-900 hover:bg-slate-800 text-[10px] font-bold text-emerald-400 rounded-lg transition border border-slate-850 flex items-center gap-1 active:scale-95"
+                              >
+                                😊 다정하게
+                              </button>
+                              <button
+                                onClick={() => handleCheer('strict', q.title)}
+                                className="px-2 py-1.5 bg-slate-900 hover:bg-slate-800 text-[10px] font-bold text-rose-400 rounded-lg transition border border-slate-850 flex items-center gap-1 active:scale-95"
+                              >
+                                🔥 단호하게
+                              </button>
+                              <button
+                                onClick={() => handleCheer('funny', q.title)}
+                                className="px-2 py-1.5 bg-slate-900 hover:bg-slate-800 text-[10px] font-bold text-amber-400 rounded-lg transition border border-slate-850 flex items-center gap-1 active:scale-95"
+                              >
+                                🤠 유머러스
+                              </button>
+                              {q.status === 'request_approval' && (
+                                <button
+                                  onClick={() => handleQuestAction(q)}
+                                  className="px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-[10px] font-bold text-white rounded-lg transition shadow active:scale-95 ml-1"
+                                >
+                                  검수하기
+                                </button>
+                              )}
+                            </>
                           )}
-                        </>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* SECTION 2: 돌발 퀘스트 (심부름) 섹션 */}
+            <div className="bg-slate-900 border border-slate-850 rounded-3xl p-5 shadow-xl transition-all duration-300">
+              <div 
+                onClick={() => setIsFlashQuestsCollapsed(!isFlashQuestsCollapsed)}
+                className="flex justify-between items-center cursor-pointer pb-3 border-b border-slate-850"
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded font-black">
+                    {quests.filter(q => q.type === 'flash').length}
+                  </span>
+                  <h4 className="text-sm font-extrabold text-white flex items-center gap-1.5">
+                    ⚡ 돌발 퀘스트 섹션 (심부름 / 미션)
+                  </h4>
+                </div>
+                <div className="flex items-center gap-1.5 text-slate-400 hover:text-slate-200 text-xs font-bold">
+                  <span>{isFlashQuestsCollapsed ? '펼치기 🔓' : '접기 🔒'}</span>
+                  <span className="text-md">{isFlashQuestsCollapsed ? '▼' : '▲'}</span>
+                </div>
               </div>
+
+              {!isFlashQuestsCollapsed && (
+                <div className="mt-4 space-y-3 animate-in fade-in duration-200">
+                  {/* 테이블 헤더 */}
+                  <div className="hidden sm:grid grid-cols-12 gap-4 px-4 py-2 text-[10px] font-black text-slate-500 border-b border-slate-850/60">
+                    <div className="col-span-4">활동명 (돌발 미션)</div>
+                    <div className="col-span-3 text-center">퀘스트 마감시간 / 정보</div>
+                    <div className="col-span-5 text-right">퀘스트 완료 독려 메시지 전송</div>
+                  </div>
+
+                  {quests.filter(q => q.type === 'flash').length === 0 ? (
+                    <div className="text-center py-12 text-slate-650 text-xs font-bold border-2 border-dashed border-slate-850/70 rounded-2xl bg-slate-950/20">
+                      현재 활성화된 돌발 퀘스트가 없습니다.
+                    </div>
+                  ) : (
+                    quests.filter(q => q.type === 'flash').map(q => (
+                      <div key={q.id} className="p-4 bg-slate-950/60 border border-slate-850 rounded-2xl grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
+                        <div className="col-span-1 sm:col-span-4">
+                          <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            {q.category}
+                          </span>
+                          <h4 className="text-sm font-extrabold text-slate-200 mt-1.5">{q.title}</h4>
+                          <p className="text-[10px] text-slate-500 mt-0.5">보상: 🪙 {q.rewardGold} G</p>
+                        </div>
+                        <div className="col-span-1 sm:col-span-3 text-left sm:text-center">
+                          <div className="inline-flex flex-col items-center">
+                            <span className="text-[10px] font-bold text-rose-400 bg-rose-500/10 px-2.5 py-1 rounded-lg border border-rose-500/20 flex items-center gap-1">
+                              ⏱️ {q.dueTime || '18:00'} 마감
+                            </span>
+                            <span className="text-[8px] text-slate-500 mt-1 font-semibold">(미수행 시 골드 소멸)</span>
+                          </div>
+                        </div>
+                        <div className="col-span-1 sm:col-span-5 flex flex-wrap gap-1.5 justify-start sm:justify-end items-center">
+                          {q.status === 'completed' ? (
+                            <span className="text-xs text-emerald-400 font-bold px-3 py-1 bg-emerald-500/10 rounded-lg border border-emerald-500/20">✓ 완료됨</span>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => handleCheer('sweet', q.title)}
+                                className="px-2 py-1.5 bg-slate-900 hover:bg-slate-800 text-[10px] font-bold text-emerald-400 rounded-lg transition border border-slate-850 flex items-center gap-1 active:scale-95"
+                              >
+                                😊 다정하게
+                              </button>
+                              <button
+                                onClick={() => handleCheer('strict', q.title)}
+                                className="px-2 py-1.5 bg-slate-900 hover:bg-slate-800 text-[10px] font-bold text-rose-400 rounded-lg transition border border-slate-850 flex items-center gap-1 active:scale-95"
+                              >
+                                🔥 단호하게
+                              </button>
+                              <button
+                                onClick={() => handleCheer('funny', q.title)}
+                                className="px-2 py-1.5 bg-slate-900 hover:bg-slate-800 text-[10px] font-bold text-amber-400 rounded-lg transition border border-slate-850 flex items-center gap-1 active:scale-95"
+                              >
+                                🤠 유머러스
+                              </button>
+                              {q.status === 'request_approval' && (
+                                <button
+                                  onClick={() => handleQuestAction(q)}
+                                  className="px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-[10px] font-bold text-white rounded-lg transition shadow active:scale-95 ml-1"
+                                >
+                                  검수하기
+                                </button>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
           </div>
         )}
