@@ -246,7 +246,7 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                     alt="Class Avatar" 
                     className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105" 
                   />
-                  <span className="absolute -bottom-1.5 bg-emerald-500 text-white font-extrabold text-[10px] px-3 py-1 rounded-full shadow-md border border-slate-900 z-10">
+                  <span className="absolute bottom-[3px] right-[3px] bg-emerald-500 text-white font-extrabold text-[10px] px-2.5 py-0.5 rounded-lg shadow-md border border-slate-900 z-10">
                     Lv.{child.level}
                   </span>
                 </div>
