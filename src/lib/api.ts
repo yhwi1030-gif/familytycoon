@@ -120,6 +120,13 @@ export const api = {
     return list;
   },
 
+  deleteProfile: (id: string): Profile[] => {
+    const list = api.getProfiles();
+    const filtered = list.filter(p => p.id !== id);
+    setStored(KEYS.PROFILES, filtered);
+    return filtered;
+  },
+
   getCurrentUserId: (): string => {
     return getStored(KEYS.CURRENT_USER_ID, 'parent1');
   },

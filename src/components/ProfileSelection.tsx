@@ -90,6 +90,15 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
     setSelectedProfile(null);
   };
 
+  const handleDeleteProfile = (id: string) => {
+    if (confirm("정말로 이 프로필을 길드에서 영구 삭제하시겠습니까?")) {
+      const list = api.deleteProfile(id);
+      setProfiles(list);
+      setIsEditing(false);
+      setSelectedProfile(null);
+    }
+  };
+
   const handleAddProfile = (role: 'parent' | 'child') => {
     setOnboardingRole(role);
   };
@@ -426,6 +435,20 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
                 >
                   저장
                 </button>
+              </div>
+
+              {/* 관리 위원회 전용: 프로필 영구 삭제 버튼 (기획서 1페이지 프로필 관리 보완) */}
+              <div className="pt-4 border-t border-slate-850/60 text-center">
+                <button
+                  type="button"
+                  onClick={() => handleDeleteProfile(selectedProfile.id)}
+                  className="flex items-center justify-center gap-1.5 w-full py-2.5 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 hover:border-rose-500/40 text-rose-400 rounded-xl font-bold transition text-xs"
+                >
+                  <Trash2 className="w-3.5 h-3.5" /> ❌ 이 프로필 영구 삭제
+                </button>
+                <p className="text-[10px] text-slate-500 mt-2 font-medium">
+                  * 프로필 삭제 시 해당 모험가의 스탯 기록 및 보상 획득 정보가 즉시 파괴됩니다.
+                </p>
               </div>
             </form>
           </div>
