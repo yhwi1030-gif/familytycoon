@@ -58,7 +58,7 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
     if (q.category === '학습' || q.category === '독서') {
       setActiveCameraQuest(q);
     } else {
-      childRequestQuestApproval(q.id, q.title, '');
+      childRequestQuestApproval(q.id, q.title, '', child.id, child.name);
       loadData();
       alert(`🛡️ [인증 완료] [${q.title}] 인증 요청을 길드마스터에게 전송했습니다.`);
     }
@@ -69,7 +69,9 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
       childRequestQuestApproval(
         activeCameraQuest.id,
         activeCameraQuest.title,
-        'https://picsum.photos/400/300'
+        'https://picsum.photos/400/300',
+        child.id,
+        child.name
       );
       setActiveCameraQuest(null);
       loadData();

@@ -279,10 +279,17 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
                   quests.filter(q => q.status === 'request_approval').map(q => (
                     <div key={q.id} className="p-4 bg-indigo-950/20 border border-indigo-500/30 rounded-2xl flex justify-between items-center">
                       <div>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-indigo-400 border border-indigo-900/30">
-                          {q.category}
-                        </span>
-                        <h4 className="text-sm font-extrabold text-slate-200 mt-1">{q.title}</h4>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-indigo-400 border border-indigo-900/30">
+                            {q.category}
+                          </span>
+                          {q.childName && (
+                            <span className="text-[9px] font-black px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                              👤 {q.childName}
+                            </span>
+                          )}
+                        </div>
+                        <h4 className="text-sm font-extrabold text-slate-200 mt-1.5">{q.title}</h4>
                       </div>
                       <button
                         onClick={() => handleQuestAction(q)}

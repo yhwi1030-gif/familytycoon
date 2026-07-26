@@ -15,19 +15,21 @@ export function addMockNotification(
 }
 
 // 1. 자녀 -> 부모: 독서 퀘스트 완료 후 사진 인증 전송 요청
-export function childRequestQuestApproval(questId: string, title: string, imageUrl: string) {
+export function childRequestQuestApproval(questId: string, title: string, imageUrl: string, childId?: string, childName?: string) {
   const quests = api.getQuests();
   const idx = quests.findIndex(q => q.id === questId);
   if (idx !== -1) {
     quests[idx].status = 'request_approval';
     quests[idx].imageUrl = imageUrl;
+    quests[idx].childId = childId;
+    quests[idx].childName = childName;
     api.saveQuests(quests);
 
     addMockNotification(
       'quest_request',
-      `🛡️ 자녀가 [${title}] 완료 승인을 요청했습니다. AI 하브루타 요약 검수가 가능합니다.`,
+      `🛡️ [${childName || '자녀'}] 모험가가 [${title}] 완료 승인을 요청했습니다. AI 하브루타 요약 검수가 가능합니다.`,
       questId,
-      { imageUrl, title }
+      { imageUrl, title, childId, childName }
     );
   }
 }
