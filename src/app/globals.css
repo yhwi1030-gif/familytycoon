@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Black+And+White+Picture&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Gugi&display=swap');
 @import "tailwindcss";
 
 :root {
@@ -14,7 +14,7 @@ body {
 }
 
 .font-bw {
-  font-family: 'Black And White Picture', sans-serif !important;
+  font-family: 'Gugi', cursive !important;
 }
 
 /* 게이밍 풍 슬라이더 커스텀 스타일링 */
