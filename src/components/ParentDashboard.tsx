@@ -37,19 +37,28 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
   // 퀘스트 독려 어조 전송 상태
   const [cheeringStatus, setCheeringStatus] = useState<string | null>(null);
 
+  // setInterval 클로저 내부에서 최신 selectedChildId 상태값을 캡처하기 위한 Ref 참조
+  const selectedChildIdRef = React.useRef<string | null>(null);
+  
+  // selectedChildId 변경 시마다 Ref 동기화
+  useEffect(() => {
+    selectedChildIdRef.current = selectedChildId;
+  }, [selectedChildId]);
+
   const loadData = (overrideId?: string) => {
     const pList = api.getProfiles();
     setProfiles(pList);
     
     const children = pList.filter(p => p.role === 'child');
     if (children.length > 0) {
-      // 전달된 overrideId가 있으면 그것을 사용하고 없으면 selectedChildId 상태값 조회
-      let activeId = overrideId || selectedChildId;
+      // 1. overrideId 우선 -> 2. ref에 저장된 실시간 최신 선택 ID -> 3. 첫 자녀
+      let activeId = overrideId || selectedChildIdRef.current;
       if (!activeId || !children.some(c => c.id === activeId)) {
         activeId = children[0].id;
       }
       
       setSelectedChildId(activeId);
+      selectedChildIdRef.current = activeId;
       
       const targetChild = children.find(c => c.id === activeId);
       if (targetChild) setChild(targetChild);
@@ -63,8 +72,10 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
 
   useEffect(() => {
     loadData();
-    // 3초 간격 실시간 모의 갱신 루프
-    const interval = setInterval(loadData, 3000);
+    // 3초 간격 실시간 모의 갱신 루프 (Ref 값을 참조하므로 탭 전환 시 복원 버그가 근본 차단됩니다.)
+    const interval = setInterval(() => {
+      loadData();
+    }, 3000);
     return () => clearInterval(interval);
   }, []);
 
