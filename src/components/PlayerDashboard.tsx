@@ -465,9 +465,16 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                         {q.category}
                       </span>
                       <h4 className="text-sm font-extrabold text-slate-200 mt-1">{q.title}</h4>
-                      <p className="text-[10px] text-slate-500 mt-0.5">
-                        보상: {q.rewardType === 'exp' ? `➕ ${q.rewardExp} EXP` : `🪙 ${q.rewardGold} G`}
-                      </p>
+                      <div className="flex flex-wrap items-center gap-2 mt-1">
+                        <span className="text-[10px] text-slate-500 font-bold">
+                          보상: {q.rewardType === 'exp' ? `➕ ${q.rewardExp} EXP` : `🪙 ${q.rewardGold} G`}
+                        </span>
+                        {q.type === 'flash' && (
+                          <span className="text-[9px] text-rose-400 bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded font-black flex items-center gap-1">
+                            ⏱️ {q.dueTime || '18:00'} 마감
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     <div className="flex items-center gap-2">

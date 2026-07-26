@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 interface QuestBuilderProps {
-  onAddQuest: (questData: { title: string; category: string; type: 'main' | 'flash'; rewardValue: number }) => void;
+  onAddQuest: (questData: { title: string; category: string; type: 'main' | 'flash'; rewardValue: number; dueTime?: string }) => void;
   onClose: () => void;
 }
 
@@ -10,6 +10,7 @@ export const QuestBuilder: React.FC<QuestBuilderProps> = ({ onAddQuest, onClose 
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('학습');
   const [rewardValue, setRewardValue] = useState(20);
+  const [dueTime, setDueTime] = useState('18:00'); // 기본 마감 시간 18:00 설정
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,7 +19,8 @@ export const QuestBuilder: React.FC<QuestBuilderProps> = ({ onAddQuest, onClose 
       title,
       category,
       type,
-      rewardValue
+      rewardValue,
+      dueTime: type === 'flash' ? dueTime : undefined
     });
     onClose();
   };
@@ -116,6 +118,24 @@ export const QuestBuilder: React.FC<QuestBuilderProps> = ({ onAddQuest, onClose 
               </span>
             </div>
           </div>
+
+          {/* 마감 시간 입력 (돌발 퀘스트 전용 - 지시사항 준수) */}
+          {type === 'flash' && (
+            <div className="space-y-1 animate-in fade-in duration-250">
+              <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase flex items-center gap-1">
+                ⏱️ 퀘스트 마감 제한 시간
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="time"
+                  value={dueTime}
+                  onChange={(e) => setDueTime(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-850 rounded-xl p-3 text-sm text-slate-200 outline-none focus:border-emerald-500 font-bold"
+                  required
+                />
+              </div>
+            </div>
+          )}
 
           {/* 가이드 추천 안내 */}
           <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-850 text-[11px] text-slate-400">

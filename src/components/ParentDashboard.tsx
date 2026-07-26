@@ -109,14 +109,15 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
   };
 
   // 신규 퀘스트 발행 완료 콜백
-  const handleAddQuest = (data: { title: string; category: string; type: 'main' | 'flash'; rewardValue: number }) => {
+  const handleAddQuest = (data: { title: string; category: string; type: 'main' | 'flash'; rewardValue: number; dueTime?: string }) => {
     api.addQuest({
       title: data.title,
       category: data.category,
       type: data.type,
       rewardType: data.type === 'main' ? 'exp' : 'gold',
       rewardExp: data.type === 'main' ? data.rewardValue : 0,
-      rewardGold: data.type === 'flash' ? data.rewardValue : 0
+      rewardGold: data.type === 'flash' ? data.rewardValue : 0,
+      dueTime: data.dueTime
     });
     // 알림 전송
     api.addNotification({
@@ -460,31 +461,80 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
                 </button>
               </div>
 
-              <div className="space-y-3">
+              {/* 테이블 헤더 형태 헤드라인 */}
+              <div className="hidden sm:grid grid-cols-12 gap-4 px-4 py-2 text-[10px] font-black text-slate-500 border-b border-slate-850">
+                <div className="col-span-4">활동명</div>
+                <div className="col-span-3 text-center">퀘스트 마감시간 / 정보</div>
+                <div className="col-span-5 text-right">퀘스트 완료 독려 메시지 전송</div>
+              </div>
+
+              <div className="space-y-3 mt-2">
                 {quests.map(q => (
-                  <div key={q.id} className="p-4 bg-slate-950/60 border border-slate-850 rounded-2xl flex justify-between items-center">
-                    <div>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-400">
-                        {q.category} | {q.type === 'main' ? '메인' : '돌발'}
-                      </span>
-                      <h4 className="text-sm font-extrabold text-slate-200 mt-1">{q.title}</h4>
+                  <div key={q.id} className="p-4 bg-slate-950/60 border border-slate-850 rounded-2xl grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
+                    {/* 활동명 */}
+                    <div className="col-span-1 sm:col-span-4">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded ${q.type === 'main' ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>
+                          {q.category} | {q.type === 'main' ? '메인' : '돌발'}
+                        </span>
+                      </div>
+                      <h4 className="text-sm font-extrabold text-slate-200 mt-1.5">{q.title}</h4>
                       <p className="text-[10px] text-slate-500 mt-0.5">
                         보상: {q.rewardType === 'exp' ? `➕ ${q.rewardExp} EXP` : `🪙 ${q.rewardGold} G`}
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      {q.status === 'completed' ? (
-                        <span className="text-xs text-emerald-400 font-bold">✓ 완료됨</span>
-                      ) : (
-                        <div className="flex items-center gap-1.5">
-                          <button
-                            onClick={() => handleQuestAction(q)}
-                            className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition"
-                          >
-                            상세 보기
-                          </button>
+                    {/* 퀘스트 마감시간 (돌발 퀘스트 마감시간 필수 표시) */}
+                    <div className="col-span-1 sm:col-span-3 text-left sm:text-center">
+                      {q.type === 'flash' ? (
+                        <div className="inline-flex flex-col items-center">
+                          <span className="text-[10px] font-bold text-rose-400 bg-rose-500/10 px-2.5 py-1 rounded-lg border border-rose-500/20 flex items-center gap-1">
+                            ⏱️ {q.dueTime || '18:00'} 마감
+                          </span>
+                          <span className="text-[8px] text-slate-500 mt-1 font-semibold">
+                            (미수행 시 골드 소멸)
+                          </span>
                         </div>
+                      ) : (
+                        <span className="text-[10px] font-bold text-slate-400 bg-slate-850 px-2.5 py-1 rounded-lg border border-slate-800">
+                          📅 일일 루틴
+                        </span>
+                      )}
+                    </div>
+
+                    {/* 독려 메시지 전송 및 조치 */}
+                    <div className="col-span-1 sm:col-span-5 flex flex-wrap gap-1.5 justify-start sm:justify-end items-center">
+                      {q.status === 'completed' ? (
+                        <span className="text-xs text-emerald-400 font-bold px-3 py-1 bg-emerald-500/10 rounded-lg border border-emerald-500/20">✓ 완료됨</span>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => handleCheer('sweet', q.title)}
+                            className="px-2 py-1.5 bg-slate-900 hover:bg-slate-800 text-[10px] font-bold text-emerald-400 rounded-lg transition border border-slate-850 flex items-center gap-1 active:scale-95"
+                          >
+                            😊 다정하게
+                          </button>
+                          <button
+                            onClick={() => handleCheer('strict', q.title)}
+                            className="px-2 py-1.5 bg-slate-900 hover:bg-slate-800 text-[10px] font-bold text-rose-400 rounded-lg transition border border-slate-850 flex items-center gap-1 active:scale-95"
+                          >
+                            🔥 단호하게
+                          </button>
+                          <button
+                            onClick={() => handleCheer('funny', q.title)}
+                            className="px-2 py-1.5 bg-slate-900 hover:bg-slate-800 text-[10px] font-bold text-amber-400 rounded-lg transition border border-slate-850 flex items-center gap-1 active:scale-95"
+                          >
+                            🤠 유머러스
+                          </button>
+                          {q.status === 'request_approval' && (
+                            <button
+                              onClick={() => handleQuestAction(q)}
+                              className="px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-[10px] font-bold text-white rounded-lg transition shadow active:scale-95 ml-1"
+                            >
+                              검수하기
+                            </button>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
