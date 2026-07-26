@@ -349,14 +349,24 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                             title={item ? `${item.name} (클릭 시 사용)` : '빈 슬롯'}
                           >
                             {item ? (
-                              <>
-                                <span className="text-xl select-none">
-                                  {item.type === 'coupon' ? '🎟️' : item.type === 'real' ? '💵' : '📦'}
-                                </span>
-                                <span className="text-[8px] text-slate-300 font-bold truncate w-full text-center mt-1 block">
-                                  {item.name.replace('[쿠폰] ', '').replace('[패스] ', '').replace('[용돈] ', '').replace('[식품] ', '')}
-                                </span>
-                              </>
+                              <div className="w-full h-full relative flex flex-col items-center justify-between">
+                                {item.imageUrl ? (
+                                  <img 
+                                    src={item.imageUrl} 
+                                    alt={item.name} 
+                                    className="w-full h-full object-cover rounded-xl"
+                                  />
+                                ) : (
+                                  <span className="text-xl select-none mt-1">
+                                    {item.type === 'coupon' ? '🎟️' : item.type === 'real' ? '💵' : '📦'}
+                                  </span>
+                                )}
+                                <div className="absolute bottom-0 left-0 right-0 bg-slate-950/70 py-0.5 rounded-b-xl">
+                                  <span className="text-[7px] text-slate-200 font-extrabold truncate w-full text-center block px-1">
+                                    {item.name.replace('[쿠폰] ', '').replace('[패스] ', '').replace('[용돈] ', '').replace('[식품] ', '').replace('[아바타] ', '').replace('[외식] ', '')}
+                                  </span>
+                                </div>
+                              </div>
                             ) : (
                               <div className="w-2 h-2 rounded-full bg-slate-850" />
                             )}

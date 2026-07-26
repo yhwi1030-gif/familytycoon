@@ -60,6 +60,7 @@ export interface StoreItem {
   status: 'available' | 'locked' | 'purchased' | 'requested';
   description?: string;
   proposedCondition?: string; // Lv.10 제안 상점의 충족 조건 (예: '특정 성적 도달')
+  imageUrl?: string; // 아이템 이미지 파일명 매핑
 }
 
 export interface AppNotification {

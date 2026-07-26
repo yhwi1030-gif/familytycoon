@@ -62,14 +62,14 @@ const DEFAULT_QUESTS: Quest[] = [
 ];
 
 const DEFAULT_STORE_ITEMS: StoreItem[] = [
-  { id: 's1', name: '[아바타] 기본 티셔츠', price: 300, requiredLevel: 1, type: 'ingame', status: 'available', description: '초반 성취감 부여를 위한 아바타 기본 꾸미기 의상' },
-  { id: 's2', name: '[식품] 편의점 최애 간식 교환권', price: 400, requiredLevel: 2, type: 'coupon', status: 'available', description: '가게 부담 없는 소액 체득 단계 쿠폰' },
-  { id: 's3', name: '[쿠폰] 오늘 하루 30분 늦게 자기', price: 200, requiredLevel: 1, type: 'coupon', status: 'available', description: '비재화성 생활 밀착형 보상권' },
-  { id: 's4', name: '[용돈] 실제 현금 5,000원 계좌이체', price: 1200, requiredLevel: 4, type: 'real', status: 'locked', description: '본격적인 루틴 형성을 위한 금융 보상' },
-  { id: 's5', name: '[패스] 주말 PC방 자유 이용 1시간', price: 600, requiredLevel: 3, type: 'coupon', status: 'locked', description: '부모 협의형 최고 인기 비재화 보상' },
-  { id: 's6', name: '[패스] 오늘 하루 메인 퀘스트 면제권', price: 1500, requiredLevel: 5, type: 'coupon', status: 'locked', description: '셀프 모험 보너스를 모아야 살 수 있는 꿀맛 쿠폰' },
-  { id: 's7', name: '[용돈] 실제 현금 10,000원 전환권', price: 3000, requiredLevel: 7, type: 'real', status: 'locked', description: '장기 루틴 형성을 위한 대형 보상' },
-  { id: 's8', name: '[외식] 불금 가족 소원 치킨/피자 쏘기', price: 3000, requiredLevel: 6, type: 'real', status: 'locked', description: '자녀에게 가족 주도권을 부여하는 성취 단계 상품' }
+  { id: 's1', name: '[아바타] 기본 티셔츠', price: 300, requiredLevel: 1, type: 'ingame', status: 'available', description: '초반 성취감 부여를 위한 아바타 기본 꾸미기 의상', imageUrl: '/기본 티셔츠.jfif' },
+  { id: 's2', name: '[식품] 편의점 최애 간식 교환권', price: 400, requiredLevel: 2, type: 'coupon', status: 'available', description: '가게 부담 없는 소액 체득 단계 쿠폰', imageUrl: '/편의점 이용권.jfif' },
+  { id: 's3', name: '[쿠폰] 오늘 하루 30분 늦게 자기', price: 200, requiredLevel: 1, type: 'coupon', status: 'available', description: '비재화성 생활 밀착형 보상권', imageUrl: '/30분 늦잠.jfif' },
+  { id: 's4', name: '[용돈] 실제 현금 5,000원 계좌이체', price: 1200, requiredLevel: 4, type: 'real', status: 'locked', description: '본격적인 루틴 형성을 위한 금융 보상', imageUrl: '/5000원.jfif' },
+  { id: 's5', name: '[패스] 주말 PC방 자유 이용 1시간', price: 600, requiredLevel: 3, type: 'coupon', status: 'locked', description: '부모 협의형 최고 인기 비재화 보상', imageUrl: '/PC방 패스권.jfif' },
+  { id: 's6', name: '[패스] 오늘 하루 메인 퀘스트 면제권', price: 1500, requiredLevel: 5, type: 'coupon', status: 'locked', description: '셀프 모험 보너스를 모아야 살 수 있는 꿀맛 쿠폰', imageUrl: '/방패쉴드권.jfif' },
+  { id: 's7', name: '[용돈] 실제 현금 10,000원 전환권', price: 3000, requiredLevel: 7, type: 'real', status: 'locked', description: '장기 루틴 형성을 위한 대형 보상', imageUrl: '/10000원.jfif' },
+  { id: 's8', name: '[외식] 불금 가족 소원 치킨/피자 쏘기', price: 3000, requiredLevel: 6, type: 'real', status: 'locked', description: '자녀에게 가족 주도권을 부여하는 성취 단계 상품', imageUrl: '/치킨 피자.jfif' }
 ];
 
 const DEFAULT_NOTIFICATIONS: AppNotification[] = [];
