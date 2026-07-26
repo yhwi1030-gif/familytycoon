@@ -77,51 +77,60 @@ export const ChatbotOnboarding: React.FC<ChatbotProps> = ({ role, onComplete, on
     }
   ];
 
-  // 2. 자녀 온보딩 질문 목록 (5문항)
+  // 2. 자녀 온보딩 질문 목록 (6문항으로 전면 교체)
   const childQuestions = [
     {
-      q: "숲속에서 길을 잃었을 때, 눈앞에 낡은 표지판과 두 갈래 길이 나타났다. 당신의 선택은?",
+      q: "모험을 떠나기 전, 아주 오래된 비밀 지도를 발견했어! 너라면 어떻게 할래? (지력 역량)",
       options: [
-        { text: "가방에서 지도를 꺼내 꼼꼼하게 지형을 분석하고 계획적으로 이동한다.", class: "scholar" },
-        { text: "새로운 모험이 기다리는 곳! 마음에 이끌리는 수풀 헤치고 모험의 길로 직진!", class: "pioneer" },
-        { text: "부모님/친구들이 걱정할 테니 제자리에서 기다리며 구조 신호를 보낼 방안을 찾는다.", class: "guardian" },
-        { text: "기분 좋게 콧노래를 부르며 주변 예쁜 나비나 꽃을 구경하면서 걷는다.", class: "bard" }
+        { text: "지도에 적힌 글씨와 그림을 하나하나 돋보기로 보듯이 자세히 읽어본다.", class: "scholar" },
+        { text: "이 지도가 진짜인지, 어디로 연결되는지 도서관에 가서 책을 찾아본다.", class: "scholar" },
+        { text: "지도를 보고 가본 친구가 있는지 주변에 물어본다.", class: "bard" },
+        { text: "일단 지도만 챙겨서 가장 재미있어 보이는 곳으로 출발한다.", class: "pioneer" }
       ]
     },
     {
-      q: "길드마스터(부모님)가 거실 청소라는 '돌발 돌발 퀘스트'를 줬다. 내 마음속 진짜 생각은?",
+      q: "던전 입구가 커다란 바위로 막혀 있어! 이때 나의 해결 방법은? (창의성 역량)",
       options: [
-        { text: "청소를 빠르게 수행하고, 보상 경험치를 획득해서 얼른 레벨을 올릴 생각을 한다.", class: "scholar" },
-        { text: "심부름을 더 쉽고 스마트하게 끝낼 아이디어를 궁리하며 용돈 추가 제안을 준비한다.", class: "pioneer" },
-        { text: "부모님의 집안일 피로를 조금이라도 덜어드리는 든든한 방패 역할을 했다고 뿌듯해한다.", class: "guardian" },
-        { text: "청소하면서 신나는 노래를 틀고 춤을 추며 즐겁게 한 판 놀이처럼 해치운다.", class: "bard" }
+        { text: "바위를 폭파시키거나 비켜가게 할 신기한 마법 주문을 직접 만들어 본다.", class: "pioneer" },
+        { text: "바위 주변을 샅샅이 뒤져서 숨겨진 스위치나 비밀 통로를 찾는다.", class: "scholar" },
+        { text: "팀원들에게 각자 좋은 아이디어가 있는지 물어보고 가장 좋은 방법을 고른다.", class: "bard" },
+        { text: "힘센 친구를 불러오거나 힘을 합쳐서 무작정 바위를 밀어본다.", class: "guardian" }
       ]
     },
     {
-      q: "길드 상점에 마음에 쏙 드는 '비재화 쿠폰'이나 '장비'가 나왔는데 가격이 조금 부족하다. 나는?",
+      q: "매일 아침 8시에 해야 하는 '아침 체조 퀘스트'가 있어! (실천력 역량)",
       options: [
-        { text: "필요한 메인 루틴 일과표를 빈틈없이 채워 오직 성실한 퀘스트 완료 경험치로 승부한다.", class: "scholar" },
-        { text: "스스로 더 크고 과감한 '셀프 모험' 퀘스트를 계획하여 부모님께 폭풍 역제안을 던진다.", class: "pioneer" },
-        { text: "차곡차곡 아끼고 심부름 퀘스트를 열심히 도우며 저축 효율을 최대한 늘린다.", class: "guardian" },
-        { text: "부모님과 대화를 나누며 다정한 딜(역제안)을 통해 미션 골드 조정을 협상해본다.", class: "bard" }
+        { text: "눈 뜨자마자 \"으랏차차!\" 하고 바로 일어나서 체조를 끝낸다.", class: "pioneer" },
+        { text: "5분만 더 잘까 고민하지만, 결국 늦지 않게 일어나서 체조를 한다.", class: "scholar" },
+        { text: "엄마나 친구가 깨워주면 그제야 일어나서 투덜대며 체조를 한다.", class: "guardian" },
+        { text: " \"오늘만 쉴까?\" 하고 생각하다가 그냥 안 하고 다시 잔다.", class: "bard" }
       ]
     },
     {
-      q: "어려운 학교/학원 문제집을 마주했을 때 나의 극복 방식은?",
+      q: "무시무시한 드래곤을 만났어! 팀원들과 어떻게 싸울래? (협동심 역량)",
       options: [
-        { text: "끝까지 스스로 이해가 갈 때까지 해설지를 읽거나 책을 파헤치며 지력을 쌓는다.", class: "scholar" },
-        { text: "공부하는 순서를 나에게 딱 맞게 스스로 커스텀해서 나만의 속도로 도달한다.", class: "pioneer" },
-        { text: "부모님이나 선생님에게 정중하게 여쭤보고 피드백을 수용하며 기본기를 튼튼히 다진다.", class: "guardian" },
-        { text: "친구들과 함께 모여서 토론하거나, 공부를 완료했을 때의 성취감을 일기/그림으로 표현한다.", class: "bard" }
+        { text: "\"내가 앞에서 막을게, 너는 뒤에서 공격해!\" 하며 친구들과 작전을 짠다.", class: "guardian" },
+        { text: "친구들이 위험하지 않게 뒤에서 마법으로 도와주거나 치료해 준다.", class: "guardian" },
+        { text: "\"나만 믿어!\" 하고 멋지게 앞장서서 혼자 드래곤과 싸운다.", class: "pioneer" },
+        { text: "무서워서 친구들 뒤에 숨거나, 어떻게 싸우는지 지켜본다.", class: "scholar" }
       ]
     },
     {
-      q: "오늘 퀘스트를 모두 클리어한 후, 마침내 내 방에 누워 밤하늘을 볼 때 가장 기분 좋은 순간은?",
+      q: "길가에 예쁜 꽃이 피어있고, 그 옆에 작은 새가 다리를 다쳐서 울고 있어. (공감·감성 역량)",
       options: [
-        { text: "오늘 나의 스탯과 캐릭터가 한층 더 단단하게 레벨업했다는 논리적 만족감", class: "scholar" },
-        { text: "오늘 하루 나 스스로 계획한 도전을 내 힘으로 이뤄냈다는 주도적인 자유로움", class: "pioneer" },
-        { text: "오늘 나로 인해 우리 가족 길드의 평화와 행복 스탯이 올라갔다는 따뜻함", class: "guardian" },
-        { text: "스트레스 없이 편안하게 내 개성과 능력을 칭찬받았다는 감성 충만한 보람", class: "bard" }
+        { text: "\"많이 아프지?\" 하고 새를 따뜻하게 안아주고 정성껏 치료해 준다.", class: "bard" },
+        { text: "꽃을 보니 기분이 좋아져서, 꽃을 한 송이 꺾어 다친 새에게 선물한다.", class: "bard" },
+        { text: "새가 왜 다쳤는지 궁금해하며 주변에 위험한 것이 있는지 살펴본다.", class: "scholar" },
+        { text: "\"불쌍하다\"라고 생각하지만, 바쁜 모험 중이라 그냥 지나간다.", class: "pioneer" }
+      ]
+    },
+    {
+      q: "우리 모험팀의 마을 규칙을 정하는 날이야! 넌 어떤 규칙이 좋겠어? (책임감 역량)",
+      options: [
+        { text: "\"한 번 정한 규칙은 무조건 지켜야 해!\" 공평하고 엄격한 규칙을 만든다.", class: "guardian" },
+        { text: "\"서로 돕고 사랑하자!\" 친구들의 마음을 이해해 주는 따뜻한 규칙을 만든다.", class: "guardian" },
+        { text: "\"규칙은 필요할 때만 만들자!\" 너무 많지 않고 자유로운 규칙이 좋다.", class: "pioneer" },
+        { text: "\"내가 하고 싶은 대로 할래!\" 규칙이 없는 게 가장 좋다.", class: "bard" }
       ]
     }
   ];
@@ -164,7 +173,7 @@ export const ChatbotOnboarding: React.FC<ChatbotProps> = ({ role, onComplete, on
           title: titles[bestStyle]
         });
       } else {
-        // 클래스 빈도 계산
+        // 클래스 빈도 계산 (A, B, C, D 선택지의 매핑된 클래스 통계)
         const counts: any = { scholar: 0, pioneer: 0, guardian: 0, bard: 0 };
         nextAnswers.forEach((ansIdx, qIdx) => {
           const cls = childQuestions[qIdx].options[ansIdx].class;
@@ -181,24 +190,69 @@ export const ChatbotOnboarding: React.FC<ChatbotProps> = ({ role, onComplete, on
         });
 
         const titles: any = {
-          scholar: '지혜의 학자형 (지력/성실성 특화)',
-          pioneer: '자율의 개척자형 (주도성/창의성 특화)',
-          guardian: '든든한 가디언형 (협동/도덕성 특화)',
-          bard: '만능 바드형 (감성/사교성 특화)'
+          scholar: '지혜의 학자형 (INT 특화)',
+          pioneer: '자율의 개척자형 (STR/CRT 특화)',
+          guardian: '든든한 가디언형 (DUT/CPN 특화)',
+          bard: '만능 바드형 (SEN/CPN 특화)'
         };
 
-        // 초기 스탯 책정
-        const initialStats: any = {
-          scholar: { intelligence: 45, willpower: 35, autonomy: 20, cooperation: 20, sensibility: 10 },
-          pioneer: { intelligence: 20, willpower: 20, autonomy: 45, cooperation: 20, sensibility: 25 },
-          guardian: { intelligence: 25, willpower: 30, autonomy: 15, cooperation: 45, sensibility: 15 },
-          bard: { intelligence: 15, willpower: 15, autonomy: 25, cooperation: 30, sensibility: 45 }
-        };
+        // 각 역량별(A, B, C, D 선택 방식) 환산 점수를 5대 스탯에 실시간 정밀 누적 계산
+        // (1번: 지력 / 2번: 창의성 / 3번: 실천력 / 4번: 협동심 / 5번: 감성 / 6번: 책임감)
+        let intelligence = 10;
+        let willpower = 10;
+        let autonomy = 10;
+        let cooperation = 10;
+        let sensibility = 10;
+
+        // Q1 (비밀지도)
+        if (nextAnswers[0] === 0) { intelligence += 25; willpower += 15; }
+        else if (nextAnswers[0] === 1) { intelligence += 30; willpower += 10; }
+        else if (nextAnswers[0] === 2) { cooperation += 20; sensibility += 10; }
+        else if (nextAnswers[0] === 3) { autonomy += 30; }
+
+        // Q2 (바위 던전)
+        if (nextAnswers[1] === 0) { autonomy += 25; sensibility += 15; }
+        else if (nextAnswers[1] === 1) { intelligence += 30; willpower += 10; }
+        else if (nextAnswers[1] === 2) { cooperation += 30; }
+        else if (nextAnswers[1] === 3) { willpower += 20; cooperation += 10; }
+
+        // Q3 (아침체조)
+        if (nextAnswers[2] === 0) { willpower += 30; autonomy += 10; }
+        else if (nextAnswers[2] === 1) { willpower += 25; intelligence += 5; }
+        else if (nextAnswers[2] === 2) { cooperation += 15; }
+        else if (nextAnswers[2] === 3) { autonomy -= 5; } // 패널티
+
+        // Q4 (드래곤)
+        if (nextAnswers[3] === 0) { cooperation += 30; willpower += 10; }
+        else if (nextAnswers[3] === 1) { cooperation += 25; sensibility += 15; }
+        else if (nextAnswers[3] === 2) { autonomy += 30; }
+        else if (nextAnswers[3] === 3) { intelligence += 15; }
+
+        // Q5 (다친새와 꽃)
+        if (nextAnswers[4] === 0) { sensibility += 35; cooperation += 10; }
+        else if (nextAnswers[4] === 1) { sensibility += 25; autonomy += 15; }
+        else if (nextAnswers[4] === 2) { intelligence += 25; willpower += 15; }
+        else if (nextAnswers[4] === 3) { willpower += 10; }
+
+        // Q6 (마을규칙)
+        if (nextAnswers[5] === 0) { willpower += 30; cooperation += 10; }
+        else if (nextAnswers[5] === 1) { cooperation += 25; sensibility += 15; }
+        else if (nextAnswers[5] === 2) { autonomy += 25; }
+        else if (nextAnswers[5] === 3) { autonomy += 35; willpower -= 10; }
+
+        // 최소 10 ~ 최대 100 범위 보정
+        const clamp = (val: number) => Math.max(10, Math.min(100, val));
 
         onComplete({
           childClass: bestClass,
           title: titles[bestClass],
-          stats: initialStats[bestClass]
+          stats: {
+            intelligence: clamp(intelligence),
+            willpower: clamp(willpower),
+            autonomy: clamp(autonomy),
+            cooperation: clamp(cooperation),
+            sensibility: clamp(sensibility)
+          }
         });
       }
     } else {
