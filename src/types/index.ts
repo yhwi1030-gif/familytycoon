@@ -66,7 +66,7 @@ export interface AppNotification {
   id: string;
   createdAt: string;
   message: string;
-  type: 'quest_request' | 'quest_approved' | 'quest_rejected' | 'gold_request' | 'gold_approved' | 'gold_rejected' | 'self_quest_proposal' | 'item_request' | 'general';
+  type: 'quest_request' | 'quest_approved' | 'quest_rejected' | 'gold_request' | 'gold_approved' | 'gold_rejected' | 'self_quest_proposal' | 'item_request' | 'item_use_request' | 'general';
   targetId?: string; // 관련 퀘스트 ID 혹은 상점 아이템 ID
   resolved: boolean;
   meta?: any; // 추가 정보 (예: 제안 가격 등)

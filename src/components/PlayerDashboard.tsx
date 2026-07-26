@@ -327,8 +327,10 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                               if (item) {
                                 // 1. 마스터에게 알림 전령 전송
                                 api.addNotification({
-                                  message: `🔔 [이용권 사용] 자녀가 보관 중인 [${item.name}] 이용권 사용을 개시했습니다. 실물 정산을 준비해주세요!`,
-                                  type: 'general'
+                                  message: `🔔 [이용권 사용 요청] 자녀(${child.name.split(' ')[0]})가 획득 보관 중이던 [${item.name}] 이용권 실물 사용을 요청했습니다.`,
+                                  type: 'item_use_request',
+                                  targetId: item.id,
+                                  meta: { itemId: item.id, itemName: item.name, childId: child.id }
                                 });
                                 // 2. 인벤토리에서 해당 아이템 1개 제거 소모 처리
                                 const updatedInventory = [...(child.inventory || [])];
