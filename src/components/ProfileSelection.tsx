@@ -165,10 +165,10 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
               🏆 자녀생활습관 만들기 타이쿤
             </span>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-tight">
+            <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-tight font-bw">
               패밀리 던전 타이쿤
             </h1>
-            <p className="text-sm font-semibold text-slate-400">
+            <p className="text-sm font-semibold text-slate-400 font-bw">
               보호자 마스터 & 자녀 플레이어 연동 게임
             </p>
           </div>
@@ -218,10 +218,10 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
           🏆 자녀 생활습관 메이커 타이쿤
         </div>
-        <h1 className="text-4xl md:text-5xl font-black tracking-tight bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+        <h1 className="text-4xl md:text-5xl font-black tracking-tight bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent font-bw">
           패밀리 던전 타이쿤
         </h1>
-        <p className="text-slate-400 text-sm md:text-base font-semibold">
+        <p className="text-slate-400 text-sm md:text-base font-semibold font-bw">
           모험을 시작하시겠습니까? 원하는 프로필을 선택해 진입하세요.
         </p>
       </div>
