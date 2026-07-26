@@ -52,13 +52,13 @@ const DEFAULT_PROFILES: Profile[] = [
 ];
 
 const DEFAULT_QUESTS: Quest[] = [
-  { id: 'q1', type: 'main', title: '매일 학습지 풀기', category: '학습', rewardType: 'exp', rewardExp: 20, rewardGold: 0, status: 'active', streakCount: 3 },
-  { id: 'q2', type: 'main', title: '하루 30분 독서하기', category: '독서', rewardType: 'exp', rewardExp: 15, rewardGold: 0, status: 'active', streakCount: 5 },
-  { id: 'q3', type: 'main', title: '학원 숙제 끝내기', category: '학습', rewardType: 'exp', rewardExp: 20, rewardGold: 0, status: 'active', streakCount: 2 },
-  { id: 'q4', type: 'main', title: '기상하기', category: '생활', rewardType: 'exp', rewardExp: 10, rewardGold: 0, status: 'completed' },
-  { id: 'q5', type: 'main', title: '이불 정리하기', category: '생활', rewardType: 'exp', rewardExp: 10, rewardGold: 0, status: 'completed' },
-  { id: 'q6', type: 'main', title: '양치질하기', category: '생활', rewardType: 'exp', rewardExp: 10, rewardGold: 0, status: 'active' },
-  { id: 'q7', type: 'flash', title: '우유 사오기', category: '심부름', rewardType: 'gold', rewardExp: 0, rewardGold: 500, status: 'active', dueTime: '18:30' }
+  { id: 'q1', type: 'main', title: '매일 학습지 풀기', category: '학습', rewardType: 'exp', rewardExp: 20, rewardGold: 0, status: 'active', streakCount: 3, childId: 'child1', childName: '민우 (꼬마 전사)' },
+  { id: 'q2', type: 'main', title: '하루 30분 독서하기', category: '독서', rewardType: 'exp', rewardExp: 15, rewardGold: 0, status: 'active', streakCount: 5, childId: 'child1', childName: '민우 (꼬마 전사)' },
+  { id: 'q3', type: 'main', title: '학원 숙제 끝내기', category: '학습', rewardType: 'exp', rewardExp: 20, rewardGold: 0, status: 'active', streakCount: 2, childId: 'child1', childName: '민우 (꼬마 전사)' },
+  { id: 'q4', type: 'main', title: '기상하기', category: '생활', rewardType: 'exp', rewardExp: 10, rewardGold: 0, status: 'completed', childId: 'child1', childName: '민우 (꼬마 전사)' },
+  { id: 'q5', type: 'main', title: '이불 정리하기', category: '생활', rewardType: 'exp', rewardExp: 10, rewardGold: 0, status: 'completed', childId: 'child1', childName: '민우 (꼬마 전사)' },
+  { id: 'q6', type: 'main', title: '양치질하기', category: '생활', rewardType: 'exp', rewardExp: 10, rewardGold: 0, status: 'active', childId: 'child1', childName: '민우 (꼬마 전사)' },
+  { id: 'q7', type: 'flash', title: '우유 사오기', category: '심부름', rewardType: 'gold', rewardExp: 0, rewardGold: 500, status: 'active', dueTime: '18:30', childId: 'child1', childName: '민우 (꼬마 전사)' }
 ];
 
 const DEFAULT_STORE_ITEMS: StoreItem[] = [
