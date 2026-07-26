@@ -24,6 +24,10 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
   const [storeItems, setStoreItems] = useState<StoreItem[]>([]);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   
+  // 퀘스트 접기/펼치기 제어 상태 (자녀 모드용)
+  const [isMainQuestsCollapsed, setIsMainQuestsCollapsed] = useState(false);
+  const [isFlashQuestsCollapsed, setIsFlashQuestsCollapsed] = useState(false);
+
   // 카메라 촬영 완료 인증 팝업 모사 상태
   const [activeCameraQuest, setActiveCameraQuest] = useState<Quest | null>(null);
   
@@ -445,70 +449,157 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
 
         {/* 2. 퀘스트 탭 (퀘스트 리스트 + 3클릭 인증 & 역제안) */}
         {activeTab === 'quest' && (
-          <div className="space-y-6">
-            <div className="bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-xl">
-              <h3 className="text-sm font-bold text-white mb-6 border-b border-slate-850 pb-3 flex justify-between items-center">
-                <span>⚔️ 오늘의 퀘스트 목록</span>
-                <span className="text-[10px] text-slate-500 font-bold">1클릭 완료 / 3클릭 사진 인증</span>
-              </h3>
+          <div className="space-y-6 animate-in fade-in duration-200">
+            {/* 메인 퀘스트 섹션 (일일 루틴) */}
+            <div className="bg-slate-900 border border-slate-850 rounded-3xl p-5 shadow-xl transition-all duration-300">
+              <div 
+                onClick={() => setIsMainQuestsCollapsed(!isMainQuestsCollapsed)}
+                className="flex justify-between items-center cursor-pointer pb-3 border-b border-slate-850"
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="text-xs text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded font-black">
+                    {quests.filter(q => q.type === 'main').length}
+                  </span>
+                  <h4 className="text-sm font-extrabold text-white flex items-center gap-1.5">
+                    📅 메인 퀘스트 섹션 (일일 루틴)
+                  </h4>
+                </div>
+                <div className="flex items-center gap-1.5 text-slate-400 hover:text-slate-200 text-xs font-bold">
+                  <span>{isMainQuestsCollapsed ? '펼치기 🔓' : '접기 🔒'}</span>
+                  <span className="text-md">{isMainQuestsCollapsed ? '▼' : '▲'}</span>
+                </div>
+              </div>
 
-              <div className="space-y-3">
-                {quests.map(q => (
-                  <div
-                    key={q.id}
-                    className={`p-4 bg-slate-950/60 border border-slate-850 rounded-2xl flex justify-between items-center ${
-                      q.status === 'completed' ? 'opacity-65' : ''
-                    }`}
-                  >
-                    <div>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-850 text-slate-400 border border-slate-850">
-                        {q.category}
-                      </span>
-                      <h4 className="text-sm font-extrabold text-slate-200 mt-1">{q.title}</h4>
-                      <div className="flex flex-wrap items-center gap-2 mt-1">
-                        <span className="text-[10px] text-slate-500 font-bold">
-                          보상: {q.rewardType === 'exp' ? `➕ ${q.rewardExp} EXP` : `🪙 ${q.rewardGold} G`}
-                        </span>
-                        {q.type === 'flash' && (
-                          <span className="text-[9px] text-rose-400 bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded font-black flex items-center gap-1">
-                            ⏱️ {q.dueTime || '18:00'} 마감
-                          </span>
-                        )}
-                      </div>
+              {!isMainQuestsCollapsed && (
+                <div className="mt-4 space-y-3 animate-in fade-in duration-200">
+                  {quests.filter(q => q.type === 'main').length === 0 ? (
+                    <div className="text-center py-8 text-slate-600 text-xs font-bold italic">
+                      등록된 메인 퀘스트가 없습니다.
                     </div>
+                  ) : (
+                    quests.filter(q => q.type === 'main').map(q => (
+                      <div
+                        key={q.id}
+                        className={`p-4 bg-slate-950/60 border border-slate-850 rounded-2xl flex justify-between items-center ${
+                          q.status === 'completed' ? 'opacity-65' : ''
+                        }`}
+                      >
+                        <div>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-850 text-slate-400 border border-slate-850">
+                            {q.category}
+                          </span>
+                          <h4 className="text-sm font-extrabold text-slate-200 mt-1">{q.title}</h4>
+                          <div className="flex flex-wrap items-center gap-2 mt-1">
+                            <span className="text-[10px] text-slate-500 font-bold">
+                              보상: ➕ {q.rewardExp} EXP
+                            </span>
+                          </div>
+                        </div>
 
-                    <div className="flex items-center gap-2">
-                      {q.status === 'completed' ? (
-                        <span className="text-xs text-emerald-400 font-bold">✓ 완료됨</span>
-                      ) : q.status === 'request_approval' ? (
-                        <span className="text-xs text-indigo-400 font-bold bg-indigo-500/10 px-3 py-1.5 rounded-xl border border-indigo-500/20 animate-pulse">
-                          ⌛ 검수 대기중
-                        </span>
-                      ) : (
                         <div className="flex items-center gap-2">
-                          {q.type === 'flash' && (
+                          {q.status === 'completed' ? (
+                            <span className="text-xs text-emerald-400 font-bold">✓ 완료됨</span>
+                          ) : q.status === 'request_approval' ? (
+                            <span className="text-xs text-indigo-400 font-bold bg-indigo-500/10 px-3 py-1.5 rounded-xl border border-indigo-500/20 animate-pulse">
+                              ⌛ 검수 대기중
+                            </span>
+                          ) : (
                             <button
-                              onClick={() => {
-                                setActiveNegotiateQuest(q);
-                                setNegotiateGold(q.rewardGold);
-                              }}
-                              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-750 text-slate-350 text-xs font-bold rounded-xl border border-slate-700 transition"
+                              onClick={() => handleQuestCompleteClick(q)}
+                              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition shadow-md"
                             >
-                              🤝 역제안
+                              {q.category === '학습' || q.category === '독서' ? '📸 사진 인증' : '완료 체크'}
                             </button>
                           )}
-                          <button
-                            onClick={() => handleQuestCompleteClick(q)}
-                            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition shadow-md"
-                          >
-                            {q.category === '학습' || q.category === '독서' ? '📸 사진 인증' : '완료 체크'}
-                          </button>
                         </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* 돌발 퀘스트 섹션 (심부름) */}
+            <div className="bg-slate-900 border border-slate-850 rounded-3xl p-5 shadow-xl transition-all duration-300">
+              <div 
+                onClick={() => setIsFlashQuestsCollapsed(!isFlashQuestsCollapsed)}
+                className="flex justify-between items-center cursor-pointer pb-3 border-b border-slate-850"
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded font-black">
+                    {quests.filter(q => q.type === 'flash').length}
+                  </span>
+                  <h4 className="text-sm font-extrabold text-white flex items-center gap-1.5">
+                    ⚡ 돌발 퀘스트 섹션 (심부름 / 미션)
+                  </h4>
+                </div>
+                <div className="flex items-center gap-1.5 text-slate-400 hover:text-slate-200 text-xs font-bold">
+                  <span>{isFlashQuestsCollapsed ? '펼치기 🔓' : '접기 🔒'}</span>
+                  <span className="text-md">{isFlashQuestsCollapsed ? '▼' : '▲'}</span>
+                </div>
               </div>
+
+              {!isFlashQuestsCollapsed && (
+                <div className="mt-4 space-y-3 animate-in fade-in duration-200">
+                  {quests.filter(q => q.type === 'flash').length === 0 ? (
+                    <div className="text-center py-12 text-slate-650 text-xs font-bold border-2 border-dashed border-slate-850/70 rounded-2xl bg-slate-950/20">
+                      현재 활성화된 돌발 퀘스트가 없습니다.
+                    </div>
+                  ) : (
+                    quests.filter(q => q.type === 'flash').map(q => (
+                      <div
+                        key={q.id}
+                        className={`p-4 bg-slate-950/60 border border-slate-850 rounded-2xl flex justify-between items-center ${
+                          q.status === 'completed' ? 'opacity-65' : ''
+                        }`}
+                      >
+                        <div>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-850 text-slate-400 border border-slate-850">
+                            {q.category}
+                          </span>
+                          <h4 className="text-sm font-extrabold text-slate-200 mt-1">{q.title}</h4>
+                          <div className="flex flex-wrap items-center gap-2 mt-1">
+                            <span className="text-[10px] text-slate-500 font-bold">
+                              보상: 🪙 {q.rewardGold} G
+                            </span>
+                            <span className="text-[9px] text-rose-400 bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded font-black flex items-center gap-1">
+                              ⏱️ {q.dueTime || '18:00'} 마감
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          {q.status === 'completed' ? (
+                            <span className="text-xs text-emerald-400 font-bold">✓ 완료됨</span>
+                          ) : q.status === 'request_approval' ? (
+                            <span className="text-xs text-indigo-400 font-bold bg-indigo-500/10 px-3 py-1.5 rounded-xl border border-indigo-500/20 animate-pulse">
+                              ⌛ 검수 대기중
+                            </span>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => {
+                                  setActiveNegotiateQuest(q);
+                                  setNegotiateGold(q.rewardGold);
+                                }}
+                                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-750 text-slate-350 text-xs font-bold rounded-xl border border-slate-700 transition"
+                              >
+                                🤝 역제안
+                              </button>
+                              <button
+                                onClick={() => handleQuestCompleteClick(q)}
+                                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition shadow-md"
+                              >
+                                {q.category === '학습' || q.category === '독서' ? '📸 사진 인증' : '완료 체크'}
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
           </div>
         )}

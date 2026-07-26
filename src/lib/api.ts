@@ -35,9 +35,9 @@ const DEFAULT_PROFILES: Profile[] = [
     avatar: '🛡️',
     pin: '0000',
     title: '지혜의 학자형',
-    level: 1,
+    level: 0,
     exp: 20,
-    gold: 1000,
+    gold: 0,
     stress: 40,
     childClass: 'scholar',
     stats: {
@@ -107,7 +107,28 @@ const setStored = <T>(key: string, data: T): void => {
 export const api = {
   // --- 프로필 관련 API ---
   getProfiles: (): Profile[] => {
-    return getStored(KEYS.PROFILES, DEFAULT_PROFILES);
+    const list = getStored(KEYS.PROFILES, DEFAULT_PROFILES);
+    if (typeof window !== 'undefined') {
+      const todayStr = new Date().toDateString();
+      const lastResetDate = localStorage.getItem('ff_last_stress_reset_date');
+      if (lastResetDate !== todayStr) {
+        let updated = false;
+        const updatedList = list.map(p => {
+          if (p.role === 'child' && p.stress !== 0) {
+            updated = true;
+            return { ...p, stress: 0 };
+          }
+          return p;
+        });
+        if (updated) {
+          localStorage.setItem(KEYS.PROFILES, JSON.stringify(updatedList));
+          localStorage.setItem('ff_last_stress_reset_date', todayStr);
+          return updatedList;
+        }
+        localStorage.setItem('ff_last_stress_reset_date', todayStr);
+      }
+    }
+    return list;
   },
   
   updateProfile: (profile: Profile): Profile[] => {
