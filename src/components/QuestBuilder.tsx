@@ -119,21 +119,81 @@ export const QuestBuilder: React.FC<QuestBuilderProps> = ({ onAddQuest, onClose 
             </div>
           </div>
 
-          {/* 마감 시간 입력 (돌발 퀘스트 전용 - 지시사항 준수) */}
+          {/* 마감 시간 입력 (돌발 퀘스트 전용 - 직접 입력 / 선택 옵션화) */}
           {type === 'flash' && (
-            <div className="space-y-1 animate-in fade-in duration-250">
-              <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase flex items-center gap-1">
+            <div className="space-y-3.5 animate-in fade-in duration-250 bg-slate-950/40 p-3.5 rounded-2xl border border-slate-850">
+              <label className="block text-xs font-black text-slate-400 uppercase tracking-wider flex items-center gap-1">
                 ⏱️ 퀘스트 마감 제한 시간
               </label>
-              <div className="flex gap-2">
-                <input
-                  type="time"
-                  value={dueTime}
-                  onChange={(e) => setDueTime(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-850 rounded-xl p-3 text-sm text-slate-200 outline-none focus:border-emerald-500 font-bold"
-                  required
-                />
+              
+              {/* 직접 시간 지정 vs 빠른 분/시간 선택 토글 버튼 */}
+              <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-950 rounded-xl border border-slate-850">
+                <button
+                  type="button"
+                  onClick={() => {
+                    // 프리셋 선택 -> 기본 '30분 내' 설정
+                    setDueTime('30분 내');
+                  }}
+                  className={`py-1.5 rounded-lg text-[10px] font-bold transition ${
+                    !dueTime.includes(':')
+                      ? 'bg-emerald-600 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  ⏱️ 빠른 마감시간 선택
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    // 직접 시각 입력 -> 기본 시각 '18:00' 설정
+                    setDueTime('18:00');
+                  }}
+                  className={`py-1.5 rounded-lg text-[10px] font-bold transition ${
+                    dueTime.includes(':')
+                      ? 'bg-emerald-600 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  ✍️ 특정 시각 직접 입력
+                </button>
               </div>
+
+              {/* 입력 모드 분기 */}
+              {!dueTime.includes(':') ? (
+                /* 빠른 선택 프리셋 버튼 구역 */
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { label: '⚡ 30분 내', value: '30분 내' },
+                    { label: '⏰ 1시간 내', value: '1시간 내' },
+                    { label: '🌙 오늘 저녁', value: '오늘 저녁까지' },
+                    { label: '💤 오늘 밤', value: '오늘 자정까지' }
+                  ].map(preset => (
+                    <button
+                      key={preset.value}
+                      type="button"
+                      onClick={() => setDueTime(preset.value)}
+                      className={`py-2 rounded-xl text-xs font-semibold border transition ${
+                        dueTime === preset.value
+                          ? 'bg-emerald-500/10 border-emerald-500 text-emerald-400'
+                          : 'bg-slate-900 border-slate-850 text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                      }`}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                /* 특정 시각 타임 피커 입력 구역 */
+                <div className="flex gap-2">
+                  <input
+                    type="time"
+                    value={dueTime}
+                    onChange={(e) => setDueTime(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-850 rounded-xl p-3 text-sm text-slate-200 outline-none focus:border-emerald-500 font-bold"
+                    required
+                  />
+                </div>
+              )}
             </div>
           )}
 
