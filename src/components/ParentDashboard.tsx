@@ -267,7 +267,19 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
                   <div className="md:col-span-5 space-y-4">
                     <div className="flex items-center gap-3 bg-slate-950/40 p-3 rounded-2xl border border-slate-850">
-                      <span className="text-3xl select-none">{child.avatar}</span>
+                      <div className="w-14 h-14 rounded-xl bg-slate-950 border border-slate-800 overflow-hidden flex items-center justify-center relative shrink-0">
+                        <img 
+                          src={
+                            child.childClass === 'scholar' ? '/INT.svg' :
+                            child.childClass === 'pioneer' ? '/STR.svg' :
+                            child.childClass === 'guardian' ? '/CRT.svg' :
+                            child.childClass === 'bard' ? '/CPN.svg' :
+                            '/INT.svg' // fallback
+                          } 
+                          alt="Class Avatar" 
+                          className="w-full h-full object-cover" 
+                        />
+                      </div>
                       <div>
                         <h4 className="text-sm font-extrabold text-slate-100">{child.name}</h4>
                         <p className="text-[10px] text-slate-400 font-bold">{child.title || '성향 진단 미완료'}</p>

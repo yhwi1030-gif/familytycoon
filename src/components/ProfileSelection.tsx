@@ -284,8 +284,22 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
                   <Edit2 className="w-3.5 h-3.5" />
                 </button>
 
-                <div className="w-16 h-16 rounded-2xl bg-indigo-950/30 group-hover:bg-indigo-950/50 border border-slate-800 flex items-center justify-center text-4xl mb-4 transition select-none">
-                  {p.avatar}
+                <div className="w-16 h-16 rounded-2xl bg-indigo-950/30 group-hover:bg-indigo-950/50 border border-slate-800 flex items-center justify-center overflow-hidden transition select-none mb-4">
+                  {p.role === 'parent' ? (
+                    <span className="text-4xl">{p.avatar}</span>
+                  ) : (
+                    <img 
+                      src={
+                        p.childClass === 'scholar' ? '/INT.svg' :
+                        p.childClass === 'pioneer' ? '/STR.svg' :
+                        p.childClass === 'guardian' ? '/CRT.svg' :
+                        p.childClass === 'bard' ? '/CPN.svg' :
+                        '/INT.svg'
+                      } 
+                      alt="Class Icon" 
+                      className="w-full h-full object-cover" 
+                    />
+                  )}
                 </div>
 
                 <div className="space-y-1">

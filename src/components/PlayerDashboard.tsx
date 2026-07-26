@@ -234,8 +234,18 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
               
               {/* [1/3 영역] 캐릭터 창 카드 */}
               <div className="bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-xl flex flex-col items-center justify-center text-center space-y-4">
-                <div className="w-36 h-36 rounded-3xl bg-slate-950 border-2 border-indigo-500/20 overflow-hidden flex items-center justify-center shadow-inner relative group">
-                  <img src="/lowpoly_character.jpg" alt="Lowpoly Character" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                <div className="w-52 h-52 rounded-3xl bg-slate-950 border-2 border-indigo-500/20 overflow-hidden flex items-center justify-center shadow-inner relative group">
+                  <img 
+                    src={
+                      child.childClass === 'scholar' ? '/INT.svg' :
+                      child.childClass === 'pioneer' ? '/STR.svg' :
+                      child.childClass === 'guardian' ? '/CRT.svg' :
+                      child.childClass === 'bard' ? '/CPN.svg' :
+                      '/INT.svg' // fallback
+                    } 
+                    alt="Class Avatar" 
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                  />
                   <span className="absolute -bottom-1.5 bg-emerald-500 text-white font-extrabold text-[10px] px-3 py-1 rounded-full shadow-md border border-slate-900 z-10">
                     Lv.{child.level}
                   </span>
