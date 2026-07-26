@@ -29,6 +29,7 @@ export interface Profile {
   childClass?: ChildClass; // 자녀용
   stats?: Stats; // 자녀용 능력치
   buffs?: string[]; // 적용 중인 패시브 버프 목록
+  inventory?: string[]; // 구매한 아이템/이용권 ID 보관용 인벤토리 가방
 }
 
 export type QuestType = 'main' | 'flash' | 'self';

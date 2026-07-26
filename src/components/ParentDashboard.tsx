@@ -145,14 +145,43 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
 
   // 상점 교환/이용권 수락 및 거절 처리
   const handleResolveNotification = (noti: AppNotification, action: 'approve' | 'reject') => {
+    const profiles = api.getProfiles();
+    const childIdx = profiles.findIndex(p => p.role === 'child');
+    const child = childIdx !== -1 ? profiles[childIdx] : null;
+
     if (action === 'approve') {
-      // 승인
+      // 1. 승인 알림 추가
       api.addNotification({
         message: `🎉 [승인 완료] ${noti.message.replace('요청했습니다.', '건이 최종 승인 완료되었습니다.')}`,
         type: 'general'
       });
+
+      // 2. 상점 아이템 구매 완료 처리 및 자녀 인벤토리(가방) 추가 연동
+      if (noti.type === 'item_request' && noti.targetId) {
+        const storeItems = api.getStoreItems();
+        const item = storeItems.find(i => i.id === noti.targetId);
+        if (item) {
+          item.status = 'purchased';
+          api.updateStoreItem(item);
+
+          if (child) {
+            const currentInventory = child.inventory || [];
+            child.inventory = [...currentInventory, item.id];
+            api.updateProfile(child);
+          }
+        }
+      }
     } else {
-      // 반려
+      // 반려 처리시 아이템 구매 가능한 상태로 롤백
+      if (noti.type === 'item_request' && noti.targetId) {
+        const storeItems = api.getStoreItems();
+        const item = storeItems.find(i => i.id === noti.targetId);
+        if (item) {
+          item.status = 'available';
+          api.updateStoreItem(item);
+        }
+      }
+      // 반려 알림 추가
       api.addNotification({
         message: `⚠️ [협상/반려] ${noti.message.replace('요청했습니다.', '건이 조정 반려/협상 보류 처리되었습니다.')}`,
         type: 'general'

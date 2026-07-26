@@ -289,18 +289,85 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
               {/* [2/3 영역] 하단/우측 모험가 상세 지표 & 버프 장비 박스 */}
               <div className="md:col-span-2 flex flex-col gap-6">
                 
-                {/* 5대 스탯 및 칭호 오각형 그래프 박스 */}
-                <div className="bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-xl flex-1 flex flex-col justify-between">
-                  <h4 className="text-xs font-bold text-white mb-4 flex items-center gap-1.5">
-                    📊 모험가 5대 스탯 역량 차트
-                  </h4>
-                  <div className="flex-1 flex justify-center items-center">
-                    {child.stats ? (
-                      <RadarChart stats={child.stats} size={230} />
-                    ) : (
-                      <div className="text-xs text-slate-500">스탯 정보가 등록되지 않았습니다.</div>
-                    )}
+                {/* 아이템 가방 및 스탯 차트 가로 2분할 레이아웃 */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  
+                  {/* 아이템 가방 (인벤토리) */}
+                  <div className="bg-slate-900 border border-slate-850 rounded-3xl p-5 shadow-xl flex flex-col justify-between">
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-200 mb-1 flex items-center gap-1.5">
+                        🎒 아이템 가방
+                      </h4>
+                      <p className="text-[9px] text-slate-500 font-medium mb-4">
+                        마스터에게 획득한 이용권/아이템 보관함 (클릭 시 사용 알림 전령 발송)
+                      </p>
+                    </div>
+
+                    {/* 3x3 격자 인벤토리 슬롯 */}
+                    <div className="grid grid-cols-3 gap-2.5 my-auto">
+                      {Array.from({ length: 9 }).map((_, idx) => {
+                        const itemId = (child.inventory || [])[idx];
+                        const item = itemId ? storeItems.find(i => i.id === itemId) : null;
+                        
+                        return (
+                          <button
+                            key={idx}
+                            disabled={!item}
+                            onClick={() => {
+                              if (item) {
+                                // 1. 마스터에게 알림 전령 전송
+                                api.addNotification({
+                                  message: `🔔 [이용권 사용] 자녀가 보관 중인 [${item.name}] 이용권 사용을 개시했습니다. 실물 정산을 준비해주세요!`,
+                                  type: 'general'
+                                });
+                                // 2. 인벤토리에서 해당 아이템 1개 제거 소모 처리
+                                const updatedInventory = [...(child.inventory || [])];
+                                updatedInventory.splice(idx, 1);
+                                const updatedChild = { ...child, inventory: updatedInventory };
+                                api.updateProfile(updatedChild);
+                                loadData();
+                                alert(`🔔 [전령 발송] 마스터에게 [${item.name}] 사용 전령 메시지를 전달했습니다!`);
+                              }
+                            }}
+                            className={`aspect-square rounded-2xl border flex flex-col items-center justify-center p-1.5 transition-all duration-300 relative group ${
+                              item
+                                ? 'bg-slate-950 border-indigo-500/40 hover:bg-slate-900/90 hover:border-indigo-400 hover:scale-105 active:scale-95'
+                                : 'bg-slate-950/20 border-slate-850 cursor-default'
+                            }`}
+                            title={item ? `${item.name} (클릭 시 사용)` : '빈 슬롯'}
+                          >
+                            {item ? (
+                              <>
+                                <span className="text-xl select-none">
+                                  {item.type === 'coupon' ? '🎟️' : item.type === 'real' ? '💵' : '📦'}
+                                </span>
+                                <span className="text-[8px] text-slate-300 font-bold truncate w-full text-center mt-1 block">
+                                  {item.name.replace('[쿠폰] ', '').replace('[패스] ', '').replace('[용돈] ', '').replace('[식품] ', '')}
+                                </span>
+                              </>
+                            ) : (
+                              <div className="w-2 h-2 rounded-full bg-slate-850" />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
+
+                  {/* 5대 스탯 및 칭호 오각형 그래프 박스 */}
+                  <div className="bg-slate-900 border border-slate-850 rounded-3xl p-5 shadow-xl flex flex-col justify-between items-center text-center">
+                    <h4 className="text-xs font-bold text-white mb-2 self-start flex items-center gap-1.5">
+                      📊 모험가 스탯 차트
+                    </h4>
+                    <div className="flex-1 flex justify-center items-center">
+                      {child.stats ? (
+                        <RadarChart stats={child.stats} size={185} />
+                      ) : (
+                        <div className="text-xs text-slate-500">스탯 정보가 등록되지 않았습니다.</div>
+                      )}
+                    </div>
+                  </div>
+
                 </div>
 
                 {/* 적용 버프 & 컨디션 박스 */}
