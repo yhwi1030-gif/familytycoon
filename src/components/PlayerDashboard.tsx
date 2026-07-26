@@ -27,6 +27,11 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
   // 카메라 촬영 완료 인증 팝업 모사 상태
   const [activeCameraQuest, setActiveCameraQuest] = useState<Quest | null>(null);
   
+  // 카메라 모드 상태 ('idle' | 'capture' | 'upload')
+  const [cameraMode, setCameraMode] = useState<'idle' | 'capture' | 'upload'>('idle');
+  // 스캔한 가짜 파일 전송용 파일명 모사
+  const [uploadedFile, setUploadedFile] = useState<string | null>(null);
+  
   // 역제안(밀당) 모달 상태
   const [activeNegotiateQuest, setActiveNegotiateQuest] = useState<Quest | null>(null);
   const [negotiateGold, setNegotiateGold] = useState(500);
@@ -58,6 +63,8 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
   const handleQuestCompleteClick = (q: Quest) => {
     if (q.category === '학습' || q.category === '독서') {
       setActiveCameraQuest(q);
+      setCameraMode('idle');
+      setUploadedFile(null);
     } else {
       childRequestQuestApproval(q.id, q.title, '', child.id, child.name);
       loadData();
@@ -67,14 +74,17 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
 
   const handleCameraCaptureConfirm = () => {
     if (activeCameraQuest) {
+      const displayUrl = cameraMode === 'upload' ? 'https://picsum.photos/400/300?random=1' : 'https://picsum.photos/400/300';
       childRequestQuestApproval(
         activeCameraQuest.id,
         activeCameraQuest.title,
-        'https://picsum.photos/400/300',
+        displayUrl,
         child.id,
         child.name
       );
       setActiveCameraQuest(null);
+      setCameraMode('idle');
+      setUploadedFile(null);
       loadData();
     }
   };
@@ -754,39 +764,109 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
       {/* 카메라 찰칵 사진 촬영 모사 모달 */}
       {activeCameraQuest && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-sm bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-2xl text-center space-y-6">
+          <div className="w-full max-w-sm bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-2xl text-center space-y-5">
             <div>
-              <span className="inline-flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full text-[10px] font-bold mb-2">
-                📸 카메라 인증 촬영
+              <span className="inline-flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-2.5 py-0.5 rounded-full text-[10px] font-bold mb-2">
+                📸 완료 증빙 전송
               </span>
-              <h3 className="text-lg font-bold text-white">[{activeCameraQuest.title}]</h3>
-              <p className="text-xs text-slate-400 mt-1">공부 노트 또는 독서 흔적을 카메라로 찍어 전송하세요.</p>
+              <h3 className="text-base font-extrabold text-white">[{activeCameraQuest.title}]</h3>
+              <p className="text-[10px] text-slate-400 mt-1 font-semibold">증빙 방식(카메라 직접 촬영 또는 스캔 파일 첨부)을 선택하세요.</p>
             </div>
+
+            {/* 초기 상태: 모드 선택 유도 */}
+            {cameraMode === 'idle' && (
+              <div className="py-8 px-4 bg-slate-950/60 rounded-2xl border border-slate-850 space-y-3">
+                <button
+                  type="button"
+                  onClick={() => setCameraMode('capture')}
+                  className="w-full py-3 bg-indigo-600/90 hover:bg-indigo-500 hover:scale-105 active:scale-95 text-white font-black rounded-xl text-xs transition duration-200 shadow-md flex items-center justify-center gap-1.5"
+                >
+                  📷 실시간 카메라로 사진 촬영
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCameraMode('upload');
+                    setUploadedFile('study_note_scanned_0726.pdf');
+                  }}
+                  className="w-full py-3 bg-slate-800 hover:bg-slate-750 hover:scale-105 active:scale-95 text-slate-200 font-bold rounded-xl text-xs transition duration-200 border border-slate-700/80 flex items-center justify-center gap-1.5"
+                >
+                  📁 스캔한 파일 불러오기 및 전송
+                </button>
+              </div>
+            )}
 
             {/* 카메라 뷰 모사 구역 */}
-            <div className="aspect-[4/3] bg-slate-950 border border-slate-850 rounded-2xl flex flex-col items-center justify-center text-slate-600 relative overflow-hidden shadow-inner select-none">
-              <Camera className="w-12 h-12 text-slate-700 animate-pulse mb-2" />
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">LIVE CAMERA VIEW MOCK</span>
-              
-              <div className="absolute inset-x-0 bottom-0 bg-black/60 py-2 text-[10px] text-slate-400 font-bold border-t border-slate-900">
-                [화면을 터치하거나 확인 단추를 눌러 캡쳐]
+            {cameraMode === 'capture' && (
+              <div className="space-y-4">
+                <div className="aspect-[4/3] bg-slate-950 border border-slate-850 rounded-2xl flex flex-col items-center justify-center text-slate-600 relative overflow-hidden shadow-inner select-none">
+                  <Camera className="w-12 h-12 text-slate-700 animate-pulse mb-2" />
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">LIVE CAMERA VIEW MOCK</span>
+                  
+                  <div className="absolute inset-x-0 bottom-0 bg-black/60 py-2 text-[10px] text-slate-400 font-bold border-t border-slate-900">
+                    [화면을 터치하여 실시간 인증 샷 캡쳐]
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setCameraMode('idle')}
+                    className="w-1/3 py-2 bg-slate-800 text-slate-400 font-bold rounded-lg text-xs"
+                  >
+                    이전으로
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCameraCaptureConfirm}
+                    className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-xs shadow-md"
+                  >
+                    📸 촬영 완료 및 승인 요청
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
 
-            <div className="grid grid-cols-2 gap-3">
+            {/* 스캔 파일 업로드 구역 */}
+            {cameraMode === 'upload' && (
+              <div className="space-y-4">
+                <div className="p-6 bg-slate-955 rounded-2xl border border-dashed border-indigo-500/30 flex flex-col items-center justify-center text-slate-400">
+                  <span className="text-3xl mb-2 select-none">📄</span>
+                  <span className="text-xs font-black text-slate-350">{uploadedFile}</span>
+                  <span className="text-[9px] text-emerald-400 mt-1 font-bold">✓ 파일 스캔 완료 (준비됨)</span>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCameraMode('idle');
+                      setUploadedFile(null);
+                    }}
+                    className="w-1/3 py-2 bg-slate-800 text-slate-400 font-bold rounded-lg text-xs"
+                  >
+                    다시 선택
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCameraCaptureConfirm}
+                    className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg text-xs shadow-md"
+                  >
+                    📁 스캔한 파일 최종 전송하기
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {cameraMode === 'idle' && (
               <button
-                onClick={() => setActiveCameraQuest(null)}
-                className="w-full py-3 bg-slate-800 hover:bg-slate-750 text-slate-300 font-bold rounded-xl text-xs transition"
+                onClick={() => {
+                  setActiveCameraQuest(null);
+                  setCameraMode('idle');
+                }}
+                className="w-full py-2.5 bg-slate-800 hover:bg-slate-755 text-slate-400 hover:text-white font-bold rounded-xl text-xs transition"
               >
-                취소
+                닫기
               </button>
-              <button
-                onClick={handleCameraCaptureConfirm}
-                className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition shadow-md"
-              >
-                📸 사진 촬영 및 전송
-              </button>
-            </div>
+            )}
           </div>
         </div>
       )}
