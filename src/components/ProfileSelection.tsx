@@ -165,13 +165,8 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
           </div>
 
           {/* 로우폴리 프리뷰 박스 */}
-          <div className="aspect-[16/9] w-full rounded-3xl overflow-hidden border border-slate-800 bg-slate-900/60 shadow-2xl relative group">
-            <img src="/family_tycoon_map.jpg" alt="Family Tycoon Map" className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[1px] flex items-center justify-center">
-              <span className="text-xl font-extrabold text-white tracking-widest bg-slate-900/90 px-6 py-3 rounded-2xl border border-slate-800 shadow-md">
-                모험을 시작하시겠습니까?
-              </span>
-            </div>
+          <div className="aspect-[16/9] w-full rounded-3xl overflow-hidden border border-slate-800 bg-slate-900/60 shadow-2xl relative">
+            <img src="/start-01.jfif" alt="Family Tycoon Map" className="w-full h-full object-cover" />
           </div>
 
           <div className="space-y-4">
@@ -227,7 +222,7 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
         <div className="bg-slate-900 border border-slate-850 rounded-3xl p-5 shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center gap-6">
           <div className="w-full md:w-2/5 aspect-[16/9] rounded-2xl bg-slate-950 border border-slate-800 overflow-hidden relative group">
             <img 
-              src="/family_tycoon_map.jpg" 
+              src="/start-01.jfif" 
               alt="Family Tycoon Map Concept" 
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
