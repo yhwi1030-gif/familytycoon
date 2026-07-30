@@ -749,14 +749,15 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
         {/* 3. 상점 탭 (상점 아이템 목록 + 현금화 정산 신청) */}
         {activeTab === 'store' && (
           <div className="space-y-6">
-            <div className="bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-xl">
-              <div className="flex justify-between items-center mb-6 border-b border-slate-850 pb-3">
-                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+            {/* 상점 리스트 - 투명도 50% 설정 */}
+            <div className="bg-white/50 border border-[#EBE6DD] backdrop-blur-md rounded-3xl p-6 shadow-sm">
+              <div className="flex justify-between items-center mb-6 border-b border-[#EBE6DD] pb-3">
+                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 font-bw">
                   🛍️ 레벨 제한 길드 상점
                 </h3>
                 <button
                   onClick={() => setIsPayoutOpen(true)}
-                  className="text-[10px] text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded-lg hover:bg-amber-500/20 transition font-bold"
+                  className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1.5 rounded-lg hover:bg-amber-100 transition font-bold"
                 >
                   🪙 현금화 정산 신청
                 </button>
@@ -768,23 +769,23 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                   return (
                     <div
                       key={item.id}
-                      className={`p-3.5 rounded-2xl border transition-all duration-300 relative overflow-hidden ${
+                      className={`p-3.5 rounded-2xl border transition-all duration-300 relative overflow-hidden shadow-sm ${
                         isLocked
-                          ? 'bg-slate-950/40 border-slate-900 opacity-50'
-                          : 'bg-slate-950 border-slate-850'
+                          ? 'bg-[#FAF8F5]/40 border-slate-200 opacity-60'
+                          : 'bg-white border-[#EBE6DD]'
                       }`}
                     >
                       <div className="flex justify-between items-start gap-2">
                         <div>
-                          <h4 className="text-xs font-extrabold text-slate-100 flex items-center gap-1.5">
+                          <h4 className="text-xs font-extrabold text-slate-800 flex items-center gap-1.5 font-bw">
                             {item.name}
                             {isLocked && (
-                              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20">
+                              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-red-50 text-red-650 border border-red-200">
                                 🔒 Lv.{item.requiredLevel} 잠금
                               </span>
                             )}
                             {item.status === 'requested' && (
-                              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-indigo-500 text-white animate-pulse">
+                              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-indigo-600 text-white animate-pulse">
                                 결재 대기
                               </span>
                             )}
@@ -793,7 +794,7 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                         </div>
 
                         <div className="text-right shrink-0">
-                          <span className="text-xs font-black text-amber-400 block">{item.price} G</span>
+                          <span className="text-xs font-black text-amber-600 block">{item.price} G</span>
                           {!isLocked && item.status !== 'requested' && (
                             <button
                               onClick={() => handlePurchaseItem(item)}

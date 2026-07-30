@@ -686,41 +686,41 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
         {/* 3. 상점 탭 (골드 정산 & 이용권 결재 관리) */}
         {activeTab === 'store' && (
           <div className="space-y-6">
-            {/* 대기중인 구매/이용권 심사 대기열 */}
-            <div className="bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-xl">
-              <h3 className="text-sm font-bold text-white mb-4 border-b border-slate-850 pb-3 flex items-center gap-2">
+            {/* 대기중인 구매/이용권 심사 대기열 - 투명도 50% 설정 */}
+            <div className="bg-white/50 border border-[#EBE6DD] backdrop-blur-md rounded-3xl p-6 shadow-sm">
+              <h3 className="text-sm font-bold text-slate-900 mb-4 border-b border-[#EBE6DD] pb-3 flex items-center gap-2 font-bw">
                 ⚖️ 상점 교환 & 이용권 심사 센터
               </h3>
               <div className="space-y-3">
                 {notifications.filter(n => !n.resolved && (n.type === 'gold_request' || n.type === 'item_request' || n.type === 'item_use_request' || n.type === 'self_quest_proposal')).length === 0 ? (
-                  <div className="text-center py-12 text-slate-500 text-xs font-bold border-2 border-dashed border-slate-850 rounded-2xl">
+                  <div className="text-center py-12 text-slate-400 text-xs font-bold border-2 border-dashed border-[#EBE6DD] rounded-2xl bg-white/30">
                     현재 대기 중인 구매 결재나 실물 이용권 사용 신청 내역이 없습니다.
                   </div>
                 ) : (
                   notifications.filter(n => !n.resolved && (n.type === 'gold_request' || n.type === 'item_request' || n.type === 'item_use_request' || n.type === 'self_quest_proposal')).map(noti => (
-                    <div key={noti.id} className={`p-4 border rounded-2xl space-y-3 ${noti.type === 'item_use_request' ? 'bg-emerald-950/20 border-emerald-500/20' : 'bg-slate-950 border-slate-850'}`}>
+                    <div key={noti.id} className={`p-4 border rounded-2xl space-y-3 shadow-sm ${noti.type === 'item_use_request' ? 'bg-emerald-50/30 border-emerald-200' : 'bg-white border-[#EBE6DD]'}`}>
                       <div className="flex justify-between items-start">
-                        <p className="text-xs font-bold text-slate-200">{noti.message}</p>
+                        <p className="text-xs font-bold text-slate-800">{noti.message}</p>
                         <span className={`text-[9px] px-2 py-0.5 rounded font-bold shrink-0 ${
-                          noti.type === 'item_use_request' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                          noti.type === 'gold_request' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
-                          'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
+                          noti.type === 'item_use_request' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                          noti.type === 'gold_request' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                          'bg-indigo-50 text-indigo-700 border border-indigo-200'
                         }`}>
                           {noti.type === 'item_use_request' ? '🎟️ 실물사용 요청' : noti.type === 'gold_request' ? '💰 용돈전환' : '🛍️ 구매결재'}
                         </span>
                       </div>
                       
                       {noti.meta?.proposedGold && (
-                        <div className="bg-slate-900 p-2.5 rounded-xl text-[10px] text-indigo-400 font-bold flex justify-between">
+                        <div className="bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-[10px] text-indigo-600 font-bold flex justify-between">
                           <span>자녀 역제안가:</span>
-                          <span className="text-amber-400 font-black">{noti.meta.proposedGold} G</span>
+                          <span className="text-amber-600 font-black">{noti.meta.proposedGold} G</span>
                         </div>
                       )}
 
                       <div className="flex gap-2 justify-end">
                         <button
                           onClick={() => handleResolveNotification(noti, 'reject')}
-                          className="px-3 py-1.5 bg-slate-800 hover:bg-slate-750 text-slate-350 text-xs font-bold rounded-lg transition"
+                          className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-lg transition"
                         >
                           거절 / 협상
                         </button>
@@ -737,25 +737,25 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
               </div>
             </div>
 
-            {/* 승인한 완료 이력 로그 */}
-            <div className="bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-xl">
-              <h3 className="text-sm font-bold text-slate-200 mb-4 border-b border-slate-850 pb-3 flex items-center gap-2">
+            {/* 승인한 완료 이력 로그 - 투명도 50% 설정 */}
+            <div className="bg-white/50 border border-[#EBE6DD] backdrop-blur-md rounded-3xl p-6 shadow-sm">
+              <h3 className="text-sm font-bold text-slate-900 mb-4 border-b border-[#EBE6DD] pb-3 flex items-center gap-2 font-bw">
                 📋 승인/반려 완료 이력 로그
               </h3>
               <div className="space-y-2.5 max-h-60 overflow-y-auto">
                 {notifications.filter(n => n.resolved || n.message.includes('[승인 완료]') || n.message.includes('[사용 승인 완료]') || n.message.includes('[협상/반려]') || n.message.includes('[사용 반려]')).length === 0 ? (
-                  <div className="text-center py-8 text-slate-600 text-xs font-bold italic">
+                  <div className="text-center py-8 text-slate-400 text-xs font-bold italic">
                     최근 처리 완료된 이력이 없습니다.
                   </div>
                 ) : (
                   notifications.filter(n => n.resolved || n.message.includes('[승인 완료]') || n.message.includes('[사용 승인 완료]') || n.message.includes('[협상/반려]') || n.message.includes('[사용 반려]')).map(noti => (
-                    <div key={noti.id} className="p-3 bg-slate-950/80 border border-slate-850 rounded-xl text-xs font-semibold leading-relaxed text-slate-300 flex justify-between items-center">
+                    <div key={noti.id} className="p-3 bg-white/80 border border-[#EBE6DD] rounded-xl text-xs font-semibold leading-relaxed text-slate-700 flex justify-between items-center shadow-sm">
                       <div>
-                        <p className="text-[9px] text-slate-500 mb-1">{new Date(noti.createdAt).toLocaleString()}</p>
+                        <p className="text-[9px] text-slate-400 mb-1">{new Date(noti.createdAt).toLocaleString()}</p>
                         <p>{noti.message}</p>
                       </div>
                       <span className={`text-[9px] font-black shrink-0 px-2 py-0.5 rounded ml-3 ${
-                        noti.message.includes('반려') ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                        noti.message.includes('반려') ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                       }`}>
                         {noti.message.includes('반려') ? '처리 반려' : '승인 완료'}
                       </span>
