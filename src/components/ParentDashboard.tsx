@@ -581,21 +581,21 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
               )}
             </div>
 
-            {/* SECTION 2: 돌발 퀘스트 (심부름) 섹션 */}
-            <div className="bg-white border border-[#EBE6DD] rounded-3xl p-5 shadow-sm transition-all duration-300">
+            {/* SECTION 2: 돌발 퀘스트 (심부름) 섹션 - 그린 계열 테마 */}
+            <div className="bg-[#FAFDF8] border border-[#DCE8D0] rounded-3xl p-5 shadow-sm transition-all duration-300">
               <div 
                 onClick={() => setIsFlashQuestsCollapsed(!isFlashQuestsCollapsed)}
-                className="flex justify-between items-center cursor-pointer pb-3 border-b border-[#EBE6DD]"
+                className="flex justify-between items-center cursor-pointer pb-3 border-b border-[#DCE8D0]"
               >
                 <div className="flex items-center gap-2.5">
-                  <span className="text-xs text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded font-black">
+                  <span className="text-xs text-emerald-700 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded font-black">
                     {quests.filter(q => q.type === 'flash').length}
                   </span>
-                  <h4 className="text-sm font-extrabold text-slate-800 flex items-center gap-1.5 font-bw">
+                  <h4 className="text-sm font-extrabold text-emerald-900 flex items-center gap-1.5 font-bw">
                     ⚡ 돌발 퀘스트 섹션 (심부름 / 미션)
                   </h4>
                 </div>
-                <div className="flex items-center gap-1.5 text-slate-500 hover:text-slate-700 text-xs font-bold">
+                <div className="flex items-center gap-1.5 text-emerald-700 hover:text-emerald-900 text-xs font-bold">
                   <span>{isFlashQuestsCollapsed ? '펼치기 🔓' : '접기 🔒'}</span>
                   <span className="text-md">{isFlashQuestsCollapsed ? '▼' : '▲'}</span>
                 </div>
@@ -604,21 +604,21 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
               {!isFlashQuestsCollapsed && (
                 <div className="mt-4 space-y-3 animate-in fade-in duration-200">
                   {/* 테이블 헤더 */}
-                  <div className="hidden sm:grid grid-cols-12 gap-4 px-4 py-2 text-[10px] font-black text-slate-400 border-b border-slate-200">
+                  <div className="hidden sm:grid grid-cols-12 gap-4 px-4 py-2 text-[10px] font-black text-emerald-800/80 border-b border-[#E2F0D8]">
                     <div className="col-span-4">활동명 (돌발 미션)</div>
                     <div className="col-span-3 text-center">퀘스트 마감시간 / 정보</div>
                     <div className="col-span-5 text-right">퀘스트 완료 독려 메시지 전송</div>
                   </div>
 
                   {quests.filter(q => q.type === 'flash').length === 0 ? (
-                    <div className="text-center py-12 text-slate-500 text-xs font-bold border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
+                    <div className="text-center py-12 text-emerald-750 text-xs font-bold border-2 border-dashed border-[#DCE8D0] rounded-2xl bg-[#FAFDF8]">
                       현재 활성화된 돌발 퀘스트가 없습니다.
                     </div>
                   ) : (
                     quests.filter(q => q.type === 'flash').map(q => (
-                      <div key={q.id} className="p-4 bg-[#FDFBF7] border border-[#EBE6DD] rounded-2xl grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
+                      <div key={q.id} className="p-4 bg-white border border-[#E2F0D8] rounded-2xl grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
                         <div className="col-span-1 sm:col-span-4">
-                          <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-600 border border-emerald-200">
+                          <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
                             {q.category}
                           </span>
                           <h4 className="text-sm font-extrabold text-slate-800 mt-1.5">{q.title}</h4>
@@ -626,7 +626,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
                         </div>
                         <div className="col-span-1 sm:col-span-3 text-left sm:text-center">
                           <div className="inline-flex flex-col items-center">
-                            <span className="text-[10px] font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200 flex items-center gap-1">
+                            <span className="text-[10px] font-bold text-rose-700 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200 flex items-center gap-1">
                               ⏱️ {q.dueTime || '18:00'} 마감
                             </span>
                             <span className="text-[8px] text-slate-500 mt-1 font-semibold">(미수행 시 골드 소멸)</span>
