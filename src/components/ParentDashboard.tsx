@@ -347,9 +347,9 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
                   <div className="md:col-span-5 space-y-4">
                     
-                    {/* 캐릭터 표시창 배경부분 - 웹페이지 배경색 #FAF8F5와 일치화 */}
-                    <div className="flex items-center gap-3 bg-[#FAF8F5] p-3 rounded-2xl border border-[#EBE6DD]">
-                      <div className="w-14 h-14 rounded-xl bg-white border border-[#EBE6DD] overflow-hidden flex items-center justify-center relative shrink-0 p-1">
+                    {/* 캐릭터 표시창 배경부분 - 웹페이지 배경색 #FAF8F5 일치화 및 세로 2배, 캐릭터 2배 크기 조절 */}
+                    <div className="flex items-center gap-4 bg-[#FAF8F5] py-7 px-4 h-32 rounded-2xl border border-[#EBE6DD]">
+                      <div className="w-24 h-24 rounded-xl bg-white border border-[#EBE6DD] overflow-hidden flex items-center justify-center relative shrink-0 p-1 shadow-sm">
                         <img 
                           src={
                             child.childClass === 'scholar' ? '/INT.svg' :
@@ -359,21 +359,21 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
                             '/INT.svg' // fallback
                           } 
                           alt="Class Avatar" 
-                          className="w-full h-full object-contain" 
+                          className="w-full h-full object-contain animate-pulse" 
                         />
                       </div>
                       <div>
-                        <h4 className="text-sm font-extrabold text-slate-800">{child.name}</h4>
-                        <p className="text-[10px] text-slate-500 font-bold">{child.title || '성향 진단 미완료'}</p>
+                        <h4 className="text-base font-extrabold text-slate-800">{child.name}</h4>
+                        <p className="text-xs text-slate-500 font-bold mt-0.5">{child.title || '성향 진단 미완료'}</p>
                       </div>
                     </div>
 
-                    <div className="space-y-1.5">
-                      <div className="flex justify-between text-xs font-bold text-slate-500">
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-[11px] font-bold text-slate-500">
                         <span>캐릭터 레벨 (Lv.{child.level})</span>
                         <span className="text-indigo-600 font-extrabold">{child.exp} / {child.level * 100} EXP</span>
                       </div>
-                      <div className="w-full bg-[#FAF8F5] h-2.5 rounded-full overflow-hidden border border-[#EBE6DD]">
+                      <div className="w-full bg-[#FAF8F5] h-1.5 rounded-full overflow-hidden border border-[#EBE6DD]">
                         <div
                           className="bg-gradient-to-r from-indigo-500 to-purple-500 h-full transition-all duration-500"
                           style={{ width: `${(child.exp / (child.level * 100)) * 100}%` }}
@@ -381,17 +381,17 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
                       </div>
                     </div>
 
-                    <div className="flex justify-between items-center bg-white/80 p-3.5 rounded-2xl border border-[#EBE6DD] shadow-sm">
-                      <span className="text-xs font-bold text-slate-500">🪙 누적 보상 골드</span>
-                      <span className="text-md font-black text-amber-600">{child.gold.toLocaleString()} G</span>
+                    <div className="flex justify-between items-center bg-white/80 py-1.5 px-3.5 rounded-2xl border border-[#EBE6DD] shadow-sm">
+                      <span className="text-[11px] font-bold text-slate-500">🪙 누적 보상 골드</span>
+                      <span className="text-sm font-black text-amber-600">{child.gold.toLocaleString()} G</span>
                     </div>
 
-                    <div className="space-y-1.5 bg-white/80 p-3 rounded-2xl border border-[#EBE6DD] shadow-sm">
-                      <div className="flex justify-between text-xs font-bold text-slate-500">
+                    <div className="space-y-1 bg-white/80 py-1.5 px-3 rounded-2xl border border-[#EBE6DD] shadow-sm">
+                      <div className="flex justify-between text-[11px] font-bold text-slate-500">
                         <span>💥 아바타 피로도 (스트레스)</span>
                         <span className="font-bold">{child.stress} / 100</span>
                       </div>
-                      <div className="w-full bg-[#FAF8F5] h-2 rounded-full overflow-hidden border border-slate-200">
+                      <div className="w-full bg-[#FAF8F5] h-1 rounded-full overflow-hidden border border-slate-200">
                         <div
                           className={`h-full transition-all duration-500 ${
                             child.stress >= 80 ? 'bg-red-500' : child.stress >= 50 ? 'bg-orange-500' : 'bg-emerald-500'

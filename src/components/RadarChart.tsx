@@ -14,15 +14,15 @@ interface RadarChartProps {
 export const RadarChart: React.FC<RadarChartProps> = ({ stats, size = 300 }) => {
   const center = size / 2;
   const maxVal = 100;
-  const radius = (size / 2) * 0.75;
+  const radius = (size / 2) * 0.58; // 반지름 비율을 0.75 -> 0.58로 축소하여 주변 라벨 텍스트와의 여유 공간 확보
 
   // 5개 축의 라벨 및 값 정의
   const keys: Array<{ label: string; key: keyof typeof stats; color: string }> = [
-    { label: '지력 (INT)', key: 'intelligence', color: '#60A5FA' },
-    { label: '성실성 (WIL)', key: 'willpower', color: '#34D399' },
-    { label: '주도성 (AUT)', key: 'autonomy', color: '#FBBF24' },
-    { label: '협동심 (COP)', key: 'cooperation', color: '#F472B6' },
-    { label: '감성 (SEN)', key: 'sensibility', color: '#A78BFA' }
+    { label: '지력 (INT)', key: 'intelligence', color: '#3B82F6' },
+    { label: '성실성 (WIL)', key: 'willpower', color: '#10B981' },
+    { label: '주도성 (AUT)', key: 'autonomy', color: '#F59E0B' },
+    { label: '협동심 (COP)', key: 'cooperation', color: '#EC4899' },
+    { label: '감성 (SEN)', key: 'sensibility', color: '#8B5CF6' }
   ];
 
   const angleStep = (Math.PI * 2) / keys.length;
@@ -48,7 +48,7 @@ export const RadarChart: React.FC<RadarChartProps> = ({ stats, size = 300 }) => 
         key={i}
         points={points}
         fill="none"
-        stroke="#374151"
+        stroke="#E2E8F0"
         strokeWidth="1"
         strokeDasharray={scale === 1 ? 'none' : '4,4'}
       />
@@ -65,7 +65,7 @@ export const RadarChart: React.FC<RadarChartProps> = ({ stats, size = 300 }) => 
         y1={center}
         x2={x}
         y2={y}
-        stroke="#4B5563"
+        stroke="#E2E8F0"
         strokeWidth="1"
       />
     );
@@ -81,7 +81,7 @@ export const RadarChart: React.FC<RadarChartProps> = ({ stats, size = 300 }) => 
   const dataPolygonPoints = dataPoints.map(p => `${p.x},${p.y}`).join(' ');
 
   return (
-    <div className="flex flex-col items-center justify-center p-2 bg-slate-900/50 backdrop-blur-md rounded-2xl border border-slate-700/50 shadow-2xl">
+    <div className="flex flex-col items-center justify-center p-4 bg-[#FAF8F5] rounded-2xl border border-[#EBE6DD] shadow-sm">
       <svg width={size} height={size} className="overflow-visible">
         {/* 오각형 배경선 */}
         {bgPolygons}
@@ -92,9 +92,9 @@ export const RadarChart: React.FC<RadarChartProps> = ({ stats, size = 300 }) => 
         {/* 데이터 영역 */}
         <polygon
           points={dataPolygonPoints}
-          fill="rgba(139, 92, 246, 0.25)"
-          stroke="#8B5CF6"
-          strokeWidth="3"
+          fill="rgba(99, 102, 241, 0.15)"
+          stroke="#6366F1"
+          strokeWidth="2.5"
           className="transition-all duration-500 ease-out"
         />
 
@@ -102,7 +102,7 @@ export const RadarChart: React.FC<RadarChartProps> = ({ stats, size = 300 }) => 
         {dataPoints.map((p, idx) => {
           // 텍스트 위치 보정용 오프셋 산출
           const angle = angleStep * idx - Math.PI / 2;
-          const textDist = radius + 20;
+          const textDist = radius + 22;
           const tx = center + textDist * Math.cos(angle);
           const ty = center + textDist * Math.sin(angle) + 4; // y 축 보정
 
@@ -111,16 +111,16 @@ export const RadarChart: React.FC<RadarChartProps> = ({ stats, size = 300 }) => 
               <circle
                 cx={p.x}
                 cy={p.y}
-                r="5"
+                r="4.5"
                 fill={p.color}
-                className="transition-all duration-500 ease-out shadow-lg"
+                className="transition-all duration-500 ease-out shadow-md"
               />
               <text
                 x={tx}
                 y={ty}
-                fill="#E2E8F0"
-                fontSize="11"
-                fontWeight="bold"
+                fill="#475569"
+                fontSize="10"
+                fontWeight="black"
                 textAnchor="middle"
                 className="select-none font-sans"
               >
