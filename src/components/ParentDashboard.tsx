@@ -131,16 +131,40 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
     loadData();
   };
 
-  // 독려 메시지 전송
+  // 독려 메시지 전송 (톤앤매너 다변화 및 5종 프리셋 무작위 선택)
   const handleCheer = (tone: 'sweet' | 'strict' | 'funny', questTitle: string) => {
-    const toneMsgs = {
-      sweet: `💚 "우리 꼬마 전사님, [${questTitle}] 퀘스트 파이팅이에요! 마스터가 언제나 응원해요."`,
-      strict: `🔥 "모험가 길드 율법 제1조! 지정된 [${questTitle}] 완료 시간까지 서두르세요. 시간 엄수!"`,
-      funny: `🤠 "똑딱똑딱! [${questTitle}] 클리어하고 시원한 골드 획득해서 물약(간식) 사 먹으러 안 가실 건가요?"`
+    const childName = child ? child.name.split(' ')[0] : '모험가';
+    
+    const messages = {
+      sweet: [
+        `💚 "오늘 하루도 고생 많았어! [${questTitle}] 완료하고 오늘의 20 EXP까지 싹 챙겨서 깔끔하게 마감해볼까? ❤️"`,
+        `💚 "오늘 [${questTitle}] 완료하면 완벽한 하루! 엄마(아빠)가 맛있는 간장 계란밥/간식 준비해둘게 칭찬 쿠폰 대기 중!"`,
+        `💚 "조금 피곤하지? 딱 10분만 집중해서 [${questTitle}] 끝내고 같이 자유시간 즐기자, ${childName} 파이팅!"`,
+        `💚 "우리 ${childName}의 집중력 스킬 발동할 시간! 오늘 [${questTitle}] 퀘스트도 가볍게 클리어해줄 거라 믿어 ✨"`,
+        `💚 "오늘 [${questTitle}] 완료하면 오늘의 루틴 끝! 차근차근 해내는 모습이 진짜 멋져."`
+      ],
+      strict: [
+        `🔥 "오늘의 던전 문이 밤 12시에 닫힙니다! [${questTitle}] 완료하고 경험치 증발하기 전에 얼른 클리어해라 오버 🚀"`,
+        `🔥 "할 일 미루기 스킬 금지! 지금 딱 집중해서 [${questTitle}] 풀고 쿨하게 쉬는 게 진짜 고수다."`,
+        `🔥 "연속 성공 기록 깨지면 엄마(아빠)가 더 아쉬워! 지금 바로 [${questTitle}] 열고 클리어 버튼 누르자."`,
+        `🔥 "약속한 [${questTitle}] 시간이다! 미루면 나중에 두 배로 힘들어진다는 거 알지? 빠르게 끝내자 🔥"`,
+        `🔥 "오늘의 EXP가 [${questTitle}]에서 주인을 기다리다 울고 있다... 지금 바로 구출하러 가자!"`
+      ],
+      funny: [
+        `🤠 "[긴급] ${questTitle}: '나를 이대로 방치할 셈인가...?' 퀘스트가 너의 손길을 기다린다 😈"`,
+        `🤠 "이 메시지를 본 당신! [${questTitle}] 20 EXP를 획득할 운명입니다. 지금 바로 클릭해서 경험치를 챙기시오 🤠"`,
+        `🤠 "뇌 근육 강화 운동 시간 도착! 딱 5분만 집중해서 [${questTitle}] 해결하고 쿨하게 레벨업하자 💪"`,
+        `🤠 "[${questTitle}] 완료 시 '엄마(아빠)의 무한 칭찬' 패시브 스킬이 즉시 발동됩니다. 획득하시겠습니까?"`,
+        `🤠 "오늘 [${questTitle}] 안 깨면 엄마(아빠)가 옆에서 춤출 예정... (경고함 🕺)"`
+      ]
     };
+
+    // 무작위로 하나의 메시지 템플릿 선택
+    const pool = messages[tone];
+    const chosenMessage = pool[Math.floor(Math.random() * pool.length)];
     
     api.addNotification({
-      message: toneMsgs[tone],
+      message: chosenMessage,
       type: 'general'
     });
     
