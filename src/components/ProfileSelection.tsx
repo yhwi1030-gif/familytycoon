@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { Profile } from '@/types';
-import { Shield, User, Key, Plus, Trash2, Edit2, RotateCcw } from 'lucide-react';
+import { Shield, User, Key, Plus, Trash2, Edit2, RotateCcw, Eye, EyeOff } from 'lucide-react';
 import { ChatbotOnboarding } from '@/components/ChatbotOnboarding';
 
 interface ProfileSelectionProps {
@@ -31,6 +31,7 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
   const [agreeToPrivacy, setAgreeToPrivacy] = useState(false);
   const [showSignupGuideModal, setShowSignupGuideModal] = useState(false);
   const [tempSignupData, setTempSignupData] = useState<{ name: string; password: string; email: string } | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   // 인트로 시작 페이지 대기 유무
   const [showIntro, setShowIntro] = useState(true);
@@ -348,14 +349,23 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
             {/* 비밀번호 입력 */}
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">비밀번호 (영문, 숫자, 특수문자 조합 8자 이상)</label>
-              <input
-                type="password"
-                required
-                value={signupPassword}
-                onChange={e => setSignupPassword(e.target.value)}
-                placeholder="비밀번호를 입력해 주세요"
-                className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-white/80 text-xs font-bold text-slate-800 outline-none focus:border-indigo-500 transition shadow-sm"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={signupPassword}
+                  onChange={e => setSignupPassword(e.target.value)}
+                  placeholder="비밀번호를 입력해 주세요"
+                  className="w-full px-4 py-3 pr-12 rounded-2xl border border-slate-200 bg-white/80 text-xs font-bold text-slate-800 outline-none focus:border-indigo-500 transition shadow-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition p-1"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
 
             {/* 개인정보 활용 동의 (필수 체크란) */}
@@ -379,7 +389,8 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
             <div className="pt-2 space-y-2">
               <button
                 type="submit"
-                className="w-full py-3.5 bg-[#644EB0] hover:bg-[#523d9c] text-white font-extrabold text-xs rounded-2xl transition duration-300 transform active:scale-95 shadow-md shadow-[#644EB0]/10"
+                disabled={!agreeToPrivacy}
+                className="w-full py-3.5 bg-[#644EB0] hover:bg-[#523d9c] disabled:bg-slate-400 text-white font-extrabold text-xs rounded-2xl transition duration-300 transform active:scale-95 shadow-md shadow-[#644EB0]/10 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
               >
                 💾 회원가입 및 등록 완료
               </button>
