@@ -20,6 +20,7 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
   const [editName, setEditName] = useState('');
   const [editPin, setEditPin] = useState('');
   const [onboardingRole, setOnboardingRole] = useState<'parent' | 'child' | null>(null);
+  const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
 
   // 인트로 시작 페이지 대기 유무
   const [showIntro, setShowIntro] = useState(true);
@@ -174,12 +175,20 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
 
           <div className="space-y-4">
             {!showLoading ? (
-              <button
-                onClick={handleStartAdventure}
-                className="w-full py-4 bg-[#644EB0] hover:bg-[#523d9c] text-white font-extrabold text-[17px] font-bw rounded-2xl transition duration-300 transform active:scale-95 shadow-lg shadow-[#644EB0]/20 tracking-wider"
-              >
-                🎮 입장하기 (로그인)
-              </button>
+              <div className="space-y-3">
+                <button
+                  onClick={() => setIsSignupModalOpen(true)}
+                  className="w-full py-4 bg-[#644EB0] hover:bg-[#523d9c] text-white font-extrabold text-[17px] font-bw rounded-2xl transition duration-300 transform active:scale-95 shadow-lg shadow-[#644EB0]/20 tracking-wider flex items-center justify-center gap-2"
+                >
+                  📝 회원가입하기
+                </button>
+                <button
+                  onClick={handleStartAdventure}
+                  className="w-full py-4 bg-[#644EB0] hover:bg-[#523d9c] text-white font-extrabold text-[17px] font-bw rounded-2xl transition duration-300 transform active:scale-95 shadow-lg shadow-[#644EB0]/20 tracking-wider flex items-center justify-center gap-2"
+                >
+                  🎮 입장하기 (로그인)
+                </button>
+              </div>
             ) : (
               <div className="space-y-3 p-4 bg-white border border-slate-200 rounded-2xl animate-pulse">
                 <div className="flex justify-between text-xs font-bold text-slate-500">
@@ -200,6 +209,55 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
             </p>
           </div>
         </div>
+
+        {/* 회원가입 유형 선택 모달 */}
+        {isSignupModalOpen && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white border border-[#EBE6DD] rounded-3xl p-6 max-w-sm w-full space-y-5 shadow-2xl animate-in zoom-in-95 duration-200">
+              <div className="text-center space-y-1.5">
+                <h4 className="text-md font-black text-slate-800 font-bw">🛡️ 던전 길드 신규 회원가입</h4>
+                <p className="text-[10px] text-slate-500 font-medium">활동하실 길드 역할을 선택해 모험을 등록하세요.</p>
+              </div>
+
+              <div className="space-y-3">
+                <button
+                  onClick={() => {
+                    setIsSignupModalOpen(false);
+                    handleAddProfile('parent');
+                  }}
+                  className="w-full p-4 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100/70 rounded-2xl text-left flex items-center justify-between group transition duration-200"
+                >
+                  <div>
+                    <p className="text-xs font-black text-indigo-950 font-bw">🧙‍♀️ 길드마스터 (보호자)</p>
+                    <p className="text-[9px] text-indigo-600 font-bold mt-0.5">자녀 퀘스트 관리, 보상 결재, 전령 발송</p>
+                  </div>
+                  <span className="text-md transform group-hover:translate-x-1 transition">➔</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setIsSignupModalOpen(false);
+                    handleAddProfile('child');
+                  }}
+                  className="w-full p-4 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100/70 rounded-2xl text-left flex items-center justify-between group transition duration-200"
+                >
+                  <div>
+                    <p className="text-xs font-black text-emerald-950 font-bw">🛡️ 아기 모험가 (자녀)</p>
+                    <p className="text-[9px] text-emerald-600 font-bold mt-0.5">일일 루틴/돌발 퀘스트 수행, 레벨업, 용돈 상점 이용</p>
+                  </div>
+                  <span className="text-md transform group-hover:translate-x-1 transition">➔</span>
+                </button>
+              </div>
+
+              <button
+                onClick={() => setIsSignupModalOpen(false)}
+                className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs rounded-xl transition"
+              >
+                닫기
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
