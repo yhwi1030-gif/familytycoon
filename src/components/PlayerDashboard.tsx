@@ -28,6 +28,50 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
   const [isMainQuestsCollapsed, setIsMainQuestsCollapsed] = useState(false);
   const [isFlashQuestsCollapsed, setIsFlashQuestsCollapsed] = useState(false);
 
+  // 실시간 타이머 및 던전 문 제어 상태
+  const [timeState, setTimeState] = useState({
+    currentTimeStr: '00:00:00',
+    timeLeftStr: '00시간 00분 00초',
+    gateProgress: 0
+  });
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      const hrs = now.getHours();
+      const mins = now.getMinutes();
+      const secs = now.getSeconds();
+      
+      const currentTimeStr = `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      
+      // 자정(24:00)까지의 카운트다운
+      const totalSecsInDay = 24 * 3600;
+      const currentTotalSecs = hrs * 3600 + mins * 60 + secs;
+      const diffSecs = totalSecsInDay - currentTotalSecs;
+      
+      const diffHrs = Math.floor(diffSecs / 3600);
+      const diffMins = Math.floor((diffSecs % 3600) / 60);
+      const diffSecsLeft = diffSecs % 60;
+      const timeLeftStr = `${String(diffHrs).padStart(2, '0')}시간 ${String(diffMins).padStart(2, '0')}분 ${String(diffSecsLeft).padStart(2, '0')}초`;
+      
+      // 문 계산: 오전 8시(0%) ~ 밤 12시(100%)
+      const startSecs = 8 * 3600;
+      let gateProgress = 0;
+      if (currentTotalSecs >= startSecs) {
+        gateProgress = ((currentTotalSecs - startSecs) / (totalSecsInDay - startSecs)) * 100;
+        if (gateProgress > 100) gateProgress = 100;
+      } else {
+        gateProgress = 100; // 자정 ~ 오전 8시 사이에는 완전 닫힘
+      }
+      
+      setTimeState({ currentTimeStr, timeLeftStr, gateProgress });
+    };
+
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   // 카메라 촬영 완료 인증 팝업 모사 상태
   const [activeCameraQuest, setActiveCameraQuest] = useState<Quest | null>(null);
   
@@ -450,70 +494,166 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
         {/* 2. 퀘스트 탭 (퀘스트 리스트 + 3클릭 인증 & 역제안) */}
         {activeTab === 'quest' && (
           <div className="space-y-6 animate-in fade-in duration-200">
-            {/* 메인 퀘스트 섹션 (일일 루틴) */}
-            <div className="bg-slate-900 border border-slate-850 rounded-3xl p-5 shadow-xl transition-all duration-300">
+            {/* 메인 퀘스트 섹션 (던전 진입 테마) */}
+            <div className="bg-white border border-[#EBE6DD] rounded-3xl p-5 shadow-sm transition-all duration-300">
               <div 
                 onClick={() => setIsMainQuestsCollapsed(!isMainQuestsCollapsed)}
-                className="flex justify-between items-center cursor-pointer pb-3 border-b border-slate-850"
+                className="flex justify-between items-center cursor-pointer pb-3 border-b border-[#EBE6DD]"
               >
                 <div className="flex items-center gap-2.5">
-                  <span className="text-xs text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded font-black">
+                  <span className="text-xs text-indigo-600 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded font-black">
                     {quests.filter(q => q.type === 'main').length}
                   </span>
-                  <h4 className="text-sm font-extrabold text-white flex items-center gap-1.5">
-                    📅 메인 퀘스트 섹션 (일일 루틴)
+                  <h4 className="text-sm font-extrabold text-slate-800 flex items-center gap-1.5 font-bw">
+                    🏰 메인 던전 게이트 (일일 루틴)
                   </h4>
                 </div>
-                <div className="flex items-center gap-1.5 text-slate-400 hover:text-slate-200 text-xs font-bold">
+                <div className="flex items-center gap-1.5 text-slate-500 hover:text-slate-700 text-xs font-bold">
                   <span>{isMainQuestsCollapsed ? '펼치기 🔓' : '접기 🔒'}</span>
                   <span className="text-md">{isMainQuestsCollapsed ? '▼' : '▲'}</span>
                 </div>
               </div>
 
               {!isMainQuestsCollapsed && (
-                <div className="mt-4 space-y-3 animate-in fade-in duration-200">
+                <div className="mt-4 space-y-4 animate-in fade-in duration-200">
+                  
+                  {/* 상단: 타이머 UI */}
+                  <div className="bg-[#1e1b29] text-slate-100 rounded-2xl p-4 flex flex-col sm:flex-row justify-between items-center gap-3 border border-[#3c3654] shadow-inner">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">⏱️</span>
+                      <div>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">현재 시간</p>
+                        <p className="text-sm font-black text-white font-bw">{timeState.currentTimeStr}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 bg-[#2d293d] px-3.5 py-1.5 rounded-xl border border-[#443e5c]">
+                      <span className="text-xs text-rose-400 font-bold">던전 마감까지 남은 시간:</span>
+                      <span className="text-xs font-black text-rose-300 font-bw">{timeState.timeLeftStr}</span>
+                    </div>
+                  </div>
+
+                  {/* 중앙 & 우측: 던전 입구 및 징검다리 횡스크롤 */}
                   {quests.filter(q => q.type === 'main').length === 0 ? (
-                    <div className="text-center py-8 text-slate-600 text-xs font-bold italic">
-                      등록된 메인 퀘스트가 없습니다.
+                    <div className="text-center py-8 text-slate-500 text-xs font-bold italic bg-slate-50 rounded-2xl border border-slate-200">
+                      등록된 메인 던전 퀘스트가 없습니다.
                     </div>
                   ) : (
-                    quests.filter(q => q.type === 'main').map(q => (
-                      <div
-                        key={q.id}
-                        className={`p-4 bg-slate-950/60 border border-slate-850 rounded-2xl flex justify-between items-center ${
-                          q.status === 'completed' ? 'opacity-65' : ''
-                        }`}
-                      >
-                        <div>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-850 text-slate-400 border border-slate-850">
-                            {q.category}
-                          </span>
-                          <h4 className="text-sm font-extrabold text-slate-200 mt-1">{q.title}</h4>
-                          <div className="flex flex-wrap items-center gap-2 mt-1">
-                            <span className="text-[10px] text-slate-500 font-bold">
-                              보상: ➕ {q.rewardExp} EXP
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          {q.status === 'completed' ? (
-                            <span className="text-xs text-emerald-400 font-bold">✓ 완료됨</span>
-                          ) : q.status === 'request_approval' ? (
-                            <span className="text-xs text-indigo-400 font-bold bg-indigo-500/10 px-3 py-1.5 rounded-xl border border-indigo-500/20 animate-pulse">
-                              ⌛ 검수 대기중
-                            </span>
-                          ) : (
-                            <button
-                              onClick={() => handleQuestCompleteClick(q)}
-                              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition shadow-md"
-                            >
-                              {q.category === '학습' || q.category === '독서' ? '📸 사진 인증' : '완료 체크'}
-                            </button>
+                    <div className="relative w-full h-64 rounded-2xl border border-slate-300 bg-slate-950 overflow-hidden flex flex-col justify-end p-4 shadow-inner">
+                      {/* 던전 배경 데코레이션 */}
+                      <div className="absolute inset-0 bg-gradient-to-b from-[#111625] via-[#1b2238] to-[#0c0f1a] opacity-95" />
+                      
+                      {/* 횃불 애니메이션 효과 */}
+                      <div className="absolute top-4 left-6 flex flex-col items-center select-none z-10">
+                        <span className="text-lg animate-bounce duration-1000">🔥</span>
+                        <div className="w-1.5 h-6 bg-slate-800 rounded-full border border-slate-700 mt-1" />
+                      </div>
+                      <div className="absolute top-4 right-6 flex flex-col items-center select-none z-10">
+                        <span className="text-lg animate-bounce duration-1000 delay-300">🔥</span>
+                        <div className="w-1.5 h-6 bg-slate-800 rounded-full border border-slate-700 mt-1" />
+                      </div>
+                      
+                      <div className="absolute inset-0 flex items-center justify-between px-6 z-10 pt-10">
+                        {/* 징검다리 횡스크롤 영역 */}
+                        <div className="flex-1 overflow-x-auto py-6 flex items-center gap-6 pr-12 scrollbar-thin">
+                          {quests.filter(q => q.type === 'main').map((q, idx, arr) => {
+                            // 징검다리 상태(State) 계산
+                            const isCompleted = q.status === 'completed';
+                            const prevCompleted = arr.slice(0, idx).every(item => item.status === 'completed');
+                            const isActive = !isCompleted && prevCompleted;
+                            const isLocked = !isCompleted && !prevCompleted;
+                            
+                            let stateColor = 'bg-slate-800/80 border-slate-700 text-slate-400 shadow-md';
+                            if (isCompleted) {
+                              stateColor = 'bg-indigo-950/60 border-indigo-500 text-indigo-300 shadow-lg shadow-indigo-500/20';
+                            } else if (isActive) {
+                              stateColor = 'bg-amber-950/60 border-amber-500 text-amber-200 shadow-lg shadow-amber-500/30 animate-pulse border-2';
+                            }
+                            
+                            return (
+                              <div 
+                                key={q.id} 
+                                onClick={() => {
+                                  if (!isCompleted && !isLocked) {
+                                    handleQuestCompleteClick(q);
+                                  }
+                                }}
+                                className={`flex-shrink-0 w-24 h-24 rounded-2xl border flex flex-col items-center justify-center p-2 text-center cursor-pointer transition transform hover:scale-105 select-none relative ${stateColor}`}
+                              >
+                                {/* 캐릭터 앉아 있는 연출 (ACTIVE) */}
+                                {isActive && (
+                                  <div className="absolute -top-12 z-20 flex flex-col items-center animate-bounce">
+                                    <span className="text-3xl filter drop-shadow">{child.avatar || '🛡️'}</span>
+                                    <span className="text-[7px] text-amber-300 bg-slate-950 px-1 rounded-full border border-amber-500 font-bold">진행중</span>
+                                  </div>
+                                )}
+                                
+                                {isCompleted ? (
+                                  <span className="text-xl mb-1">👣</span>
+                                ) : isLocked ? (
+                                  <span className="text-lg text-slate-650 mb-1">🔒</span>
+                                ) : (
+                                  <span className="text-xl mb-1">⚔️</span>
+                                )}
+                                
+                                <p className="text-[9px] font-black leading-tight max-w-[80px] truncate">{q.title}</p>
+                                <p className="text-[7px] text-slate-400 mt-0.5">{q.rewardExp} EXP</p>
+                                
+                                {q.status === 'request_approval' && (
+                                  <span className="absolute -bottom-2 bg-indigo-600 text-[6px] font-black text-white px-1 py-0.5 rounded border border-indigo-400 animate-pulse">검수중</span>
+                                )}
+                              </div>
+                            );
+                          })}
+                          
+                          {/* 모든 퀘스트가 완료되었을 경우의 골 게이트 위치 캐릭터 */}
+                          {quests.filter(q => q.type === 'main').every(q => q.status === 'completed') && (
+                            <div className="flex-shrink-0 w-20 flex flex-col items-center justify-center animate-bounce">
+                              <span className="text-4xl">{child.avatar || '🛡️'}</span>
+                              <span className="text-[8px] bg-emerald-500 text-white px-2 py-0.5 rounded-full border border-emerald-300 font-bold mt-1">도착!</span>
+                            </div>
                           )}
                         </div>
+                        
+                        {/* 우측 던전 게이트 (Portcullis Gate) */}
+                        <div className="w-24 h-36 flex-shrink-0 relative bg-slate-900 rounded-t-2xl border-t-4 border-amber-900 border-x-2 border-x-amber-950 overflow-hidden flex flex-col justify-end">
+                          <div className="absolute inset-0 bg-gradient-to-t from-purple-950/20 to-transparent" />
+                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-[10px] font-black text-purple-400 tracking-wider z-10 leading-normal select-none">
+                            <span>던전<br/>입구</span>
+                          </div>
+                          
+                          {/* 실시간으로 하강하는 쇠창살 문 (Portcullis Gate) */}
+                          <div 
+                            className="absolute inset-0 bg-transparent flex justify-around p-1 h-full transition-transform duration-1000 z-20"
+                            style={{ transform: `translateY(${-100 + timeState.gateProgress}%)` }}
+                          >
+                            {/* 쇠창살 기둥들 */}
+                            <div className="w-1.5 h-full bg-slate-600 border-x border-slate-800 rounded-b-sm relative shadow-md">
+                              <div className="absolute bottom-0 w-full h-2 bg-slate-900 rounded-b-sm" />
+                            </div>
+                            <div className="w-1.5 h-full bg-slate-600 border-x border-slate-800 rounded-b-sm relative shadow-md">
+                              <div className="absolute bottom-0 w-full h-2 bg-slate-900 rounded-b-sm" />
+                            </div>
+                            <div className="w-1.5 h-full bg-slate-600 border-x border-slate-800 rounded-b-sm relative shadow-md">
+                              <div className="absolute bottom-0 w-full h-2 bg-slate-900 rounded-b-sm" />
+                            </div>
+                            <div className="w-1.5 h-full bg-slate-600 border-x border-slate-800 rounded-b-sm relative shadow-md">
+                              <div className="absolute bottom-0 w-full h-2 bg-slate-900 rounded-b-sm" />
+                            </div>
+                            
+                            {/* 가로 보강대 */}
+                            <div className="absolute top-1/4 inset-x-0 h-1.5 bg-slate-700 border-y border-slate-850" />
+                            <div className="absolute top-2/4 inset-x-0 h-1.5 bg-slate-700 border-y border-slate-850" />
+                            <div className="absolute top-3/4 inset-x-0 h-1.5 bg-slate-700 border-y border-slate-850" />
+                          </div>
+                        </div>
                       </div>
-                    ))
+                      
+                      {/* 게이트 상태 표시 텍스트 */}
+                      <div className="relative z-10 flex justify-between items-center text-[10px] text-slate-400 font-bold bg-slate-950/80 px-3 py-1 rounded-lg border border-slate-800 mt-2">
+                        <span>🏰 던전 폐쇄 진행도: <span className="text-rose-400 font-black">{Math.floor(timeState.gateProgress)}%</span></span>
+                        <span>⏰ 24:00 자동 완전 폐쇄 (오전 08:00 오픈)</span>
+                      </div>
+                    </div>
                   )}
                 </div>
               )}
