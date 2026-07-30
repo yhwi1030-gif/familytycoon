@@ -250,8 +250,8 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
         <div className="flex items-center gap-3">
           <div className="text-2xl select-none">🧙‍♀️</div>
           <div>
-            <h1 className="text-sm md:text-md font-black tracking-tight text-slate-900 flex items-center gap-1.5 font-bw">
-              패밀리 던전 타이쿤 <span className="text-indigo-600 font-bold text-[9px] bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full font-sans">길드마스터 모드</span>
+            <h1 className="text-sm md:text-md font-black tracking-tight flex items-center gap-1.5 font-bw">
+              <span className="bg-gradient-to-r from-[#AC52F2] to-[#E879F9] bg-clip-text text-transparent inline-block">패밀리 던전 타이쿤</span> <span className="text-indigo-600 font-bold text-[9px] bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full font-sans">길드마스터 모드</span>
             </h1>
             <p className="text-[9px] text-slate-500 font-bold">{user.name}</p>
           </div>

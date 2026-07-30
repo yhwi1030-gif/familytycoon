@@ -162,7 +162,7 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
 
         <div className="max-w-md w-full text-center space-y-8 z-10">
           <div className="space-y-4">
-            <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-tight font-bw text-[#AC52F2]">
+            <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-tight font-bw bg-gradient-to-r from-[#AC52F2] to-[#E879F9] bg-clip-text text-transparent inline-block">
               패밀리 던전 타이쿤
             </h1>
           </div>
@@ -209,7 +209,7 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
       
       {/* 최상단 타이틀 */}
       <div className="max-w-4xl mx-auto w-full text-center space-y-2 mt-4">
-        <h1 className="text-4xl md:text-5xl font-black tracking-tight bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent font-bw">
+        <h1 className="text-4xl md:text-5xl font-black tracking-tight bg-gradient-to-r from-[#AC52F2] to-[#E879F9] bg-clip-text text-transparent inline-block font-bw">
           패밀리 던전 타이쿤
         </h1>
       </div>
