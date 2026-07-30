@@ -451,25 +451,31 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
               </div>
             </div>
 
-            {/* 실시간 활동 알림창 로그 */}
-            <div className="bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-xl">
-              <h3 className="text-sm font-bold text-white mb-4 border-b border-slate-850 pb-3 flex justify-between items-center">
+            {/* 실시간 활동 알림창 로그 - 투명도 50% 설정 */}
+            <div className="bg-white/50 border border-[#EBE6DD] backdrop-blur-md rounded-3xl p-6 shadow-sm">
+              <h3 className="text-sm font-bold text-slate-900 mb-4 border-b border-[#EBE6DD] pb-3 flex justify-between items-center font-bw">
                 <span>알림창 히스토리 로그</span>
                 <button 
                   onClick={() => {
                     localStorage.removeItem('ff_notifications');
                     setNotifications([]);
                   }} 
-                  className="text-[10px] text-slate-500 hover:text-slate-300 font-bold"
+                  className="text-[10px] text-slate-400 hover:text-slate-700 font-bold"
                 >전체 비우기</button>
               </h3>
               <div className="space-y-2 max-h-40 overflow-y-auto">
-                {notifications.map(n => (
-                  <div key={n.id} className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-850/60 text-[11px]">
-                    <span className="text-slate-500 text-[9px] block mb-0.5">{new Date(n.createdAt).toLocaleTimeString()}</span>
-                    {n.message}
+                {notifications.length === 0 ? (
+                  <div className="text-center py-6 text-slate-400 text-[10px] font-bold">
+                    기록된 활동 알림이 없습니다.
                   </div>
-                ))}
+                ) : (
+                  notifications.map(n => (
+                    <div key={n.id} className="p-2.5 rounded-xl bg-white/85 border border-[#EBE6DD] text-[11px] text-slate-800 shadow-sm">
+                      <span className="text-slate-400 text-[9px] block mb-0.5 font-bold">{new Date(n.createdAt).toLocaleTimeString()}</span>
+                      {n.message}
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>
