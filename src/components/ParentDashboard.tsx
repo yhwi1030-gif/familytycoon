@@ -312,15 +312,15 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
         {/* 1. 홈 탭 (타이쿤 성장 분석 리포트 + 실시간 검수 통지) */}
         {activeTab === 'home' && (
           <div className="space-y-6">
-            {/* 타이쿤 성장 리포트 */}
-            <div className="bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-xl relative overflow-hidden">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-slate-850 pb-4">
-                <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-indigo-400" /> 타이쿤 성장 리포트
+            {/* 타이쿤 성장 리포트 - 투명도 50% 설정 */}
+            <div className="bg-white/50 border border-[#EBE6DD] backdrop-blur-md rounded-3xl p-6 shadow-sm relative overflow-hidden">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-[#EBE6DD] pb-4">
+                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 font-bw">
+                  <TrendingUp className="w-4 h-4 text-indigo-600" /> 타이쿤 성장 리포트
                 </h3>
-                {/* 다자녀 선택 탭 (지시사항 반영) */}
+                {/* 다자녀 선택 탭 */}
                 {profiles.filter(p => p.role === 'child').length > 1 && (
-                  <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-850 gap-1 self-stretch sm:self-auto overflow-x-auto">
+                  <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 gap-1 self-stretch sm:self-auto overflow-x-auto">
                     {profiles.filter(p => p.role === 'child').map(c => (
                       <button
                         key={c.id}
@@ -332,7 +332,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
                         className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-black transition whitespace-nowrap ${
                           selectedChildId === c.id
                             ? 'bg-indigo-600 text-white shadow-sm'
-                            : 'text-slate-400 hover:text-slate-200'
+                            : 'text-slate-600 hover:text-slate-900'
                         }`}
                       >
                         <span>{c.avatar}</span>
@@ -346,8 +346,10 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
               {child ? (
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
                   <div className="md:col-span-5 space-y-4">
-                    <div className="flex items-center gap-3 bg-slate-950/40 p-3 rounded-2xl border border-slate-850">
-                      <div className="w-14 h-14 rounded-xl bg-slate-950 border border-slate-800 overflow-hidden flex items-center justify-center relative shrink-0 p-1">
+                    
+                    {/* 캐릭터 표시창 배경부분 - 웹페이지 배경색 #FAF8F5와 일치화 */}
+                    <div className="flex items-center gap-3 bg-[#FAF8F5] p-3 rounded-2xl border border-[#EBE6DD]">
+                      <div className="w-14 h-14 rounded-xl bg-white border border-[#EBE6DD] overflow-hidden flex items-center justify-center relative shrink-0 p-1">
                         <img 
                           src={
                             child.childClass === 'scholar' ? '/INT.svg' :
@@ -361,17 +363,17 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
                         />
                       </div>
                       <div>
-                        <h4 className="text-sm font-extrabold text-slate-100">{child.name}</h4>
-                        <p className="text-[10px] text-slate-400 font-bold">{child.title || '성향 진단 미완료'}</p>
+                        <h4 className="text-sm font-extrabold text-slate-800">{child.name}</h4>
+                        <p className="text-[10px] text-slate-500 font-bold">{child.title || '성향 진단 미완료'}</p>
                       </div>
                     </div>
 
                     <div className="space-y-1.5">
-                      <div className="flex justify-between text-xs font-bold text-slate-400">
+                      <div className="flex justify-between text-xs font-bold text-slate-500">
                         <span>캐릭터 레벨 (Lv.{child.level})</span>
-                        <span className="text-indigo-400">{child.exp} / {child.level * 100} EXP</span>
+                        <span className="text-indigo-600 font-extrabold">{child.exp} / {child.level * 100} EXP</span>
                       </div>
-                      <div className="w-full bg-slate-950 h-2.5 rounded-full overflow-hidden border border-slate-850">
+                      <div className="w-full bg-[#FAF8F5] h-2.5 rounded-full overflow-hidden border border-[#EBE6DD]">
                         <div
                           className="bg-gradient-to-r from-indigo-500 to-purple-500 h-full transition-all duration-500"
                           style={{ width: `${(child.exp / (child.level * 100)) * 100}%` }}
@@ -379,17 +381,17 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
                       </div>
                     </div>
 
-                    <div className="flex justify-between items-center bg-slate-950/60 p-3.5 rounded-2xl border border-slate-850">
-                      <span className="text-xs font-bold text-slate-400">🪙 누적 보상 골드</span>
-                      <span className="text-md font-black text-amber-400">{child.gold.toLocaleString()} G</span>
+                    <div className="flex justify-between items-center bg-white/80 p-3.5 rounded-2xl border border-[#EBE6DD] shadow-sm">
+                      <span className="text-xs font-bold text-slate-500">🪙 누적 보상 골드</span>
+                      <span className="text-md font-black text-amber-600">{child.gold.toLocaleString()} G</span>
                     </div>
 
-                    <div className="space-y-1.5 bg-slate-950/30 p-3 rounded-2xl border border-slate-850/60">
-                      <div className="flex justify-between text-xs font-bold text-slate-400">
+                    <div className="space-y-1.5 bg-white/80 p-3 rounded-2xl border border-[#EBE6DD] shadow-sm">
+                      <div className="flex justify-between text-xs font-bold text-slate-500">
                         <span>💥 아바타 피로도 (스트레스)</span>
-                        <span>{child.stress} / 100</span>
+                        <span className="font-bold">{child.stress} / 100</span>
                       </div>
-                      <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden">
+                      <div className="w-full bg-[#FAF8F5] h-2 rounded-full overflow-hidden border border-slate-200">
                         <div
                           className={`h-full transition-all duration-500 ${
                             child.stress >= 80 ? 'bg-red-500' : child.stress >= 50 ? 'bg-orange-500' : 'bg-emerald-500'
@@ -411,31 +413,31 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
               )}
             </div>
 
-            {/* 실시간 퀘스트 인증 요청 센터 */}
-            <div className="bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-xl">
-              <h3 className="text-sm font-bold text-white mb-4 border-b border-slate-850 pb-3">
+            {/* 실시간 퀘스트 인증 요청 센터 - 투명도 50% 설정 */}
+            <div className="bg-white/50 border border-[#EBE6DD] backdrop-blur-md rounded-3xl p-6 shadow-sm">
+              <h3 className="text-sm font-bold text-slate-900 mb-4 border-b border-[#EBE6DD] pb-3 font-bw">
                 🔔 실시간 인증 요청 센터
               </h3>
               <div className="space-y-3">
                 {quests.filter(q => q.status === 'request_approval').length === 0 ? (
-                  <div className="text-center py-8 text-slate-500 text-xs font-bold">
+                  <div className="text-center py-8 text-slate-400 text-xs font-bold">
                     현재 자녀가 승인 대기 중인 퀘스트 요청이 없습니다.
                   </div>
                 ) : (
                   quests.filter(q => q.status === 'request_approval').map(q => (
-                    <div key={q.id} className="p-4 bg-indigo-950/20 border border-indigo-500/30 rounded-2xl flex justify-between items-center">
+                    <div key={q.id} className="p-4 bg-white/80 border border-[#EBE6DD] rounded-2xl flex justify-between items-center shadow-sm">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-indigo-400 border border-indigo-900/30">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-50 text-indigo-600 border border-indigo-200">
                             {q.category}
                           </span>
                           {q.childName && (
-                            <span className="text-[9px] font-black px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            <span className="text-[9px] font-black px-2 py-0.5 rounded bg-emerald-50 text-emerald-600 border border-emerald-200">
                               👤 {q.childName}
                             </span>
                           )}
                         </div>
-                        <h4 className="text-sm font-extrabold text-slate-200 mt-1.5">{q.title}</h4>
+                        <h4 className="text-sm font-extrabold text-slate-800 mt-1.5">{q.title}</h4>
                       </div>
                       <button
                         onClick={() => handleQuestAction(q)}
