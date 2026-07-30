@@ -215,7 +215,7 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
       </div>
 
       {/* 본문 프로필 격자 그리드 */}
-      <div className="max-w-4xl mx-auto w-full my-4">
+      <div className="max-w-4xl mx-auto w-full mt-10 mb-4">
         <div className="bg-slate-900/90 backdrop-blur-md rounded-3xl border border-slate-800 p-8 shadow-2xl">
           <div className="flex justify-between items-center mb-8 border-b border-slate-800 pb-4">
             <h3 className="text-lg font-bold text-white flex items-center gap-2">
