@@ -30,6 +30,7 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
   const [signupEmail, setSignupEmail] = useState('');
   const [agreeToPrivacy, setAgreeToPrivacy] = useState(false);
   const [showSignupGuideModal, setShowSignupGuideModal] = useState(false);
+  const [tempSignupData, setTempSignupData] = useState<{ name: string; pin: string; email: string } | null>(null);
 
   // 인트로 시작 페이지 대기 유무
   const [showIntro, setShowIntro] = useState(true);
@@ -123,28 +124,41 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
 
   const handleOnboardingComplete = (data: any) => {
     const list = api.getProfiles();
-    const newId = roleCount(onboardingRole!) > 0 ? `${onboardingRole!}${roleCount(onboardingRole!) + 1}` : `${onboardingRole!}2`;
+    const isSignupFlow = onboardingRole === 'parent' && tempSignupData !== null;
     
+    const newId = isSignupFlow
+      ? 'parent1'
+      : (roleCount(onboardingRole!) > 0 ? `${onboardingRole!}${roleCount(onboardingRole!) + 1}` : `${onboardingRole!}2`);
+      
+    const finalName = isSignupFlow ? tempSignupData.name : (onboardingRole === 'parent' ? `길드마스터 ${roleCount('parent') + 1}` : `아기 모험가 ${roleCount('child') + 1}`);
+    const finalPin = isSignupFlow ? tempSignupData.pin : (onboardingRole === 'parent' ? '1234' : '0000');
+
     const newProfile: Profile = {
       id: newId,
       role: onboardingRole!,
-      name: onboardingRole === 'parent' ? `길드마스터 ${roleCount('parent') + 1}` : `아기 모험가 ${roleCount('child') + 1}`,
+      name: finalName,
       avatar: onboardingRole === 'parent' ? '🧙‍♀️' : '🛡️',
-      pin: onboardingRole === 'parent' ? '1234' : '0000',
+      pin: finalPin,
       title: data.title,
-      level: 0,
+      level: 1,
       exp: 0,
-      gold: 0,
+      gold: 1000,
       stress: onboardingRole === 'child' ? 30 : 0,
       style: data.style,
       childClass: data.childClass,
       stats: data.stats || { intelligence: 10, willpower: 10, autonomy: 10, cooperation: 10, sensibility: 10 }
     };
 
-    const updatedList = [...list, newProfile];
+    const updatedList = isSignupFlow ? [newProfile] : [...list, newProfile];
     localStorage.setItem('ff_profiles', JSON.stringify(updatedList));
     setProfiles(updatedList);
     setOnboardingRole(null);
+    setTempSignupData(null);
+    
+    if (isSignupFlow) {
+      setShowIntro(false);
+      alert(`🎉 [가입 완료] 성향 분석이 성공적으로 마무리되어 길드마스터 ${finalName} 님이 등록되었습니다!`);
+    }
   };
 
   const handleRegisterProfile = (e: React.FormEvent) => {
@@ -175,37 +189,22 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
       return;
     }
 
-    const list = api.getProfiles();
-    const count = list.filter(p => p.role === 'parent').length;
-    const newId = count > 0 ? `parent${count + 2}` : `parent2`;
-
-    const newProfile: Profile = {
-      id: newId,
-      role: 'parent',
+    // 작성한 계정 정보 임시 백업 및 성향 진단 챗봇 실행
+    setTempSignupData({
       name: signupName,
-      avatar: '🧙‍♀️',
       pin: signupPin,
-      title: '수습 길드마스터',
-      level: 1,
-      exp: 0,
-      gold: 1000,
-      stress: 0,
-      style: 'lighthouse' // lighthouse type matches ParentingStyle
-    };
+      email: signupEmail
+    });
 
-    const updatedList = [...list, newProfile];
-    localStorage.setItem('ff_profiles', JSON.stringify(updatedList));
-    setProfiles(updatedList);
-    
     // reset form fields
     setSignupName('');
     setSignupPin('1234');
     setSignupEmail('');
     setSignupBirthdate('1990-01-01');
     setAgreeToPrivacy(false);
+    
     setShowSignupPage(false);
-    setShowIntro(false); // Go directly to profile list
-    alert(`🎉 [가입 완료] 길드마스터 ${signupName} 님이 성공적으로 등록되었습니다!`);
+    setOnboardingRole('parent'); // 온보딩 챗봇 호출하여 길드마스터 성향 분석 실행
   };
 
   const roleCount = (role: 'parent' | 'child') => {
