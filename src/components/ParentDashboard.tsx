@@ -312,8 +312,8 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
         {/* 1. 홈 탭 (타이쿤 성장 분석 리포트 + 실시간 검수 통지) */}
         {activeTab === 'home' && (
           <div className="space-y-6">
-            {/* 타이쿤 성장 리포트 - 투명도 50% 설정 */}
-            <div className="bg-white/50 border border-[#EBE6DD] backdrop-blur-md rounded-3xl p-6 shadow-sm relative overflow-hidden">
+            {/* 타이쿤 성장 리포트 - 투명도 20% 설정 */}
+            <div className="bg-white/20 border border-[#EBE6DD] backdrop-blur-md rounded-3xl p-6 shadow-sm relative overflow-hidden">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-[#EBE6DD] pb-4">
                 <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 font-bw">
                   <TrendingUp className="w-4 h-4 text-indigo-600" /> 타이쿤 성장 리포트
@@ -413,8 +413,8 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
               )}
             </div>
 
-            {/* 실시간 퀘스트 인증 요청 센터 - 투명도 50% 설정 */}
-            <div className="bg-white/50 border border-[#EBE6DD] backdrop-blur-md rounded-3xl p-6 shadow-sm">
+            {/* 실시간 퀘스트 인증 요청 센터 - 투명도 20% 설정 */}
+            <div className="bg-white/20 border border-[#EBE6DD] backdrop-blur-md rounded-3xl p-6 shadow-sm">
               <h3 className="text-sm font-bold text-slate-900 mb-4 border-b border-[#EBE6DD] pb-3 font-bw">
                 🔔 실시간 인증 요청 센터
               </h3>
@@ -451,8 +451,8 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
               </div>
             </div>
 
-            {/* 실시간 활동 알림창 로그 - 투명도 50% 설정 */}
-            <div className="bg-white/50 border border-[#EBE6DD] backdrop-blur-md rounded-3xl p-6 shadow-sm">
+            {/* 실시간 활동 알림창 로그 - 투명도 20% 설정 */}
+            <div className="bg-white/20 border border-[#EBE6DD] backdrop-blur-md rounded-3xl p-6 shadow-sm">
               <h3 className="text-sm font-bold text-slate-900 mb-4 border-b border-[#EBE6DD] pb-3 flex justify-between items-center font-bw">
                 <span>알림창 히스토리 로그</span>
                 <button 
@@ -686,8 +686,8 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
         {/* 3. 상점 탭 (골드 정산 & 이용권 결재 관리) */}
         {activeTab === 'store' && (
           <div className="space-y-6">
-            {/* 대기중인 구매/이용권 심사 대기열 - 투명도 50% 설정 */}
-            <div className="bg-white/50 border border-[#EBE6DD] backdrop-blur-md rounded-3xl p-6 shadow-sm">
+            {/* 대기중인 구매/이용권 심사 대기열 - 투명도 20% 설정 */}
+            <div className="bg-white/20 border border-[#EBE6DD] backdrop-blur-md rounded-3xl p-6 shadow-sm">
               <h3 className="text-sm font-bold text-slate-900 mb-4 border-b border-[#EBE6DD] pb-3 flex items-center gap-2 font-bw">
                 ⚖️ 상점 교환 & 이용권 심사 센터
               </h3>
@@ -737,8 +737,8 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
               </div>
             </div>
 
-            {/* 승인한 완료 이력 로그 - 투명도 50% 설정 */}
-            <div className="bg-white/50 border border-[#EBE6DD] backdrop-blur-md rounded-3xl p-6 shadow-sm">
+            {/* 승인한 완료 이력 로그 - 투명도 20% 설정 */}
+            <div className="bg-white/20 border border-[#EBE6DD] backdrop-blur-md rounded-3xl p-6 shadow-sm">
               <h3 className="text-sm font-bold text-slate-900 mb-4 border-b border-[#EBE6DD] pb-3 flex items-center gap-2 font-bw">
                 📋 승인/반려 완료 이력 로그
               </h3>

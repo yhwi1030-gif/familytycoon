@@ -290,9 +290,9 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
             {/* 좌측 캐릭터 1/3 영역 분할 메인 박스 */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               
-              {/* [1/3 영역] 캐릭터 창 카드 */}
-              <div className="bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-xl flex flex-col items-center justify-center text-center space-y-4">
-                <div className="w-52 h-52 rounded-3xl bg-slate-950 border-2 border-indigo-500/20 overflow-hidden flex items-center justify-center shadow-inner relative group p-[10px]">
+              {/* [1/3 영역] 캐릭터 창 카드 - 투명도 20% 설정 */}
+              <div className="bg-white/20 border border-[#EBE6DD] backdrop-blur-md rounded-3xl p-6 shadow-sm flex flex-col items-center justify-center text-center space-y-4">
+                <div className="w-52 h-52 rounded-3xl bg-[#FAF8F5] border border-[#EBE6DD] overflow-hidden flex items-center justify-center shadow-inner relative group p-[10px]">
                   <img 
                     src={
                       child.childClass === 'scholar' ? '/INT.svg' :
@@ -304,24 +304,24 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                     alt="Class Avatar" 
                     className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105" 
                   />
-                  <span className="absolute bottom-[3px] right-[3px] bg-emerald-500 text-white font-extrabold text-[10px] px-2.5 py-0.5 rounded-lg shadow-md border border-slate-900 z-10">
+                  <span className="absolute bottom-[3px] right-[3px] bg-emerald-600 text-white font-extrabold text-[10px] px-2.5 py-0.5 rounded-lg shadow-md border border-emerald-300 z-10">
                     Lv.{child.level}
                   </span>
                 </div>
                 <div className="space-y-1">
-                  <h3 className="text-base font-extrabold text-slate-100">{child.name}</h3>
-                  <div className="text-[10px] font-black text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded-full inline-block">
+                  <h3 className="text-base font-extrabold text-slate-800">{child.name}</h3>
+                  <div className="text-[10px] font-black text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full inline-block">
                     {child.title || '성향 진단 완료'}
                   </div>
                 </div>
 
-                <div className="w-full pt-4 border-t border-slate-850/60 space-y-3 text-left">
+                <div className="w-full pt-4 border-t border-[#EBE6DD] space-y-3 text-left">
                   <div className="space-y-1.5">
-                    <div className="flex justify-between text-[11px] font-bold text-slate-400">
+                    <div className="flex justify-between text-[11px] font-bold text-slate-500">
                       <span>성장 경험치</span>
-                      <span className="text-emerald-400">{child.exp} / {child.level * 100} EXP</span>
+                      <span className="text-emerald-600 font-extrabold">{child.exp} / {child.level * 100} EXP</span>
                     </div>
-                    <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden">
+                    <div className="w-full bg-[#FAF8F5] h-2 rounded-full overflow-hidden border border-slate-200">
                       <div
                         className="bg-gradient-to-r from-emerald-500 to-teal-500 h-full transition-all duration-500"
                         style={{ width: `${(child.exp / (child.level * 100)) * 100}%` }}
@@ -330,13 +330,13 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                   </div>
 
                   <div className="grid grid-cols-1 gap-2 pt-1">
-                    <div className="bg-slate-950/60 p-2.5 rounded-xl border border-slate-850 flex items-center justify-between">
-                      <span className="text-[10px] font-bold text-slate-400">🪙 골드 주머니</span>
-                      <span className="text-xs font-black text-amber-400">{child.gold.toLocaleString()} G</span>
+                    <div className="bg-white/80 p-2.5 rounded-xl border border-[#EBE6DD] flex items-center justify-between shadow-sm">
+                      <span className="text-[10px] font-bold text-slate-500">🪙 골드 주머니</span>
+                      <span className="text-xs font-black text-amber-600">{child.gold.toLocaleString()} G</span>
                     </div>
-                    <div className="bg-slate-950/60 p-2.5 rounded-xl border border-slate-850 flex items-center justify-between">
-                      <span className="text-[10px] font-bold text-slate-400">💥 피로도</span>
-                      <span className={`text-xs font-black ${child.stress >= 70 ? 'text-red-400' : 'text-emerald-400'}`}>
+                    <div className="bg-white/80 p-2.5 rounded-xl border border-[#EBE6DD] flex items-center justify-between shadow-sm">
+                      <span className="text-[10px] font-bold text-slate-500">💥 피로도</span>
+                      <span className={`text-xs font-black ${child.stress >= 70 ? 'text-red-650' : 'text-emerald-600'}`}>
                         {child.stress} / 100
                       </span>
                     </div>
@@ -350,10 +350,10 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                 {/* 아이템 가방 및 스탯 차트 가로 2분할 레이아웃 */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   
-                  {/* 아이템 가방 (인벤토리) */}
-                  <div className="bg-slate-900 border border-slate-850 rounded-3xl p-5 shadow-xl flex flex-col justify-between">
+                  {/* 아이템 가방 (인벤토리) - 투명도 20% 설정 */}
+                  <div className="bg-white/20 border border-[#EBE6DD] backdrop-blur-md rounded-3xl p-5 shadow-sm flex flex-col justify-between">
                     <div>
-                      <h4 className="text-xs font-bold text-slate-200 mb-1 flex items-center gap-1.5">
+                      <h4 className="text-xs font-bold text-slate-800 mb-1 flex items-center gap-1.5 font-bw">
                         🎒 아이템 가방
                       </h4>
                       <p className="text-[9px] text-slate-500 font-medium mb-4">
@@ -389,10 +389,10 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                                 alert(`🔔 [전령 발송] 마스터에게 [${item.name}] 사용 전령 메시지를 전달했습니다!`);
                               }
                             }}
-                            className={`aspect-square rounded-2xl border flex flex-col items-center justify-center p-1.5 transition-all duration-300 relative group ${
+                            className={`aspect-square rounded-2xl border flex flex-col items-center justify-center p-1.5 transition-all duration-300 relative group shadow-sm ${
                               item
-                                ? 'bg-slate-950 border-indigo-500/40 hover:bg-slate-900/90 hover:border-indigo-400 hover:scale-105 active:scale-95'
-                                : 'bg-slate-950/20 border-slate-850 cursor-default'
+                                ? 'bg-white border-indigo-200 hover:bg-[#FAF8F5] hover:border-indigo-400 hover:scale-105 active:scale-95'
+                                : 'bg-[#FAF8F5]/30 border-[#EBE6DD] cursor-default'
                             }`}
                             title={item ? `${item.name} (클릭 시 사용)` : '빈 슬롯'}
                           >
@@ -409,14 +409,14 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                                     {item.type === 'coupon' ? '🎟️' : item.type === 'real' ? '💵' : '📦'}
                                   </span>
                                 )}
-                                <div className="absolute bottom-0 left-0 right-0 bg-slate-950/70 py-0.5 rounded-b-xl">
-                                  <span className="text-[7px] text-slate-200 font-extrabold truncate w-full text-center block px-1">
+                                <div className="absolute bottom-0 left-0 right-0 bg-white/90 py-0.5 rounded-b-xl border-t border-slate-100">
+                                  <span className="text-[7px] text-slate-800 font-extrabold truncate w-full text-center block px-1">
                                     {item.name.replace('[쿠폰] ', '').replace('[패스] ', '').replace('[용돈] ', '').replace('[식품] ', '').replace('[아바타] ', '').replace('[외식] ', '')}
                                   </span>
                                 </div>
                               </div>
                             ) : (
-                              <div className="w-2 h-2 rounded-full bg-slate-850" />
+                              <div className="w-2 h-2 rounded-full bg-slate-300" />
                             )}
                           </button>
                         );
@@ -424,36 +424,36 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                     </div>
                   </div>
 
-                  {/* 5대 스탯 및 칭호 오각형 그래프 박스 */}
-                  <div className="bg-slate-900 border border-slate-850 rounded-3xl p-5 shadow-xl flex flex-col justify-between items-center text-center">
-                    <h4 className="text-xs font-bold text-white mb-2 self-start flex items-center gap-1.5">
+                  {/* 5대 스탯 및 칭호 오각형 그래프 박스 - 투명도 20% 설정 */}
+                  <div className="bg-white/20 border border-[#EBE6DD] backdrop-blur-md rounded-3xl p-5 shadow-sm flex flex-col justify-between items-center text-center">
+                    <h4 className="text-xs font-bold text-slate-800 mb-2 self-start flex items-center gap-1.5 font-bw">
                       📊 모험가 스탯 차트
                     </h4>
                     <div className="flex-1 flex justify-center items-center">
                       {child.stats ? (
                         <RadarChart stats={child.stats} size={185} />
                       ) : (
-                        <div className="text-xs text-slate-500">스탯 정보가 등록되지 않았습니다.</div>
+                        <div className="text-xs text-slate-400">스탯 정보가 등록되지 않았습니다.</div>
                       )}
                     </div>
                   </div>
 
                 </div>
 
-                {/* 적용 버프 & 컨디션 박스 */}
-                <div className="bg-slate-900 border border-slate-850 rounded-3xl p-5 shadow-xl space-y-4">
+                {/* 적용 버프 & 컨디션 박스 - 투명도 20% 설정 */}
+                <div className="bg-white/20 border border-[#EBE6DD] backdrop-blur-md rounded-3xl p-5 shadow-sm space-y-4">
                   <div className="space-y-1.5">
-                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                    <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
                       👑 부모 양육스타일 연동 패시브 버프
                     </h4>
                     {activeBuffs.length > 0 ? (
                       activeBuffs.map((buff, i) => (
-                        <div key={i} className="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-3 py-2 rounded-xl">
+                        <div key={i} className="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-xl">
                           🛡️ {buff}
                         </div>
                       ))
                     ) : (
-                      <div className="text-[10px] text-slate-500">현재 활성화된 패시브 버프가 없습니다.</div>
+                      <div className="text-[10px] text-slate-400">현재 활성화된 패시브 버프가 없습니다.</div>
                     )}
                   </div>
 
@@ -461,27 +461,27 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                     <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
                     <div>
                       <p>{stressInfo.title}</p>
-                      <p className="text-[10px] text-slate-400 font-semibold mt-0.5">{stressInfo.desc}</p>
+                      <p className="text-[10px] text-slate-500 font-semibold mt-0.5">{stressInfo.desc}</p>
                     </div>
                   </div>
                 </div>
 
               </div>
             </div>
-            {/* 길드마스터 훈육/독려 전령 메시지 수신함 */}
-            <div className="bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-xl mt-6">
-              <h3 className="text-sm font-bold text-white mb-4 border-b border-slate-850 pb-3">
+            {/* 길드마스터 훈육/독려 전령 메시지 수신함 - 투명도 20% 설정 */}
+            <div className="bg-white/20 border border-[#EBE6DD] backdrop-blur-md rounded-3xl p-6 shadow-sm mt-6">
+              <h3 className="text-sm font-bold text-slate-900 mb-4 border-b border-[#EBE6DD] pb-3 font-bw">
                 💬 길드마스터 전령 메시지 수신함
               </h3>
               <div className="space-y-2 max-h-56 overflow-y-auto">
                 {notifications.filter(n => n.message.includes('"')).length === 0 ? (
-                  <div className="text-center py-8 text-slate-600 text-xs font-bold italic">
+                  <div className="text-center py-8 text-slate-400 text-xs font-bold italic">
                     아직 수신된 전령 메시지가 없습니다.
                   </div>
                 ) : (
                   notifications.filter(n => n.message.includes('"')).map(n => (
-                    <div key={n.id} className="p-3 bg-indigo-950/20 border border-indigo-900/30 rounded-2xl text-xs font-semibold leading-relaxed text-indigo-300">
-                      <p className="text-[9px] text-indigo-400/70 mb-1">{new Date(n.createdAt).toLocaleTimeString()}</p>
+                    <div key={n.id} className="p-3 bg-white/80 border border-[#EBE6DD] rounded-2xl text-xs font-semibold leading-relaxed text-slate-800 shadow-sm">
+                      <p className="text-[9px] text-indigo-600 mb-1 font-bold">{new Date(n.createdAt).toLocaleTimeString()}</p>
                       {n.message}
                     </div>
                   ))
@@ -580,7 +580,6 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                               }}
                               className={`flex-shrink-0 w-24 h-24 rounded-2xl border flex flex-col items-center justify-center p-2 text-center cursor-pointer transition transform hover:scale-105 select-none relative ${stateColor} ${zigZagStyle}`}
                             >
-                              {/* 캐릭터 앉아 있는 연출 (ACTIVE) */}
                               {isActive && (
                                 <div className="absolute -top-12 z-20 flex flex-col items-center animate-bounce">
                                   <span className="text-3xl filter drop-shadow">{child.avatar || '🛡️'}</span>
@@ -606,7 +605,6 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                           );
                         })}
                         
-                        {/* 모든 퀘스트가 완료되었을 경우의 골 게이트 위치 캐릭터 */}
                         {quests.filter(q => q.type === 'main').every(q => q.status === 'completed') && (
                           <div className="flex-shrink-0 w-20 flex flex-col items-end justify-center animate-bounce pb-2 overflow-visible">
                             <div className="flex flex-col items-center">
@@ -693,21 +691,21 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
               )}
             </div>
 
-            {/* 돌발 퀘스트 섹션 (심부름) */}
-            <div className="bg-slate-900 border border-slate-850 rounded-3xl p-5 shadow-xl transition-all duration-300">
+            {/* 돌발 퀘스트 섹션 (심부름) - 투명도 20% 설정 */}
+            <div className="bg-white/20 border border-[#EBE6DD] backdrop-blur-md rounded-3xl p-5 shadow-sm transition-all duration-300">
               <div 
                 onClick={() => setIsFlashQuestsCollapsed(!isFlashQuestsCollapsed)}
-                className="flex justify-between items-center cursor-pointer pb-3 border-b border-slate-850"
+                className="flex justify-between items-center cursor-pointer pb-3 border-b border-[#EBE6DD]"
               >
                 <div className="flex items-center gap-2.5">
-                  <span className="text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded font-black">
+                  <span className="text-xs text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded font-black">
                     {quests.filter(q => q.type === 'flash').length}
                   </span>
-                  <h4 className="text-sm font-extrabold text-white flex items-center gap-1.5">
+                  <h4 className="text-sm font-extrabold text-slate-800 flex items-center gap-1.5 font-bw">
                     ⚡ 돌발 퀘스트 섹션 (심부름 / 미션)
                   </h4>
                 </div>
-                <div className="flex items-center gap-1.5 text-slate-400 hover:text-slate-200 text-xs font-bold">
+                <div className="flex items-center gap-1.5 text-slate-500 hover:text-slate-755 text-xs font-bold">
                   <span>{isFlashQuestsCollapsed ? '펼치기 🔓' : '접기 🔒'}</span>
                   <span className="text-md">{isFlashQuestsCollapsed ? '▼' : '▲'}</span>
                 </div>
@@ -716,27 +714,27 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
               {!isFlashQuestsCollapsed && (
                 <div className="mt-4 space-y-3 animate-in fade-in duration-200">
                   {quests.filter(q => q.type === 'flash').length === 0 ? (
-                    <div className="text-center py-12 text-slate-650 text-xs font-bold border-2 border-dashed border-slate-850/70 rounded-2xl bg-slate-950/20">
+                    <div className="text-center py-12 text-slate-400 text-xs font-bold border-2 border-dashed border-[#EBE6DD] rounded-2xl bg-white/30">
                       현재 활성화된 돌발 퀘스트가 없습니다.
                     </div>
                   ) : (
                     quests.filter(q => q.type === 'flash').map(q => (
                       <div
                         key={q.id}
-                        className={`p-4 bg-slate-950/60 border border-slate-850 rounded-2xl flex justify-between items-center ${
+                        className={`p-4 bg-white border border-[#EBE6DD] rounded-2xl flex justify-between items-center shadow-sm ${
                           q.status === 'completed' ? 'opacity-65' : ''
                         }`}
                       >
                         <div>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-850 text-slate-400 border border-slate-850">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-[#EBE6DD]">
                             {q.category}
                           </span>
-                          <h4 className="text-sm font-extrabold text-slate-200 mt-1">{q.title}</h4>
+                          <h4 className="text-sm font-extrabold text-slate-800 mt-1">{q.title}</h4>
                           <div className="flex flex-wrap items-center gap-2 mt-1">
                             <span className="text-[10px] text-slate-500 font-bold">
                               보상: 🪙 {q.rewardGold} G
                             </span>
-                            <span className="text-[9px] text-rose-400 bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded font-black flex items-center gap-1">
+                            <span className="text-[9px] text-rose-600 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded font-black flex items-center gap-1">
                               ⏱️ {q.dueTime || '18:00'} 마감
                             </span>
                           </div>
@@ -744,9 +742,9 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
 
                         <div className="flex items-center gap-2">
                           {q.status === 'completed' ? (
-                            <span className="text-xs text-emerald-400 font-bold">✓ 완료됨</span>
+                            <span className="text-xs text-emerald-600 font-bold">✓ 완료됨</span>
                           ) : q.status === 'request_approval' ? (
-                            <span className="text-xs text-indigo-400 font-bold bg-indigo-500/10 px-3 py-1.5 rounded-xl border border-indigo-500/20 animate-pulse">
+                            <span className="text-xs text-indigo-600 font-bold bg-indigo-50 px-3 py-1.5 rounded-xl border border-indigo-200 animate-pulse">
                               ⌛ 검수 대기중
                             </span>
                           ) : (
@@ -756,15 +754,15 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                                   setActiveNegotiateQuest(q);
                                   setNegotiateGold(q.rewardGold);
                                 }}
-                                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-750 text-slate-350 text-xs font-bold rounded-xl border border-slate-700 transition"
+                                className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-xl border border-[#EBE6DD] transition"
                               >
                                 🤝 역제안
                               </button>
                               <button
                                 onClick={() => handleQuestCompleteClick(q)}
-                                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition shadow-md"
+                                className="px-4 py-2 bg-[#644EB0] hover:bg-[#523e96] text-white text-xs font-bold rounded-xl transition shadow-md"
                               >
-                                {q.category === '학습' || q.category === '독서' ? '📸 사진 인증' : '완료 체크'}
+                                {requiresPhoto(q) ? '📸 사진 인증' : '완료 체크'}
                               </button>
                             </div>
                           )}
