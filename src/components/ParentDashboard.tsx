@@ -219,7 +219,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-16">
+    <div className="min-h-screen bg-[#FAF8F5] text-slate-800 font-sans pb-16">
       
       {/* 헤더 네비게이션 */}
       <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 py-3 px-6 flex justify-between items-center shadow-lg">

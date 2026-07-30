@@ -142,7 +142,7 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
 
   if (onboardingRole) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#FAF8F5] flex items-center justify-center p-4">
         <ChatbotOnboarding
           role={onboardingRole}
           onComplete={handleOnboardingComplete}
@@ -155,7 +155,7 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
   // --- 기획서 1페이지 인트로 대기 시작화면 렌더링 ---
   if (showIntro) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-6 select-none relative overflow-hidden">
+      <div className="min-h-screen bg-[#FAF8F5] text-slate-800 flex flex-col items-center justify-center p-6 select-none relative overflow-hidden">
         {/* 네온 배경 장식 */}
         <div className="absolute top-1/4 left-1/4 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-pink-500/10 rounded-full blur-3xl" />
@@ -168,13 +168,13 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
             <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-tight font-bw">
               패밀리 던전 타이쿤
             </h1>
-            <p className="text-sm font-semibold text-slate-400 font-bw">
+            <p className="text-sm font-semibold text-slate-500 font-bw">
               보호자 마스터 & 자녀 플레이어 연동 게임
             </p>
           </div>
 
           {/* 로우폴리 프리뷰 박스 */}
-          <div className="aspect-[16/9] w-full rounded-3xl overflow-hidden border border-slate-800 bg-slate-900/60 shadow-2xl relative">
+          <div className="aspect-[16/9] w-full rounded-3xl overflow-hidden border border-slate-300 bg-white/60 shadow-2xl relative">
             <img src="/familyguildtycoon_start.jfif" alt="Family Tycoon Map" className="w-full h-full object-cover" />
           </div>
 
@@ -187,12 +187,12 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
                 🎮 입장하기 (로그인)
               </button>
             ) : (
-              <div className="space-y-3 p-4 bg-slate-900 border border-slate-850 rounded-2xl animate-pulse">
-                <div className="flex justify-between text-xs font-bold text-slate-400">
+              <div className="space-y-3 p-4 bg-white border border-slate-200 rounded-2xl animate-pulse">
+                <div className="flex justify-between text-xs font-bold text-slate-500">
                   <span>LOADING ADVENTURE...</span>
-                  <span className="text-indigo-400">{loadingPercent}%</span>
+                  <span className="text-indigo-600">{loadingPercent}%</span>
                 </div>
-                <div className="w-full bg-slate-950 h-3 rounded-full overflow-hidden border border-slate-800">
+                <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden border border-slate-200">
                   <div
                     className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 h-full transition-all duration-150"
                     style={{ width: `${loadingPercent}%` }}
@@ -211,7 +211,7 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col justify-between py-12 px-4 select-none">
+    <div className="min-h-screen bg-[#FAF8F5] text-slate-800 font-sans flex flex-col justify-between py-12 px-4 select-none">
       
       {/* 최상단 타이틀 */}
       <div className="max-w-4xl mx-auto w-full text-center space-y-3">
