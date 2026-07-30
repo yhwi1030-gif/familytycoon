@@ -205,26 +205,18 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] text-slate-800 font-sans flex flex-col justify-between py-12 px-4 select-none">
+    <div className="min-h-screen bg-[#FAF8F5] text-slate-800 font-sans flex flex-col justify-start py-6 px-4 select-none">
       
       {/* 최상단 타이틀 */}
-      <div className="max-w-4xl mx-auto w-full text-center space-y-3">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
-          🏆 자녀 생활습관 메이커 타이쿤
-        </div>
-        <h1 className="text-4xl md:text-5xl font-black tracking-tight bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent font-bw">
+      <div className="max-w-4xl mx-auto w-full text-center space-y-2 mt-4">
+        <h1 className="text-4xl md:text-5xl font-black tracking-tight bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent font-bw">
           패밀리 던전 타이쿤
         </h1>
-        <p className="text-slate-400 text-sm md:text-base font-semibold font-bw">
-          모험을 시작하시겠습니까? 원하는 프로필을 선택해 진입하세요.
-        </p>
       </div>
 
-
-
       {/* 본문 프로필 격자 그리드 */}
-      <div className="max-w-4xl mx-auto w-full my-12">
-        <div className="bg-slate-900/60 backdrop-blur-md rounded-3xl border border-slate-800 p-8 shadow-2xl">
+      <div className="max-w-4xl mx-auto w-full my-4">
+        <div className="bg-slate-900/90 backdrop-blur-md rounded-3xl border border-slate-800 p-8 shadow-2xl">
           <div className="flex justify-between items-center mb-8 border-b border-slate-800 pb-4">
             <h3 className="text-lg font-bold text-white flex items-center gap-2">
               <User className="w-5 h-5 text-indigo-400" /> 길드 멤버 프로필 선택
@@ -291,15 +283,15 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
               <div className="flex flex-col gap-3">
                 <button
                   onClick={() => handleAddProfile('parent')}
-                  className="h-1/2 flex items-center justify-center border-2 border-dashed border-slate-800 hover:border-indigo-500/30 rounded-2xl text-xs font-bold text-slate-500 hover:text-slate-300 transition"
+                  className="h-[46%] flex items-center justify-center border-2 border-dashed border-slate-800 hover:border-indigo-500/50 rounded-2xl text-xs font-bold text-indigo-400 hover:text-indigo-300 transition bg-slate-950/20"
                 >
-                  <Plus className="w-4 h-4 mr-1" /> 보호자 추가
+                  <Plus className="w-4 h-4 mr-1 text-indigo-400" /> 보호자 추가
                 </button>
                 <button
                   onClick={() => handleAddProfile('child')}
-                  className="h-1/2 flex items-center justify-center border-2 border-dashed border-slate-800 hover:border-emerald-500/30 rounded-2xl text-xs font-bold text-slate-500 hover:text-slate-300 transition"
+                  className="h-[46%] flex items-center justify-center border-2 border-dashed border-slate-800 hover:border-emerald-500/50 rounded-2xl text-xs font-bold text-emerald-400 hover:text-emerald-300 transition bg-slate-950/20"
                 >
-                  <Plus className="w-4 h-4 mr-1" /> 자녀(모험가) 추가
+                  <Plus className="w-4 h-4 mr-1 text-emerald-400" /> 자녀 추가
                 </button>
               </div>
             )}
