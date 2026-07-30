@@ -29,6 +29,7 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
   const [signupGender, setSignupGender] = useState<'male' | 'female'>('male');
   const [signupEmail, setSignupEmail] = useState('');
   const [agreeToPrivacy, setAgreeToPrivacy] = useState(false);
+  const [showSignupGuideModal, setShowSignupGuideModal] = useState(false);
 
   // 인트로 시작 페이지 대기 유무
   const [showIntro, setShowIntro] = useState(true);
@@ -53,6 +54,14 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
         }, 300);
       }
     }, 150);
+  };
+
+  const handleStartSignup = () => {
+    // 신규 가족 회원가입 시 기존 완성형 데모 데이터는 공란(empty) 상태로 초기화합니다.
+    localStorage.setItem('ff_profiles', JSON.stringify([]));
+    setProfiles([]);
+    setShowSignupPage(true);
+    setShowSignupGuideModal(true); // 길드마스터 반드시 등록 안내 팝업 활성화
   };
 
   const handleProfileClick = (p: Profile) => {
@@ -230,6 +239,33 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
         <div className="absolute top-1/4 left-1/4 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-pink-500/10 rounded-full blur-3xl" />
 
+        {/* 회원가입 안내 모달 (최소 1명 길드마스터 필수 등록 안내) */}
+        {showSignupGuideModal && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white border border-[#EBE6DD] rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl text-center animate-in zoom-in-95 duration-200">
+              <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto border border-amber-200">
+                <span className="text-3xl">🧙‍♀️</span>
+              </div>
+              <div className="space-y-1.5 text-left">
+                <h4 className="text-md font-black text-slate-800 font-bw text-center">📢 길드마스터 등록 필수 안내</h4>
+                <p className="text-xs text-slate-600 font-bold leading-relaxed mt-2">
+                  신규 패밀리 모험이 시작되었습니다!<br />
+                  길드를 활성화하기 위해 <span className="text-indigo-600 font-black underline">최소 1명의 길드마스터(보호자)</span>를 회원가입을 통해 반드시 등록하셔야 합니다.
+                </p>
+                <p className="text-[10px] text-slate-400 font-semibold pt-1">
+                  * 회원가입 완료 후 모험가(자녀) 프로필을 대시보드에서 추가로 생성하여 플레이할 수 있습니다.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowSignupGuideModal(false)}
+                className="w-full py-3 bg-[#644EB0] hover:bg-[#523d9c] text-white font-extrabold text-xs rounded-xl transition shadow-md shadow-[#644EB0]/15"
+              >
+                확인했습니다 🛡️
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="max-w-md w-full bg-white/20 border border-[#EBE6DD] backdrop-blur-md rounded-3xl p-6 shadow-xl z-10 space-y-6">
           <div className="text-center space-y-2">
             <h2 className="text-2xl font-black text-slate-800 font-bw">🛡️ 신규 모험가 회원가입</h2>
@@ -385,7 +421,7 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
             {!showLoading ? (
               <div className="space-y-3">
                 <button
-                  onClick={() => setShowSignupPage(true)}
+                  onClick={handleStartSignup}
                   className="w-full py-4 bg-[#644EB0] hover:bg-[#523d9c] text-white font-extrabold text-[17px] font-bw rounded-2xl transition duration-300 transform active:scale-95 shadow-lg shadow-[#644EB0]/20 tracking-wider flex items-center justify-center gap-2"
                 >
                   📝 회원가입하기
