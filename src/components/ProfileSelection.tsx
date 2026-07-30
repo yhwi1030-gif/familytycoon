@@ -24,13 +24,13 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
   // 회원가입 전용 페이지 전환 상태 및 폼 필드 (성인만 회원가입 가능)
   const [showSignupPage, setShowSignupPage] = useState(false);
   const [signupName, setSignupName] = useState('');
-  const [signupPin, setSignupPin] = useState('1234');
+  const [signupPassword, setSignupPassword] = useState('');
   const [signupBirthdate, setSignupBirthdate] = useState('1990-01-01');
   const [signupGender, setSignupGender] = useState<'male' | 'female'>('male');
   const [signupEmail, setSignupEmail] = useState('');
   const [agreeToPrivacy, setAgreeToPrivacy] = useState(false);
   const [showSignupGuideModal, setShowSignupGuideModal] = useState(false);
-  const [tempSignupData, setTempSignupData] = useState<{ name: string; pin: string; email: string } | null>(null);
+  const [tempSignupData, setTempSignupData] = useState<{ name: string; password: string; email: string } | null>(null);
 
   // 인트로 시작 페이지 대기 유무
   const [showIntro, setShowIntro] = useState(true);
@@ -131,7 +131,7 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
       : (roleCount(onboardingRole!) > 0 ? `${onboardingRole!}${roleCount(onboardingRole!) + 1}` : `${onboardingRole!}2`);
       
     const finalName = isSignupFlow ? tempSignupData.name : (onboardingRole === 'parent' ? `길드마스터 ${roleCount('parent') + 1}` : `아기 모험가 ${roleCount('child') + 1}`);
-    const finalPin = isSignupFlow ? tempSignupData.pin : (onboardingRole === 'parent' ? '1234' : '0000');
+    const finalPin = isSignupFlow ? '1234' : (onboardingRole === 'parent' ? '1234' : '0000'); // default PIN, editable per profile card
 
     const newProfile: Profile = {
       id: newId,
@@ -146,7 +146,8 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
       stress: onboardingRole === 'child' ? 30 : 0,
       style: data.style,
       childClass: data.childClass,
-      stats: data.stats || { intelligence: 10, willpower: 10, autonomy: 10, cooperation: 10, sensibility: 10 }
+      stats: data.stats || { intelligence: 10, willpower: 10, autonomy: 10, cooperation: 10, sensibility: 10 },
+      password: isSignupFlow ? tempSignupData.password : undefined
     };
 
     const updatedList = isSignupFlow ? [newProfile] : [...list, newProfile];
@@ -157,7 +158,7 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
     
     if (isSignupFlow) {
       setShowIntro(false);
-      alert(`🎉 [가입 완료] 성향 분석이 성공적으로 마무리되어 길드마스터 ${finalName} 님이 등록되었습니다!`);
+      alert(`🎉 [가입 완료] 성향 분석이 성공적으로 마무리되어 길드마스터 ${finalName} 님이 등록되었습니다! (초기 PIN 번호는 '1234'로 설정되었으며, 프로필 카드 관리 화면에서 수정하실 수 있습니다.)`);
     }
   };
 
@@ -171,10 +172,14 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
       alert("올바른 이메일 주소를 입력해 주세요!");
       return;
     }
-    if (signupPin.length !== 4) {
-      alert("4자리 비밀번호(PIN)를 입력해 주세요!");
+    
+    // 비밀번호 정규식 검증: 영문, 숫자, 특수문자 포함 8자리 이상
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&._\-])[A-Za-z\d@$!%*#?&._\-]{8,}$/;
+    if (!passwordRegex.test(signupPassword)) {
+      alert("⚠️ 비밀번호는 영문, 숫자, 특수문자를 포함하여 8자리 이상이어야 합니다.");
       return;
     }
+    
     if (!agreeToPrivacy) {
       alert("개인정보 수집 및 활용 동의란에 체크하셔야 회원가입이 최종 완료됩니다.");
       return;
@@ -192,13 +197,13 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
     // 작성한 계정 정보 임시 백업 및 성향 진단 챗봇 실행
     setTempSignupData({
       name: signupName,
-      pin: signupPin,
+      password: signupPassword,
       email: signupEmail
     });
 
     // reset form fields
     setSignupName('');
-    setSignupPin('1234');
+    setSignupPassword('');
     setSignupEmail('');
     setSignupBirthdate('1990-01-01');
     setAgreeToPrivacy(false);
@@ -340,17 +345,16 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
               </div>
             </div>
 
-            {/* 비밀번호(PIN) 입력 */}
+            {/* 비밀번호 입력 */}
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">4자리 간편 비밀번호 (PIN)</label>
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">비밀번호 (영문, 숫자, 특수문자 조합 8자 이상)</label>
               <input
                 type="password"
-                maxLength={4}
                 required
-                value={signupPin}
-                onChange={e => setSignupPin(e.target.value.replace(/\D/g, ''))}
-                placeholder="0000"
-                className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-white/80 text-xs font-black tracking-widest text-center text-slate-800 outline-none focus:border-indigo-500 transition shadow-sm"
+                value={signupPassword}
+                onChange={e => setSignupPassword(e.target.value)}
+                placeholder="비밀번호를 입력해 주세요"
+                className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-white/80 text-xs font-bold text-slate-800 outline-none focus:border-indigo-500 transition shadow-sm"
               />
             </div>
 
