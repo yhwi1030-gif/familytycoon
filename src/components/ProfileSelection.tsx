@@ -162,15 +162,9 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
 
         <div className="max-w-md w-full text-center space-y-8 z-10">
           <div className="space-y-4">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
-              🏆 자녀생활습관 만들기 타이쿤
-            </span>
             <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-tight font-bw">
               패밀리 던전 타이쿤
             </h1>
-            <p className="text-sm font-semibold text-slate-500 font-bw">
-              보호자 마스터 & 자녀 플레이어 연동 게임
-            </p>
           </div>
 
           {/* 로우폴리 프리뷰 박스 */}
@@ -182,7 +176,7 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
             {!showLoading ? (
               <button
                 onClick={handleStartAdventure}
-                className="w-full py-4 bg-pink-600 hover:bg-pink-500 text-white font-extrabold text-sm rounded-2xl transition duration-300 transform active:scale-95 shadow-lg shadow-pink-500/20 tracking-wider"
+                className="w-full py-4 bg-pink-600 hover:bg-pink-500 text-white font-extrabold text-[17px] font-bw rounded-2xl transition duration-300 transform active:scale-95 shadow-lg shadow-pink-500/20 tracking-wider"
               >
                 🎮 입장하기 (로그인)
               </button>
