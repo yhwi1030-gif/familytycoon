@@ -20,7 +20,14 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
   const [editName, setEditName] = useState('');
   const [editPin, setEditPin] = useState('');
   const [onboardingRole, setOnboardingRole] = useState<'parent' | 'child' | null>(null);
-  const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
+  
+  // 회원가입 전용 페이지 전환 상태 및 폼 필드 (성인만 회원가입 가능)
+  const [showSignupPage, setShowSignupPage] = useState(false);
+  const [signupName, setSignupName] = useState('');
+  const [signupPin, setSignupPin] = useState('1234');
+  const [signupBirthdate, setSignupBirthdate] = useState('1990-01-01');
+  const [signupGender, setSignupGender] = useState<'male' | 'female'>('male');
+  const [signupEmail, setSignupEmail] = useState('');
 
   // 인트로 시작 페이지 대기 유무
   const [showIntro, setShowIntro] = useState(true);
@@ -130,6 +137,62 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
     setOnboardingRole(null);
   };
 
+  const handleRegisterProfile = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!signupName.trim()) {
+      alert("이름을 입력해 주세요!");
+      return;
+    }
+    if (!signupEmail.trim() || !signupEmail.includes('@')) {
+      alert("올바른 이메일 주소를 입력해 주세요!");
+      return;
+    }
+    if (signupPin.length !== 4) {
+      alert("4자리 비밀번호(PIN)를 입력해 주세요!");
+      return;
+    }
+
+    // 성인(만 19세 이상) 검증: 현재 2026년 기준
+    const birthYear = new Date(signupBirthdate).getFullYear();
+    const currentYear = 2026;
+    const age = currentYear - birthYear;
+    if (isNaN(age) || age < 19) {
+      alert("⚠️ 회원가입은 만 19세 이상의 성인(길드마스터)만 가능합니다. 생년월일을 다시 확인해 주세요.");
+      return;
+    }
+
+    const list = api.getProfiles();
+    const count = list.filter(p => p.role === 'parent').length;
+    const newId = count > 0 ? `parent${count + 2}` : `parent2`;
+
+    const newProfile: Profile = {
+      id: newId,
+      role: 'parent',
+      name: signupName,
+      avatar: '🧙‍♀️',
+      pin: signupPin,
+      title: '수습 길드마스터',
+      level: 1,
+      exp: 0,
+      gold: 1000,
+      stress: 0,
+      style: 'lighthouse' // lighthouse type matches ParentingStyle
+    };
+
+    const updatedList = [...list, newProfile];
+    localStorage.setItem('ff_profiles', JSON.stringify(updatedList));
+    setProfiles(updatedList);
+    
+    // reset form fields
+    setSignupName('');
+    setSignupPin('1234');
+    setSignupEmail('');
+    setSignupBirthdate('1990-01-01');
+    setShowSignupPage(false);
+    setShowIntro(false); // Go directly to profile list
+    alert(`🎉 [가입 완료] 길드마스터 ${signupName} 님이 성공적으로 등록되었습니다!`);
+  };
+
   const roleCount = (role: 'parent' | 'child') => {
     return profiles.filter(p => p.role === role).length;
   };
@@ -149,6 +212,128 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
           onComplete={handleOnboardingComplete}
           onCancel={() => setOnboardingRole(null)}
         />
+      </div>
+    );
+  }
+
+  // --- 회원가입 전용 페이지 렌더링 ---
+  if (showSignupPage) {
+    return (
+      <div className="min-h-screen bg-[#FAF8F5] text-slate-800 flex flex-col items-center justify-center p-6 select-none relative overflow-hidden">
+        {/* 네온 배경 장식 */}
+        <div className="absolute top-1/4 left-1/4 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-pink-500/10 rounded-full blur-3xl" />
+
+        <div className="max-w-md w-full bg-white/20 border border-[#EBE6DD] backdrop-blur-md rounded-3xl p-6 shadow-xl z-10 space-y-6">
+          <div className="text-center space-y-2">
+            <h2 className="text-2xl font-black text-slate-800 font-bw">🛡️ 신규 모험가 회원가입</h2>
+            <p className="text-xs text-slate-500 font-medium font-sans">활동하실 모험가 프로필을 등록하여 모험을 시작하세요.</p>
+          </div>
+
+          <form onSubmit={handleRegisterProfile} className="space-y-4 text-left">
+            {/* 이름 입력 */}
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">이름</label>
+              <input
+                type="text"
+                required
+                value={signupName}
+                onChange={e => setSignupName(e.target.value)}
+                placeholder="예: 홍길동"
+                className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-white/80 text-xs font-bold text-slate-800 outline-none focus:border-indigo-500 transition shadow-sm"
+              />
+            </div>
+
+            {/* 이메일 입력 */}
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">이메일 주소</label>
+              <input
+                type="email"
+                required
+                value={signupEmail}
+                onChange={e => setSignupEmail(e.target.value)}
+                placeholder="example@email.com"
+                className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-white/80 text-xs font-bold text-slate-800 outline-none focus:border-indigo-500 transition shadow-sm"
+              />
+            </div>
+
+            {/* 생년월일 입력 */}
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">생년월일</label>
+              <input
+                type="date"
+                required
+                value={signupBirthdate}
+                onChange={e => setSignupBirthdate(e.target.value)}
+                className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-white/80 text-xs font-bold text-slate-800 outline-none focus:border-indigo-500 transition shadow-sm"
+              />
+              <p className="text-[9px] text-amber-600 font-semibold">* 본 서비스는 만 19세 이상의 성인(길드마스터)만 가입할 수 있습니다.</p>
+            </div>
+
+            {/* 성별 선택 */}
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">성별</label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setSignupGender('male')}
+                  className={`py-3 rounded-2xl border text-xs font-black transition ${
+                    signupGender === 'male'
+                      ? 'bg-indigo-50 border-indigo-500 text-indigo-750 shadow-sm'
+                      : 'bg-white/40 border-slate-200 text-slate-600 hover:bg-white/60'
+                  }`}
+                >
+                  🙋‍♂️ 남성
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSignupGender('female')}
+                  className={`py-3 rounded-2xl border text-xs font-black transition ${
+                    signupGender === 'female'
+                      ? 'bg-pink-50 border-pink-500 text-pink-750 shadow-sm'
+                      : 'bg-white/40 border-slate-200 text-slate-600 hover:bg-white/60'
+                  }`}
+                >
+                  🙋‍♀️ 여성
+                </button>
+              </div>
+            </div>
+
+            {/* 비밀번호(PIN) 입력 */}
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">4자리 간편 비밀번호 (PIN)</label>
+              <input
+                type="password"
+                maxLength={4}
+                required
+                value={signupPin}
+                onChange={e => setSignupPin(e.target.value.replace(/\D/g, ''))}
+                placeholder="0000"
+                className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-white/80 text-xs font-black tracking-widest text-center text-slate-800 outline-none focus:border-indigo-500 transition shadow-sm"
+              />
+            </div>
+
+            {/* 제출 버튼 */}
+            <div className="pt-2 space-y-2">
+              <button
+                type="submit"
+                className="w-full py-3.5 bg-[#644EB0] hover:bg-[#523d9c] text-white font-extrabold text-xs rounded-2xl transition duration-300 transform active:scale-95 shadow-md shadow-[#644EB0]/10"
+              >
+                💾 회원가입 및 등록 완료
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowSignupPage(false);
+                  setSignupName('');
+                }}
+                className="w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs rounded-2xl transition"
+              >
+                취소하고 첫화면으로
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     );
   }
@@ -177,7 +362,7 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
             {!showLoading ? (
               <div className="space-y-3">
                 <button
-                  onClick={() => setIsSignupModalOpen(true)}
+                  onClick={() => setShowSignupPage(true)}
                   className="w-full py-4 bg-[#644EB0] hover:bg-[#523d9c] text-white font-extrabold text-[17px] font-bw rounded-2xl transition duration-300 transform active:scale-95 shadow-lg shadow-[#644EB0]/20 tracking-wider flex items-center justify-center gap-2"
                 >
                   📝 회원가입하기
@@ -209,55 +394,6 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
             </p>
           </div>
         </div>
-
-        {/* 회원가입 유형 선택 모달 */}
-        {isSignupModalOpen && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white border border-[#EBE6DD] rounded-3xl p-6 max-w-sm w-full space-y-5 shadow-2xl animate-in zoom-in-95 duration-200">
-              <div className="text-center space-y-1.5">
-                <h4 className="text-md font-black text-slate-800 font-bw">🛡️ 던전 길드 신규 회원가입</h4>
-                <p className="text-[10px] text-slate-500 font-medium">활동하실 길드 역할을 선택해 모험을 등록하세요.</p>
-              </div>
-
-              <div className="space-y-3">
-                <button
-                  onClick={() => {
-                    setIsSignupModalOpen(false);
-                    handleAddProfile('parent');
-                  }}
-                  className="w-full p-4 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100/70 rounded-2xl text-left flex items-center justify-between group transition duration-200"
-                >
-                  <div>
-                    <p className="text-xs font-black text-indigo-950 font-bw">🧙‍♀️ 길드마스터 (보호자)</p>
-                    <p className="text-[9px] text-indigo-600 font-bold mt-0.5">자녀 퀘스트 관리, 보상 결재, 전령 발송</p>
-                  </div>
-                  <span className="text-md transform group-hover:translate-x-1 transition">➔</span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    setIsSignupModalOpen(false);
-                    handleAddProfile('child');
-                  }}
-                  className="w-full p-4 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100/70 rounded-2xl text-left flex items-center justify-between group transition duration-200"
-                >
-                  <div>
-                    <p className="text-xs font-black text-emerald-950 font-bw">🛡️ 아기 모험가 (자녀)</p>
-                    <p className="text-[9px] text-emerald-600 font-bold mt-0.5">일일 루틴/돌발 퀘스트 수행, 레벨업, 용돈 상점 이용</p>
-                  </div>
-                  <span className="text-md transform group-hover:translate-x-1 transition">➔</span>
-                </button>
-              </div>
-
-              <button
-                onClick={() => setIsSignupModalOpen(false)}
-                className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs rounded-xl transition"
-              >
-                닫기
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     );
   }
