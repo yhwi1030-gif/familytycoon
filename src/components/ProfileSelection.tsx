@@ -28,6 +28,7 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
   const [signupBirthdate, setSignupBirthdate] = useState('1990-01-01');
   const [signupGender, setSignupGender] = useState<'male' | 'female'>('male');
   const [signupEmail, setSignupEmail] = useState('');
+  const [agreeToPrivacy, setAgreeToPrivacy] = useState(false);
 
   // 인트로 시작 페이지 대기 유무
   const [showIntro, setShowIntro] = useState(true);
@@ -151,6 +152,10 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
       alert("4자리 비밀번호(PIN)를 입력해 주세요!");
       return;
     }
+    if (!agreeToPrivacy) {
+      alert("개인정보 수집 및 활용 동의란에 체크하셔야 회원가입이 최종 완료됩니다.");
+      return;
+    }
 
     // 성인(만 19세 이상) 검증: 현재 2026년 기준
     const birthYear = new Date(signupBirthdate).getFullYear();
@@ -188,6 +193,7 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
     setSignupPin('1234');
     setSignupEmail('');
     setSignupBirthdate('1990-01-01');
+    setAgreeToPrivacy(false);
     setShowSignupPage(false);
     setShowIntro(false); // Go directly to profile list
     alert(`🎉 [가입 완료] 길드마스터 ${signupName} 님이 성공적으로 등록되었습니다!`);
@@ -311,6 +317,23 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
                 placeholder="0000"
                 className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-white/80 text-xs font-black tracking-widest text-center text-slate-800 outline-none focus:border-indigo-500 transition shadow-sm"
               />
+            </div>
+
+            {/* 개인정보 활용 동의 (필수 체크란) */}
+            <div className="flex items-start gap-2.5 p-3 rounded-2xl bg-white/50 border border-slate-200">
+              <input
+                type="checkbox"
+                id="agreeToPrivacy"
+                checked={agreeToPrivacy}
+                onChange={e => setAgreeToPrivacy(e.target.checked)}
+                className="w-4 h-4 mt-0.5 rounded text-[#644EB0] focus:ring-[#644EB0] border-slate-350 cursor-pointer"
+              />
+              <label htmlFor="agreeToPrivacy" className="text-[10px] font-bold text-slate-700 cursor-pointer leading-tight">
+                [필수] 개인정보 수집 및 활용 동의
+                <span className="block text-[8px] text-slate-500 font-semibold mt-0.5">
+                  서비스 가입 및 본인 확인, 패밀리 길드 관리 목적으로 회원님의 성명, 이메일, 생년월일 정보를 수집하고 활용하는 것에 동의합니다.
+                </span>
+              </label>
             </div>
 
             {/* 제출 버튼 */}
