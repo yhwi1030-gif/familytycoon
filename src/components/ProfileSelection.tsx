@@ -162,7 +162,7 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
 
         <div className="max-w-md w-full text-center space-y-8 z-10">
           <div className="space-y-4">
-            <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-tight font-bw">
+            <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-tight font-bw text-[#AC52F2]">
               패밀리 던전 타이쿤
             </h1>
           </div>
