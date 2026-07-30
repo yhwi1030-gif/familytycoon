@@ -177,25 +177,25 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
     <div className="min-h-screen bg-[#FAF8F5] text-slate-800 font-sans pb-16">
       
       {/* 헤더 네비게이션 */}
-      <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 py-3 px-6 flex justify-between items-center shadow-lg">
+      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-[#EBE6DD] py-3 px-6 flex justify-between items-center shadow-sm">
         <div className="flex items-center gap-3">
           <div className="text-2xl select-none">🛡️</div>
           <div>
-            <h1 className="text-sm md:text-md font-black tracking-tight text-white flex items-center gap-1.5">
-              패밀리 던전 타이쿤 <span className="text-emerald-400 font-bold text-[9px] bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">플레이어 모드</span>
+            <h1 className="text-sm md:text-md font-black tracking-tight text-slate-900 flex items-center gap-1.5 font-bw">
+              패밀리 던전 타이쿤 <span className="text-emerald-600 font-bold text-[9px] bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full font-sans">플레이어 모드</span>
             </h1>
-            <p className="text-[9px] text-slate-400 font-semibold">{child.name}</p>
+            <p className="text-[9px] text-slate-500 font-bold">{child.name}</p>
           </div>
         </div>
 
         {/* 대시보드 메인 탭 전환 버튼 구역 (기획안 13페이지 준수) */}
-        <nav className="flex items-center bg-slate-950 border border-slate-850 p-1.5 rounded-2xl gap-1">
+        <nav className="flex items-center bg-slate-100 border border-slate-200 p-1.5 rounded-2xl gap-1">
           <button
             onClick={() => setActiveTab('home')}
             className={`px-4 py-1.5 rounded-xl text-xs font-bold transition ${
               activeTab === 'home'
                 ? 'bg-emerald-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-white'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             홈 (캐릭터)
@@ -205,7 +205,7 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
             className={`px-4 py-1.5 rounded-xl text-xs font-bold transition ${
               activeTab === 'quest'
                 ? 'bg-emerald-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-white'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             퀘스트
@@ -215,7 +215,7 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
             className={`px-4 py-1.5 rounded-xl text-xs font-bold transition ${
               activeTab === 'store'
                 ? 'bg-emerald-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-white'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             상점
@@ -231,7 +231,7 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
           </button>
           <button
             onClick={onLogout}
-            className="bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg transition border border-slate-750"
+            className="bg-slate-200 hover:bg-slate-350 text-slate-700 hover:text-slate-900 text-[10px] font-bold px-2.5 py-1.5 rounded-lg transition border border-slate-300"
           >
             로그아웃
           </button>

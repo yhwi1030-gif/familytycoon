@@ -246,25 +246,25 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
     <div className="min-h-screen bg-[#FAF8F5] text-slate-800 font-sans pb-16">
       
       {/* 헤더 네비게이션 */}
-      <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 py-3 px-6 flex justify-between items-center shadow-lg">
+      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-[#EBE6DD] py-3 px-6 flex justify-between items-center shadow-sm">
         <div className="flex items-center gap-3">
           <div className="text-2xl select-none">🧙‍♀️</div>
           <div>
-            <h1 className="text-sm md:text-md font-black tracking-tight text-white flex items-center gap-1.5">
-              패밀리 던전 타이쿤 <span className="text-indigo-400 font-bold text-[9px] bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded-full">길드마스터 모드</span>
+            <h1 className="text-sm md:text-md font-black tracking-tight text-slate-900 flex items-center gap-1.5 font-bw">
+              패밀리 던전 타이쿤 <span className="text-indigo-600 font-bold text-[9px] bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full font-sans">길드마스터 모드</span>
             </h1>
-            <p className="text-[9px] text-slate-400 font-semibold">{user.name}</p>
+            <p className="text-[9px] text-slate-500 font-bold">{user.name}</p>
           </div>
         </div>
 
         {/* 대시보드 메인 탭 전환 버튼 구역 (기획안 6페이지 준수) */}
-        <nav className="flex items-center bg-slate-950 border border-slate-850 p-1.5 rounded-2xl gap-1">
+        <nav className="flex items-center bg-slate-100 border border-slate-200 p-1.5 rounded-2xl gap-1">
           <button
             onClick={() => setActiveTab('home')}
             className={`px-4 py-1.5 rounded-xl text-xs font-bold transition ${
               activeTab === 'home'
                 ? 'bg-indigo-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-white'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             홈 (타이쿤 성장)
@@ -274,7 +274,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
             className={`px-4 py-1.5 rounded-xl text-xs font-bold transition ${
               activeTab === 'quest'
                 ? 'bg-indigo-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-white'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             퀘스트
@@ -284,7 +284,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
             className={`px-4 py-1.5 rounded-xl text-xs font-bold transition ${
               activeTab === 'store'
                 ? 'bg-indigo-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-white'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             상점
@@ -300,7 +300,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
           </button>
           <button
             onClick={onLogout}
-            className="bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg transition border border-slate-750"
+            className="bg-slate-200 hover:bg-slate-350 text-slate-700 hover:text-slate-900 text-[10px] font-bold px-2.5 py-1.5 rounded-lg transition border border-slate-300"
           >
             로그아웃
           </button>
@@ -477,9 +477,9 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
         {activeTab === 'quest' && (
           <div className="space-y-6 animate-in fade-in duration-200">
             {/* 상단 퀘스트 공통 헤더 */}
-            <div className="flex justify-between items-center bg-slate-900/60 p-4 border border-slate-850 rounded-2xl">
+            <div className="flex justify-between items-center bg-white p-4 border border-[#EBE6DD] rounded-2xl shadow-sm">
               <div>
-                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 font-bw">
                   ⚔️ 퀘스트 컨트롤 타워
                 </h3>
                 <p className="text-[10px] text-slate-500 font-semibold mt-0.5">자녀의 활동 루틴과 일시적인 미션을 총괄 통제합니다.</p>
@@ -493,20 +493,20 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
             </div>
 
             {/* SECTION 1: 메인 퀘스트 (일일 루틴) 섹션 */}
-            <div className="bg-slate-900 border border-slate-850 rounded-3xl p-5 shadow-xl transition-all duration-300">
+            <div className="bg-white border border-[#EBE6DD] rounded-3xl p-5 shadow-sm transition-all duration-300">
               <div 
                 onClick={() => setIsMainQuestsCollapsed(!isMainQuestsCollapsed)}
-                className="flex justify-between items-center cursor-pointer pb-3 border-b border-slate-850"
+                className="flex justify-between items-center cursor-pointer pb-3 border-b border-[#EBE6DD]"
               >
                 <div className="flex items-center gap-2.5">
-                  <span className="text-xs text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded font-black">
+                  <span className="text-xs text-indigo-600 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded font-black">
                     {quests.filter(q => q.type === 'main').length}
                   </span>
-                  <h4 className="text-sm font-extrabold text-white flex items-center gap-1.5">
+                  <h4 className="text-sm font-extrabold text-slate-800 flex items-center gap-1.5 font-bw">
                     📅 메인 퀘스트 섹션 (일일 루틴)
                   </h4>
                 </div>
-                <div className="flex items-center gap-1.5 text-slate-400 hover:text-slate-200 text-xs font-bold">
+                <div className="flex items-center gap-1.5 text-slate-500 hover:text-slate-700 text-xs font-bold">
                   <span>{isMainQuestsCollapsed ? '펼치기 🔓' : '접기 🔒'}</span>
                   <span className="text-md">{isMainQuestsCollapsed ? '▼' : '▲'}</span>
                 </div>
@@ -515,51 +515,51 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
               {!isMainQuestsCollapsed && (
                 <div className="mt-4 space-y-3 animate-in fade-in duration-200">
                   {/* 테이블 헤더 */}
-                  <div className="hidden sm:grid grid-cols-12 gap-4 px-4 py-2 text-[10px] font-black text-slate-500 border-b border-slate-850/60">
+                  <div className="hidden sm:grid grid-cols-12 gap-4 px-4 py-2 text-[10px] font-black text-slate-400 border-b border-slate-200">
                     <div className="col-span-4">활동명 (메인 루틴)</div>
                     <div className="col-span-3 text-center">리셋 / 정보</div>
                     <div className="col-span-5 text-right">퀘스트 완료 독려 메시지 전송</div>
                   </div>
 
                   {quests.filter(q => q.type === 'main').length === 0 ? (
-                    <div className="text-center py-8 text-slate-600 text-xs font-bold italic">
+                    <div className="text-center py-8 text-slate-500 text-xs font-bold italic">
                       등록된 메인 퀘스트가 없습니다.
                     </div>
                   ) : (
                     quests.filter(q => q.type === 'main').map(q => (
-                      <div key={q.id} className="p-4 bg-slate-950/60 border border-slate-850 rounded-2xl grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
+                      <div key={q.id} className="p-4 bg-[#FDFBF7] border border-[#EBE6DD] rounded-2xl grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
                         <div className="col-span-1 sm:col-span-4">
-                          <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                          <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-indigo-50 text-indigo-600 border border-indigo-200">
                             {q.category}
                           </span>
-                          <h4 className="text-sm font-extrabold text-slate-200 mt-1.5">{q.title}</h4>
+                          <h4 className="text-sm font-extrabold text-slate-800 mt-1.5">{q.title}</h4>
                           <p className="text-[10px] text-slate-500 mt-0.5">보상: ➕ {q.rewardExp} EXP</p>
                         </div>
                         <div className="col-span-1 sm:col-span-3 text-left sm:text-center">
-                          <span className="text-[10px] font-bold text-slate-400 bg-slate-850 px-2.5 py-1 rounded-lg border border-slate-800">
+                          <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
                             📅 일일 루틴
                           </span>
                         </div>
                         <div className="col-span-1 sm:col-span-5 flex flex-wrap gap-1.5 justify-start sm:justify-end items-center">
                           {q.status === 'completed' ? (
-                            <span className="text-xs text-emerald-400 font-bold px-3 py-1 bg-emerald-500/10 rounded-lg border border-emerald-500/20">✓ 완료됨</span>
+                            <span className="text-xs text-emerald-600 font-bold px-3 py-1 bg-emerald-50 rounded-lg border border-emerald-200">✓ 완료됨</span>
                           ) : (
                             <>
                               <button
                                 onClick={() => handleCheer('sweet', q.title)}
-                                className="px-2 py-1.5 bg-slate-900 hover:bg-slate-800 text-[10px] font-bold text-emerald-400 rounded-lg transition border border-slate-850 flex items-center gap-1 active:scale-95"
+                                className="px-2 py-1.5 bg-white hover:bg-slate-50 text-[10px] font-bold text-emerald-600 rounded-lg transition border border-slate-200 flex items-center gap-1 active:scale-95 shadow-sm"
                               >
                                 😊 다정하게
                               </button>
                               <button
                                 onClick={() => handleCheer('strict', q.title)}
-                                className="px-2 py-1.5 bg-slate-900 hover:bg-slate-800 text-[10px] font-bold text-rose-400 rounded-lg transition border border-slate-850 flex items-center gap-1 active:scale-95"
+                                className="px-2 py-1.5 bg-white hover:bg-slate-50 text-[10px] font-bold text-rose-600 rounded-lg transition border border-slate-200 flex items-center gap-1 active:scale-95 shadow-sm"
                               >
                                 🔥 단호하게
                               </button>
                               <button
                                 onClick={() => handleCheer('funny', q.title)}
-                                className="px-2 py-1.5 bg-slate-900 hover:bg-slate-800 text-[10px] font-bold text-amber-400 rounded-lg transition border border-slate-850 flex items-center gap-1 active:scale-95"
+                                className="px-2 py-1.5 bg-white hover:bg-slate-50 text-[10px] font-bold text-amber-600 rounded-lg transition border border-slate-200 flex items-center gap-1 active:scale-95 shadow-sm"
                               >
                                 🤠 유머러스
                               </button>
@@ -582,20 +582,20 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
             </div>
 
             {/* SECTION 2: 돌발 퀘스트 (심부름) 섹션 */}
-            <div className="bg-slate-900 border border-slate-850 rounded-3xl p-5 shadow-xl transition-all duration-300">
+            <div className="bg-white border border-[#EBE6DD] rounded-3xl p-5 shadow-sm transition-all duration-300">
               <div 
                 onClick={() => setIsFlashQuestsCollapsed(!isFlashQuestsCollapsed)}
-                className="flex justify-between items-center cursor-pointer pb-3 border-b border-slate-850"
+                className="flex justify-between items-center cursor-pointer pb-3 border-b border-[#EBE6DD]"
               >
                 <div className="flex items-center gap-2.5">
-                  <span className="text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded font-black">
+                  <span className="text-xs text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded font-black">
                     {quests.filter(q => q.type === 'flash').length}
                   </span>
-                  <h4 className="text-sm font-extrabold text-white flex items-center gap-1.5">
+                  <h4 className="text-sm font-extrabold text-slate-800 flex items-center gap-1.5 font-bw">
                     ⚡ 돌발 퀘스트 섹션 (심부름 / 미션)
                   </h4>
                 </div>
-                <div className="flex items-center gap-1.5 text-slate-400 hover:text-slate-200 text-xs font-bold">
+                <div className="flex items-center gap-1.5 text-slate-500 hover:text-slate-700 text-xs font-bold">
                   <span>{isFlashQuestsCollapsed ? '펼치기 🔓' : '접기 🔒'}</span>
                   <span className="text-md">{isFlashQuestsCollapsed ? '▼' : '▲'}</span>
                 </div>
@@ -604,29 +604,29 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
               {!isFlashQuestsCollapsed && (
                 <div className="mt-4 space-y-3 animate-in fade-in duration-200">
                   {/* 테이블 헤더 */}
-                  <div className="hidden sm:grid grid-cols-12 gap-4 px-4 py-2 text-[10px] font-black text-slate-500 border-b border-slate-850/60">
+                  <div className="hidden sm:grid grid-cols-12 gap-4 px-4 py-2 text-[10px] font-black text-slate-400 border-b border-slate-200">
                     <div className="col-span-4">활동명 (돌발 미션)</div>
                     <div className="col-span-3 text-center">퀘스트 마감시간 / 정보</div>
                     <div className="col-span-5 text-right">퀘스트 완료 독려 메시지 전송</div>
                   </div>
 
                   {quests.filter(q => q.type === 'flash').length === 0 ? (
-                    <div className="text-center py-12 text-slate-650 text-xs font-bold border-2 border-dashed border-slate-850/70 rounded-2xl bg-slate-950/20">
+                    <div className="text-center py-12 text-slate-500 text-xs font-bold border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
                       현재 활성화된 돌발 퀘스트가 없습니다.
                     </div>
                   ) : (
                     quests.filter(q => q.type === 'flash').map(q => (
-                      <div key={q.id} className="p-4 bg-slate-950/60 border border-slate-850 rounded-2xl grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
+                      <div key={q.id} className="p-4 bg-[#FDFBF7] border border-[#EBE6DD] rounded-2xl grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
                         <div className="col-span-1 sm:col-span-4">
-                          <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-600 border border-emerald-200">
                             {q.category}
                           </span>
-                          <h4 className="text-sm font-extrabold text-slate-200 mt-1.5">{q.title}</h4>
+                          <h4 className="text-sm font-extrabold text-slate-800 mt-1.5">{q.title}</h4>
                           <p className="text-[10px] text-slate-500 mt-0.5">보상: 🪙 {q.rewardGold} G</p>
                         </div>
                         <div className="col-span-1 sm:col-span-3 text-left sm:text-center">
                           <div className="inline-flex flex-col items-center">
-                            <span className="text-[10px] font-bold text-rose-400 bg-rose-500/10 px-2.5 py-1 rounded-lg border border-rose-500/20 flex items-center gap-1">
+                            <span className="text-[10px] font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200 flex items-center gap-1">
                               ⏱️ {q.dueTime || '18:00'} 마감
                             </span>
                             <span className="text-[8px] text-slate-500 mt-1 font-semibold">(미수행 시 골드 소멸)</span>
@@ -634,24 +634,24 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
                         </div>
                         <div className="col-span-1 sm:col-span-5 flex flex-wrap gap-1.5 justify-start sm:justify-end items-center">
                           {q.status === 'completed' ? (
-                            <span className="text-xs text-emerald-400 font-bold px-3 py-1 bg-emerald-500/10 rounded-lg border border-emerald-500/20">✓ 완료됨</span>
+                            <span className="text-xs text-emerald-600 font-bold px-3 py-1 bg-emerald-50 rounded-lg border border-emerald-200">✓ 완료됨</span>
                           ) : (
                             <>
                               <button
                                 onClick={() => handleCheer('sweet', q.title)}
-                                className="px-2 py-1.5 bg-slate-900 hover:bg-slate-800 text-[10px] font-bold text-emerald-400 rounded-lg transition border border-slate-850 flex items-center gap-1 active:scale-95"
+                                className="px-2 py-1.5 bg-white hover:bg-slate-50 text-[10px] font-bold text-emerald-600 rounded-lg transition border border-slate-200 flex items-center gap-1 active:scale-95 shadow-sm"
                               >
                                 😊 다정하게
                               </button>
                               <button
                                 onClick={() => handleCheer('strict', q.title)}
-                                className="px-2 py-1.5 bg-slate-900 hover:bg-slate-800 text-[10px] font-bold text-rose-400 rounded-lg transition border border-slate-850 flex items-center gap-1 active:scale-95"
+                                className="px-2 py-1.5 bg-white hover:bg-slate-50 text-[10px] font-bold text-rose-600 rounded-lg transition border border-slate-200 flex items-center gap-1 active:scale-95 shadow-sm"
                               >
                                 🔥 단호하게
                               </button>
                               <button
                                 onClick={() => handleCheer('funny', q.title)}
-                                className="px-2 py-1.5 bg-slate-900 hover:bg-slate-800 text-[10px] font-bold text-amber-400 rounded-lg transition border border-slate-850 flex items-center gap-1 active:scale-95"
+                                className="px-2 py-1.5 bg-white hover:bg-slate-50 text-[10px] font-bold text-amber-600 rounded-lg transition border border-slate-200 flex items-center gap-1 active:scale-95 shadow-sm"
                               >
                                 🤠 유머러스
                               </button>
