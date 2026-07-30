@@ -538,7 +538,7 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                       등록된 메인 던전 퀘스트가 없습니다.
                     </div>
                   ) : (
-                    <div className="relative w-full h-64 rounded-2xl border border-slate-300 bg-slate-950 overflow-hidden flex flex-col justify-end p-4 shadow-inner">
+                    <div className="relative w-full h-72 rounded-2xl border border-slate-300 bg-slate-950 overflow-hidden flex flex-col justify-end p-4 shadow-inner">
                       {/* 던전 배경 데코레이션 */}
                       <div className="absolute inset-0 bg-gradient-to-b from-[#111625] via-[#1b2238] to-[#0c0f1a] opacity-95" />
                       
@@ -552,9 +552,9 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                         <div className="w-1.5 h-6 bg-slate-800 rounded-full border border-slate-700 mt-1" />
                       </div>
                       
-                      <div className="absolute inset-0 flex items-center justify-between px-6 z-10 pt-10">
-                        {/* 징검다리 횡스크롤 영역 */}
-                        <div className="flex-1 overflow-x-auto py-6 flex items-center gap-6 pr-12 scrollbar-thin">
+                      <div className="absolute inset-0 flex items-end justify-between px-6 z-10 pb-8">
+                        {/* 징검다리 횡스크롤 영역 - 높이를 h-44로 지정하고 items-end로 정렬해 상단 캐릭터가 안 잘리게 함 */}
+                        <div className="flex-1 overflow-x-auto h-44 flex items-end gap-6 pr-12 scrollbar-thin">
                           {quests.filter(q => q.type === 'main').map((q, idx, arr) => {
                             // 징검다리 상태(State) 계산
                             const isCompleted = q.status === 'completed';
@@ -577,7 +577,7 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                                     handleQuestCompleteClick(q);
                                   }
                                 }}
-                                className={`flex-shrink-0 w-24 h-24 rounded-2xl border flex flex-col items-center justify-center p-2 text-center cursor-pointer transition transform hover:scale-105 select-none relative ${stateColor}`}
+                                className={`flex-shrink-0 w-24 h-24 rounded-2xl border flex flex-col items-center justify-center p-2 text-center cursor-pointer transition transform hover:scale-105 select-none relative mb-1 ${stateColor}`}
                               >
                                 {/* 캐릭터 앉아 있는 연출 (ACTIVE) */}
                                 {isActive && (
@@ -590,7 +590,7 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                                 {isCompleted ? (
                                   <span className="text-xl mb-1">👣</span>
                                 ) : isLocked ? (
-                                  <span className="text-lg text-slate-650 mb-1">🔒</span>
+                                  <span className="text-lg text-slate-655 mb-1">🔒</span>
                                 ) : (
                                   <span className="text-xl mb-1">⚔️</span>
                                 )}
@@ -607,9 +607,11 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                           
                           {/* 모든 퀘스트가 완료되었을 경우의 골 게이트 위치 캐릭터 */}
                           {quests.filter(q => q.type === 'main').every(q => q.status === 'completed') && (
-                            <div className="flex-shrink-0 w-20 flex flex-col items-center justify-center animate-bounce">
-                              <span className="text-4xl">{child.avatar || '🛡️'}</span>
-                              <span className="text-[8px] bg-emerald-500 text-white px-2 py-0.5 rounded-full border border-emerald-300 font-bold mt-1">도착!</span>
+                            <div className="flex-shrink-0 w-20 flex flex-col items-end justify-center animate-bounce pb-2">
+                              <div className="flex flex-col items-center">
+                                <span className="text-4xl">{child.avatar || '🛡️'}</span>
+                                <span className="text-[8px] bg-emerald-500 text-white px-2 py-0.5 rounded-full border border-emerald-300 font-bold mt-1">도착!</span>
+                              </div>
                             </div>
                           )}
                         </div>
