@@ -176,7 +176,7 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
             {!showLoading ? (
               <button
                 onClick={handleStartAdventure}
-                className="w-full py-4 bg-pink-600 hover:bg-pink-500 text-white font-extrabold text-[17px] font-bw rounded-2xl transition duration-300 transform active:scale-95 shadow-lg shadow-pink-500/20 tracking-wider"
+                className="w-full py-4 bg-[#644EB0] hover:bg-[#523d9c] text-white font-extrabold text-[17px] font-bw rounded-2xl transition duration-300 transform active:scale-95 shadow-lg shadow-[#644EB0]/20 tracking-wider"
               >
                 🎮 입장하기 (로그인)
               </button>
