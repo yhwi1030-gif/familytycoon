@@ -105,7 +105,30 @@ const setStored = <T>(key: string, data: T): void => {
   }
 };
 
-// DB 맵핑 헬퍼 함수들
+// 로컬 아이콘 세이브/로드 헬퍼
+const getLocalQuestIcon = (id: string): string | undefined => {
+  if (typeof window === 'undefined') return undefined;
+  try {
+    const data = localStorage.getItem('ff_quest_icons');
+    if (data) {
+      const map = JSON.parse(data);
+      return map[id];
+    }
+  } catch (e) {}
+  return undefined;
+};
+
+const saveLocalQuestIcon = (id: string, iconUrl: string) => {
+  if (typeof window === 'undefined') return;
+  try {
+    const data = localStorage.getItem('ff_quest_icons') || '{}';
+    const map = JSON.parse(data);
+    map[id] = iconUrl;
+    localStorage.setItem('ff_quest_icons', JSON.stringify(map));
+  } catch (e) {}
+};
+
+// DB 맵핑 헬퍼 함수들 (DB 컬럼 오류를 방지하기 위해 icon_url은 Supabase에 보내지 않음)
 const mapQuestToDB = (q: any) => ({
   id: q.id,
   type: q.type,
@@ -120,27 +143,29 @@ const mapQuestToDB = (q: any) => ({
   child_name: q.childName,
   due_time: q.dueTime,
   image_url: q.imageUrl,
-  created_at: q.createdAt,
-  icon_url: q.iconUrl
+  created_at: q.createdAt
 });
 
-const mapQuestFromDB = (q: any): Quest => ({
-  id: q.id,
-  type: q.type,
-  title: q.title,
-  category: q.category,
-  rewardType: q.reward_type || q.rewardType,
-  rewardExp: q.reward_exp !== undefined ? q.reward_exp : q.rewardExp,
-  rewardGold: q.reward_gold !== undefined ? q.reward_gold : q.rewardGold,
-  status: q.status,
-  streakCount: q.streak_count !== undefined ? q.streak_count : q.streakCount,
-  childId: q.child_id || q.childId,
-  childName: q.child_name || q.childName,
-  dueTime: q.due_time || q.dueTime,
-  imageUrl: q.image_url || q.imageUrl,
-  createdAt: q.created_at || q.createdAt,
-  iconUrl: q.icon_url || q.iconUrl
-});
+const mapQuestFromDB = (q: any): Quest => {
+  const localIcon = getLocalQuestIcon(q.id);
+  return {
+    id: q.id,
+    type: q.type,
+    title: q.title,
+    category: q.category,
+    rewardType: q.reward_type || q.rewardType,
+    rewardExp: q.reward_exp !== undefined ? q.reward_exp : q.rewardExp,
+    rewardGold: q.reward_gold !== undefined ? q.reward_gold : q.rewardGold,
+    status: q.status,
+    streakCount: q.streak_count !== undefined ? q.streak_count : q.streakCount,
+    childId: q.child_id || q.childId,
+    childName: q.child_name || q.childName,
+    dueTime: q.due_time || q.dueTime,
+    imageUrl: q.image_url || q.imageUrl,
+    createdAt: q.created_at || q.createdAt,
+    iconUrl: localIcon || q.icon_url || q.iconUrl
+  };
+};
 
 const mapNotiToDB = (n: any) => ({
   id: n.id,
@@ -375,6 +400,13 @@ export const api = {
   },
 
   saveQuests: async (quests: Quest[]): Promise<void> => {
+    // 로컬 아이콘 매핑 저장
+    for (const q of quests) {
+      if (q.iconUrl) {
+        saveLocalQuestIcon(q.id, q.iconUrl);
+      }
+    }
+
     if (!isSupabaseConfigured) {
       setStored(KEYS.QUESTS, quests);
       return;
@@ -398,6 +430,10 @@ export const api = {
       status: 'active',
       createdAt: new Date().toISOString()
     };
+
+    if (newQuest.iconUrl) {
+      saveLocalQuestIcon(newQuest.id, newQuest.iconUrl);
+    }
 
     if (!isSupabaseConfigured) {
       const quests = getStored<Quest[]>(KEYS.QUESTS, DEFAULT_QUESTS);
