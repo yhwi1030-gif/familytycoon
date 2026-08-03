@@ -158,84 +158,94 @@ const mapNotiFromDB = (n: any): AppNotification => ({
   meta: n.meta
 });
 
+// 로컬 스토리지로 완전 우회하는 도우미 (Supabase 연동 실패 시의 폴백)
+const getLocalProfilesFallback = (): Profile[] => {
+  const list = getStored(KEYS.PROFILES, DEFAULT_PROFILES);
+  if (typeof window !== 'undefined') {
+    const todayStr = new Date().toDateString();
+    const lastResetDate = localStorage.getItem('ff_last_stress_reset_date');
+    if (lastResetDate !== todayStr) {
+      let updated = false;
+      const updatedList = list.map(p => {
+        if (p.role === 'child' && p.stress !== 0) {
+          updated = true;
+          return { ...p, stress: 0 };
+        }
+        return p;
+      });
+      if (updated) {
+        localStorage.setItem(KEYS.PROFILES, JSON.stringify(updatedList));
+        localStorage.setItem('ff_last_stress_reset_date', todayStr);
+        return updatedList;
+      }
+      localStorage.setItem('ff_last_stress_reset_date', todayStr);
+    }
+  }
+  return list;
+};
+
 export const api = {
   // --- 프로필 관련 API ---
   getProfiles: async (): Promise<Profile[]> => {
     if (!isSupabaseConfigured) {
-      const list = getStored(KEYS.PROFILES, DEFAULT_PROFILES);
+      return getLocalProfilesFallback();
+    }
+
+    try {
+      const { data, error } = await supabase.from('profiles').select('*');
+      if (error) {
+        console.error("Supabase getProfiles error:", error);
+        return getLocalProfilesFallback();
+      }
+
+      const profilesList = (data || []).map((p: any) => ({
+        id: p.id,
+        role: p.role,
+        name: p.name,
+        avatar: p.avatar,
+        pin: p.pin,
+        title: p.title,
+        level: p.level,
+        exp: p.exp,
+        gold: p.gold,
+        stress: p.stress,
+        style: p.style,
+        childClass: p.child_class || p.childClass || '',
+        stats: p.stats,
+        buffs: p.buffs,
+        inventory: p.inventory,
+        password: p.password
+      })) as Profile[];
+
+      // 자녀 스트레스 매일 초기화 (Supabase 연동 시)
       if (typeof window !== 'undefined') {
         const todayStr = new Date().toDateString();
         const lastResetDate = localStorage.getItem('ff_last_stress_reset_date');
         if (lastResetDate !== todayStr) {
           let updated = false;
-          const updatedList = list.map(p => {
+          const updatedList = profilesList.map(p => {
             if (p.role === 'child' && p.stress !== 0) {
               updated = true;
               return { ...p, stress: 0 };
             }
             return p;
           });
+
           if (updated) {
-            localStorage.setItem(KEYS.PROFILES, JSON.stringify(updatedList));
-            localStorage.setItem('ff_last_stress_reset_date', todayStr);
-            return updatedList;
+            for (const p of updatedList) {
+              await supabase.from('profiles').update({ stress: p.stress }).eq('id', p.id);
+            }
           }
           localStorage.setItem('ff_last_stress_reset_date', todayStr);
+          return updatedList;
         }
       }
-      return list;
+
+      return profilesList;
+    } catch (e) {
+      console.error("Supabase getProfiles Exception (falling back to LocalStorage):", e);
+      return getLocalProfilesFallback();
     }
-
-    const { data, error } = await supabase.from('profiles').select('*');
-    if (error) {
-      console.error("Supabase getProfiles error:", error);
-      return [];
-    }
-
-    const profilesList = (data || []).map((p: any) => ({
-      id: p.id,
-      role: p.role,
-      name: p.name,
-      avatar: p.avatar,
-      pin: p.pin,
-      title: p.title,
-      level: p.level,
-      exp: p.exp,
-      gold: p.gold,
-      stress: p.stress,
-      style: p.style,
-      childClass: p.child_class || p.childClass || '',
-      stats: p.stats,
-      buffs: p.buffs,
-      inventory: p.inventory,
-      password: p.password
-    })) as Profile[];
-
-    // 자녀 스트레스 매일 초기화 (Supabase 연동 시)
-    if (typeof window !== 'undefined') {
-      const todayStr = new Date().toDateString();
-      const lastResetDate = localStorage.getItem('ff_last_stress_reset_date');
-      if (lastResetDate !== todayStr) {
-        let updated = false;
-        const updatedList = profilesList.map(p => {
-          if (p.role === 'child' && p.stress !== 0) {
-            updated = true;
-            return { ...p, stress: 0 };
-          }
-          return p;
-        });
-
-        if (updated) {
-          for (const p of updatedList) {
-            await supabase.from('profiles').update({ stress: p.stress }).eq('id', p.id);
-          }
-        }
-        localStorage.setItem('ff_last_stress_reset_date', todayStr);
-        return updatedList;
-      }
-    }
-
-    return profilesList;
   },
   
   updateProfile: async (profile: Profile): Promise<Profile[]> => {
@@ -249,47 +259,76 @@ export const api = {
       return list;
     }
 
-    const dbPayload = {
-      id: profile.id,
-      role: profile.role,
-      name: profile.name,
-      avatar: profile.avatar,
-      pin: profile.pin,
-      title: profile.title,
-      level: profile.level,
-      exp: profile.exp,
-      gold: profile.gold,
-      stress: profile.stress,
-      style: profile.style,
-      child_class: profile.childClass,
-      stats: profile.stats,
-      buffs: profile.buffs,
-      inventory: profile.inventory,
-      password: profile.password
-    };
+    try {
+      const dbPayload = {
+        id: profile.id,
+        role: profile.role,
+        name: profile.name,
+        avatar: profile.avatar,
+        pin: profile.pin,
+        title: profile.title,
+        level: profile.level,
+        exp: profile.exp,
+        gold: profile.gold,
+        stress: profile.stress,
+        style: profile.style,
+        child_class: profile.childClass,
+        stats: profile.stats,
+        buffs: profile.buffs,
+        inventory: profile.inventory,
+        password: profile.password
+      };
 
-    const { error } = await supabase.from('profiles').upsert(dbPayload);
-    if (error) {
-      console.error("Supabase updateProfile error:", error);
+      const { error } = await supabase.from('profiles').upsert(dbPayload);
+      if (error) {
+        console.error("Supabase updateProfile error (falling back to LocalStorage):", error);
+        // Fallback to LocalStorage
+        const list = getStored(KEYS.PROFILES, DEFAULT_PROFILES);
+        const idx = list.findIndex(p => p.id === profile.id);
+        if (idx !== -1) {
+          list[idx] = profile;
+          setStored(KEYS.PROFILES, list);
+        }
+        return list;
+      }
+      return api.getProfiles();
+    } catch (e) {
+      console.error("Supabase updateProfile Exception (falling back to LocalStorage):", e);
+      const list = getStored(KEYS.PROFILES, DEFAULT_PROFILES);
+      const idx = list.findIndex(p => p.id === profile.id);
+      if (idx !== -1) {
+        list[idx] = profile;
+        setStored(KEYS.PROFILES, list);
+      }
+      return list;
     }
-    return api.getProfiles();
   },
 
   deleteProfile: async (id: string): Promise<Profile[]> => {
     if (!isSupabaseConfigured) {
-      const list = api.getProfiles(); // wait, api.getProfiles() returns a Promise now!
-      // Let's resolve it using wait or getStored directly for localstorage
       const localList = getStored<Profile[]>(KEYS.PROFILES, DEFAULT_PROFILES);
       const filtered = localList.filter(p => p.id !== id);
       setStored(KEYS.PROFILES, filtered);
       return filtered;
     }
 
-    const { error } = await supabase.from('profiles').delete().eq('id', id);
-    if (error) {
-      console.error("Supabase deleteProfile error:", error);
+    try {
+      const { error } = await supabase.from('profiles').delete().eq('id', id);
+      if (error) {
+        console.error("Supabase deleteProfile error (falling back to LocalStorage):", error);
+        const localList = getStored<Profile[]>(KEYS.PROFILES, DEFAULT_PROFILES);
+        const filtered = localList.filter(p => p.id !== id);
+        setStored(KEYS.PROFILES, filtered);
+        return filtered;
+      }
+      return api.getProfiles();
+    } catch (e) {
+      console.error("Supabase deleteProfile Exception (falling back to LocalStorage):", e);
+      const localList = getStored<Profile[]>(KEYS.PROFILES, DEFAULT_PROFILES);
+      const filtered = localList.filter(p => p.id !== id);
+      setStored(KEYS.PROFILES, filtered);
+      return filtered;
     }
-    return api.getProfiles();
   },
 
   getCurrentUserId: (): string => {
@@ -312,12 +351,17 @@ export const api = {
       return getStored(KEYS.QUESTS, DEFAULT_QUESTS);
     }
 
-    const { data, error } = await supabase.from('quests').select('*');
-    if (error) {
-      console.error("Supabase getQuests error:", error);
-      return [];
+    try {
+      const { data, error } = await supabase.from('quests').select('*');
+      if (error) {
+        console.error("Supabase getQuests error:", error);
+        return getStored(KEYS.QUESTS, DEFAULT_QUESTS);
+      }
+      return (data || []).map(mapQuestFromDB);
+    } catch (e) {
+      console.error("Supabase getQuests Exception:", e);
+      return getStored(KEYS.QUESTS, DEFAULT_QUESTS);
     }
-    return (data || []).map(mapQuestFromDB);
   },
 
   saveQuests: async (quests: Quest[]): Promise<void> => {
@@ -326,9 +370,14 @@ export const api = {
       return;
     }
 
-    // Supabase 퀘스트 대량 동기화
-    for (const q of quests) {
-      await supabase.from('quests').upsert(mapQuestToDB(q));
+    try {
+      // Supabase 퀘스트 대량 동기화
+      for (const q of quests) {
+        await supabase.from('quests').upsert(mapQuestToDB(q));
+      }
+    } catch (e) {
+      console.error("Supabase saveQuests Exception:", e);
+      setStored(KEYS.QUESTS, quests);
     }
   },
 
@@ -346,11 +395,22 @@ export const api = {
       return newQuest;
     }
 
-    const { error } = await supabase.from('quests').insert(mapQuestToDB(newQuest));
-    if (error) {
-      console.error("Supabase addQuest error:", error);
+    try {
+      const { error } = await supabase.from('quests').insert(mapQuestToDB(newQuest));
+      if (error) {
+        console.error("Supabase addQuest error:", error);
+        const quests = getStored<Quest[]>(KEYS.QUESTS, DEFAULT_QUESTS);
+        quests.push(newQuest);
+        setStored(KEYS.QUESTS, quests);
+      }
+      return newQuest;
+    } catch (e) {
+      console.error("Supabase addQuest Exception:", e);
+      const quests = getStored<Quest[]>(KEYS.QUESTS, DEFAULT_QUESTS);
+      quests.push(newQuest);
+      setStored(KEYS.QUESTS, quests);
+      return newQuest;
     }
-    return newQuest;
   },
 
   // --- 상점 관련 API ---
@@ -359,12 +419,17 @@ export const api = {
       return getStored(KEYS.STORE_ITEMS, DEFAULT_STORE_ITEMS);
     }
 
-    const { data, error } = await supabase.from('store_items').select('*');
-    if (error) {
-      console.error("Supabase getStoreItems error:", error);
-      return [];
+    try {
+      const { data, error } = await supabase.from('store_items').select('*');
+      if (error) {
+        console.error("Supabase getStoreItems error:", error);
+        return getStored(KEYS.STORE_ITEMS, DEFAULT_STORE_ITEMS);
+      }
+      return (data || []) as StoreItem[];
+    } catch (e) {
+      console.error("Supabase getStoreItems Exception:", e);
+      return getStored(KEYS.STORE_ITEMS, DEFAULT_STORE_ITEMS);
     }
-    return (data || []) as StoreItem[];
   },
 
   saveStoreItems: async (items: StoreItem[]): Promise<void> => {
@@ -373,8 +438,13 @@ export const api = {
       return;
     }
 
-    for (const item of items) {
-      await supabase.from('store_items').upsert(item);
+    try {
+      for (const item of items) {
+        await supabase.from('store_items').upsert(item);
+      }
+    } catch (e) {
+      console.error("Supabase saveStoreItems Exception:", e);
+      setStored(KEYS.STORE_ITEMS, items);
     }
   },
 
@@ -389,11 +459,29 @@ export const api = {
       return items;
     }
 
-    const { error } = await supabase.from('store_items').upsert(item);
-    if (error) {
-      console.error("Supabase updateStoreItem error:", error);
+    try {
+      const { error } = await supabase.from('store_items').upsert(item);
+      if (error) {
+        console.error("Supabase updateStoreItem error:", error);
+        const items = getStored<StoreItem[]>(KEYS.STORE_ITEMS, DEFAULT_STORE_ITEMS);
+        const idx = items.findIndex(i => i.id === item.id);
+        if (idx !== -1) {
+          items[idx] = item;
+          setStored(KEYS.STORE_ITEMS, items);
+        }
+        return items;
+      }
+      return api.getStoreItems();
+    } catch (e) {
+      console.error("Supabase updateStoreItem Exception:", e);
+      const items = getStored<StoreItem[]>(KEYS.STORE_ITEMS, DEFAULT_STORE_ITEMS);
+      const idx = items.findIndex(i => i.id === item.id);
+      if (idx !== -1) {
+        items[idx] = item;
+        setStored(KEYS.STORE_ITEMS, items);
+      }
+      return items;
     }
-    return api.getStoreItems();
   },
 
   addStoreItem: async (item: Omit<StoreItem, 'id' | 'status'>): Promise<StoreItem> => {
@@ -410,11 +498,22 @@ export const api = {
       return newItem;
     }
 
-    const { error } = await supabase.from('store_items').insert(newItem);
-    if (error) {
-      console.error("Supabase addStoreItem error:", error);
+    try {
+      const { error } = await supabase.from('store_items').insert(newItem);
+      if (error) {
+        console.error("Supabase addStoreItem error:", error);
+        const items = getStored<StoreItem[]>(KEYS.STORE_ITEMS, DEFAULT_STORE_ITEMS);
+        items.push(newItem);
+        setStored(KEYS.STORE_ITEMS, items);
+      }
+      return newItem;
+    } catch (e) {
+      console.error("Supabase addStoreItem Exception:", e);
+      const items = getStored<StoreItem[]>(KEYS.STORE_ITEMS, DEFAULT_STORE_ITEMS);
+      items.push(newItem);
+      setStored(KEYS.STORE_ITEMS, items);
+      return newItem;
     }
-    return newItem;
   },
 
   // --- 알림 관련 API ---
@@ -423,12 +522,17 @@ export const api = {
       return getStored(KEYS.NOTIFICATIONS, DEFAULT_NOTIFICATIONS);
     }
 
-    const { data, error } = await supabase.from('notifications').select('*');
-    if (error) {
-      console.error("Supabase getNotifications error:", error);
-      return [];
+    try {
+      const { data, error } = await supabase.from('notifications').select('*');
+      if (error) {
+        console.error("Supabase getNotifications error:", error);
+        return getStored(KEYS.NOTIFICATIONS, DEFAULT_NOTIFICATIONS);
+      }
+      return (data || []).map(mapNotiFromDB);
+    } catch (e) {
+      console.error("Supabase getNotifications Exception:", e);
+      return getStored(KEYS.NOTIFICATIONS, DEFAULT_NOTIFICATIONS);
     }
-    return (data || []).map(mapNotiFromDB);
   },
 
   addNotification: async (noti: Omit<AppNotification, 'id' | 'createdAt' | 'resolved'>): Promise<AppNotification> => {
@@ -446,11 +550,22 @@ export const api = {
       return newNoti;
     }
 
-    const { error } = await supabase.from('notifications').insert(mapNotiToDB(newNoti));
-    if (error) {
-      console.error("Supabase addNotification error:", error);
+    try {
+      const { error } = await supabase.from('notifications').insert(mapNotiToDB(newNoti));
+      if (error) {
+        console.error("Supabase addNotification error:", error);
+        const list = getStored<AppNotification[]>(KEYS.NOTIFICATIONS, DEFAULT_NOTIFICATIONS);
+        list.unshift(newNoti);
+        setStored(KEYS.NOTIFICATIONS, list);
+      }
+      return newNoti;
+    } catch (e) {
+      console.error("Supabase addNotification Exception:", e);
+      const list = getStored<AppNotification[]>(KEYS.NOTIFICATIONS, DEFAULT_NOTIFICATIONS);
+      list.unshift(newNoti);
+      setStored(KEYS.NOTIFICATIONS, list);
+      return newNoti;
     }
-    return newNoti;
   },
 
   resolveNotification: async (id: string): Promise<void> => {
@@ -464,9 +579,25 @@ export const api = {
       return;
     }
 
-    const { error } = await supabase.from('notifications').update({ resolved: true }).eq('id', id);
-    if (error) {
-      console.error("Supabase resolveNotification error:", error);
+    try {
+      const { error } = await supabase.from('notifications').update({ resolved: true }).eq('id', id);
+      if (error) {
+        console.error("Supabase resolveNotification error:", error);
+        const list = getStored<AppNotification[]>(KEYS.NOTIFICATIONS, DEFAULT_NOTIFICATIONS);
+        const idx = list.findIndex(n => n.id === id);
+        if (idx !== -1) {
+          list[idx].resolved = true;
+          setStored(KEYS.NOTIFICATIONS, list);
+        }
+      }
+    } catch (e) {
+      console.error("Supabase resolveNotification Exception:", e);
+      const list = getStored<AppNotification[]>(KEYS.NOTIFICATIONS, DEFAULT_NOTIFICATIONS);
+      const idx = list.findIndex(n => n.id === id);
+      if (idx !== -1) {
+        list[idx].resolved = true;
+        setStored(KEYS.NOTIFICATIONS, list);
+      }
     }
   },
 
