@@ -98,7 +98,12 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
     const current = list.find(p => p.id === user.id);
     if (current) setChild(current);
     const qList = await api.getQuests();
-    setQuests(qList);
+    const todayStr = new Date().toDateString();
+    const filteredQuests = qList.filter(q => {
+      const qDate = new Date(q.createdAt || new Date()).toDateString();
+      return qDate === todayStr;
+    });
+    setQuests(filteredQuests);
     const sList = await api.getStoreItems();
     setStoreItems(sList);
     const nList = await api.getNotifications();
@@ -536,7 +541,13 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                   </div>
 
                   {/* 중앙 & 우측: 던전 입구 및 징검다리 횡스크롤 */}
-                  {quests.filter(q => q.type === 'main').length === 0 ? (
+                  {new Date().getHours() < 6 ? (
+                    <div className="text-center py-12 bg-slate-900/40 rounded-2xl border border-slate-800 p-6 flex flex-col items-center justify-center min-h-[200px]">
+                      <div className="text-4xl mb-3">🔒</div>
+                      <div className="text-sm font-bold text-slate-300">오늘의 메인 퀘스트 잠금 상태</div>
+                      <div className="text-xs text-slate-500 mt-1.5">매일 미션은 오전 6시에 개방됩니다! 조금만 기다려 주세요.</div>
+                    </div>
+                  ) : quests.filter(q => q.type === 'main').length === 0 ? (
                     <div className="text-center py-8 text-slate-500 text-xs font-bold italic bg-slate-50 rounded-2xl border border-slate-200">
                       등록된 메인 던전 퀘스트가 없습니다.
                     </div>

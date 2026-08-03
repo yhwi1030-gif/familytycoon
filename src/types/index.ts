@@ -50,6 +50,7 @@ export interface Quest {
   streakCount?: number; // 연속 성공 횟수 (메인/셀프 퀘스트용)
   childId?: string; // 어떤 자녀 모험가의 퀘스트인지 매핑
   childName?: string; // 요청을 보낸 자녀 모험가 이름
+  createdAt?: string; // 퀘스트 생성일자
 }
 
 export interface StoreItem {

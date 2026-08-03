@@ -119,7 +119,8 @@ const mapQuestToDB = (q: any) => ({
   child_id: q.childId,
   child_name: q.childName,
   due_time: q.dueTime,
-  image_url: q.imageUrl
+  image_url: q.imageUrl,
+  created_at: q.createdAt
 });
 
 const mapQuestFromDB = (q: any): Quest => ({
@@ -135,7 +136,8 @@ const mapQuestFromDB = (q: any): Quest => ({
   childId: q.child_id || q.childId,
   childName: q.child_name || q.childName,
   dueTime: q.due_time || q.dueTime,
-  imageUrl: q.image_url || q.imageUrl
+  imageUrl: q.image_url || q.imageUrl,
+  createdAt: q.created_at || q.createdAt
 });
 
 const mapNotiToDB = (n: any) => ({
@@ -391,7 +393,8 @@ export const api = {
     const newQuest: Quest = {
       ...quest,
       id: 'q_' + Math.random().toString(36).substr(2, 9),
-      status: 'active'
+      status: 'active',
+      createdAt: new Date().toISOString()
     };
 
     if (!isSupabaseConfigured) {

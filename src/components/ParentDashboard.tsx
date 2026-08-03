@@ -71,7 +71,12 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
     }
     
     const qList = await api.getQuests();
-    setQuests(qList);
+    const todayStr = new Date().toDateString();
+    const filteredQuests = qList.filter(q => {
+      const qDate = new Date(q.createdAt || new Date()).toDateString();
+      return qDate === todayStr;
+    });
+    setQuests(filteredQuests);
     const nList = await api.getNotifications();
     setNotifications(nList);
   };
