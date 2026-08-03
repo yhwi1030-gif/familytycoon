@@ -119,6 +119,17 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
     }
   };
 
+  const handleResetQuest = async (id: string) => {
+    const all = await api.getQuests();
+    const target = all.find(q => q.id === id);
+    if (target) {
+      target.status = 'active';
+      target.imageUrl = undefined;
+      await api.saveQuests(all);
+      await loadData();
+    }
+  };
+
   // 신규 퀘스트 발행 완료 콜백
   const handleAddQuest = async (data: { title: string; category: string; type: 'main' | 'flash'; rewardValue: number; dueTime?: string }) => {
     await api.addQuest({
@@ -556,10 +567,18 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
                           <h4 className="text-sm font-extrabold text-slate-800 mt-1.5">{q.title}</h4>
                           <p className="text-[10px] text-slate-500 mt-0.5">보상: ➕ {q.rewardExp} EXP</p>
                         </div>
-                        <div className="col-span-1 sm:col-span-3 text-left sm:text-center">
+                        <div className="col-span-1 sm:col-span-3 text-left sm:text-center flex flex-col sm:items-center justify-center gap-1.5">
                           <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
                             📅 일일 루틴
                           </span>
+                          {(q.status === 'completed' || q.status === 'request_approval' || q.status === 'rejected') && (
+                            <button
+                              onClick={() => handleResetQuest(q.id)}
+                              className="text-[9px] font-bold text-rose-500 hover:text-white bg-rose-50 hover:bg-rose-600 border border-rose-250 px-2 py-0.5 rounded-md transition duration-200 shadow-sm flex items-center justify-center gap-0.5"
+                            >
+                              🔄 진행중 리셋
+                            </button>
+                          )}
                         </div>
                         <div className="col-span-1 sm:col-span-5 flex flex-wrap gap-1.5 justify-start sm:justify-end items-center">
                           {q.status === 'completed' ? (
@@ -645,13 +664,21 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
                           <h4 className="text-sm font-extrabold text-slate-800 mt-1.5">{q.title}</h4>
                           <p className="text-[10px] text-slate-500 mt-0.5">보상: 🪙 {q.rewardGold} G</p>
                         </div>
-                        <div className="col-span-1 sm:col-span-3 text-left sm:text-center">
+                        <div className="col-span-1 sm:col-span-3 text-left sm:text-center flex flex-col sm:items-center justify-center gap-1.5">
                           <div className="inline-flex flex-col items-center">
                             <span className="text-[10px] font-bold text-rose-700 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200 flex items-center gap-1">
                               ⏱️ {q.dueTime || '18:00'} 마감
                             </span>
                             <span className="text-[8px] text-slate-500 mt-1 font-semibold">(미수행 시 골드 소멸)</span>
                           </div>
+                          {(q.status === 'completed' || q.status === 'request_approval' || q.status === 'rejected') && (
+                            <button
+                              onClick={() => handleResetQuest(q.id)}
+                              className="text-[9px] font-bold text-rose-500 hover:text-white bg-rose-55 hover:bg-rose-600 border border-rose-250 px-2 py-0.5 rounded-md transition duration-200 shadow-sm flex items-center justify-center gap-0.5"
+                            >
+                              🔄 진행중 리셋
+                            </button>
+                          )}
                         </div>
                         <div className="col-span-1 sm:col-span-5 flex flex-wrap gap-1.5 justify-start sm:justify-end items-center">
                           {q.status === 'completed' ? (
