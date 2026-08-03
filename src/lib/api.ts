@@ -254,8 +254,10 @@ export const api = {
       const idx = list.findIndex(p => p.id === profile.id);
       if (idx !== -1) {
         list[idx] = profile;
-        setStored(KEYS.PROFILES, list);
+      } else {
+        list.push(profile);
       }
+      setStored(KEYS.PROFILES, list);
       return list;
     }
 
@@ -287,8 +289,10 @@ export const api = {
         const idx = list.findIndex(p => p.id === profile.id);
         if (idx !== -1) {
           list[idx] = profile;
-          setStored(KEYS.PROFILES, list);
+        } else {
+          list.push(profile);
         }
+        setStored(KEYS.PROFILES, list);
         return list;
       }
       return api.getProfiles();
@@ -298,8 +302,10 @@ export const api = {
       const idx = list.findIndex(p => p.id === profile.id);
       if (idx !== -1) {
         list[idx] = profile;
-        setStored(KEYS.PROFILES, list);
+      } else {
+        list.push(profile);
       }
+      setStored(KEYS.PROFILES, list);
       return list;
     }
   },

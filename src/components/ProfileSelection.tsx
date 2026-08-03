@@ -129,7 +129,7 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
     
     const newId = isSignupFlow
       ? 'parent1'
-      : (roleCount(onboardingRole!) > 0 ? `${onboardingRole!}${roleCount(onboardingRole!) + 1}` : `${onboardingRole!}2`);
+      : (roleCount(onboardingRole!) > 0 ? `${onboardingRole!}${roleCount(onboardingRole!) + 1}` : `${onboardingRole!}1`);
       
     const finalName = isSignupFlow ? tempSignupData.name : (onboardingRole === 'parent' ? `길드마스터 ${roleCount('parent') + 1}` : `아기 모험가 ${roleCount('child') + 1}`);
     const finalPin = isSignupFlow ? '1234' : (onboardingRole === 'parent' ? '1234' : '0000'); // default PIN, editable per profile card
