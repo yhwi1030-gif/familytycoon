@@ -719,5 +719,20 @@ export const api = {
         console.error("Supabase clearAllData Exception:", e);
       }
     }
+  },
+
+  // 모든 퀘스트 강제 초기화(삭제) 기능
+  clearQuests: async (): Promise<void> => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(KEYS.QUESTS, JSON.stringify([]));
+      localStorage.removeItem('ff_quest_icons');
+    }
+    if (isSupabaseConfigured) {
+      try {
+        await supabase.from('quests').delete().neq('id', 'keep_all');
+      } catch (e) {
+        console.error("Supabase clearQuests Exception:", e);
+      }
+    }
   }
 };

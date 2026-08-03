@@ -517,12 +517,26 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
                 </h3>
                 <p className="text-[10px] text-slate-500 font-semibold mt-0.5">자녀의 활동 루틴과 일시적인 미션을 총괄 통제합니다.</p>
               </div>
-              <button
-                onClick={() => setIsQuestBuilderOpen(true)}
-                className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition shadow active:scale-95"
-              >
-                ➕ 신규 퀘스트 설계
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={async () => {
+                    if (confirm('⚠️ 정말로 모든 퀘스트(메인 및 돌발 전체)를 강제 초기화(삭제)하시겠습니까?')) {
+                      await api.clearQuests();
+                      await loadData();
+                      alert('🧹 모든 퀘스트가 강제 초기화되었습니다.');
+                    }
+                  }}
+                  className="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-xl transition shadow active:scale-95 flex items-center gap-1"
+                >
+                  🧹 모든 퀘스트 초기화
+                </button>
+                <button
+                  onClick={() => setIsQuestBuilderOpen(true)}
+                  className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition shadow active:scale-95"
+                >
+                  ➕ 신규 퀘스트 설계
+                </button>
+              </div>
             </div>
 
             {/* SECTION 1: 메인 퀘스트 (일일 루틴) 섹션 */}
