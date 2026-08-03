@@ -131,7 +131,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
   };
 
   // 신규 퀘스트 발행 완료 콜백
-  const handleAddQuest = async (data: { title: string; category: string; type: 'main' | 'flash'; rewardValue: number; dueTime?: string }) => {
+  const handleAddQuest = async (data: { title: string; category: string; type: 'main' | 'flash'; rewardValue: number; dueTime?: string; iconUrl?: string }) => {
     await api.addQuest({
       title: data.title,
       category: data.category,
@@ -139,7 +139,8 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
       rewardType: data.type === 'main' ? 'exp' : 'gold',
       rewardExp: data.type === 'main' ? data.rewardValue : 0,
       rewardGold: data.type === 'flash' ? data.rewardValue : 0,
-      dueTime: data.dueTime
+      dueTime: data.dueTime,
+      iconUrl: data.iconUrl
     });
     // 알림 전송
     await api.addNotification({

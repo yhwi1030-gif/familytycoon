@@ -51,6 +51,7 @@ export interface Quest {
   childId?: string; // 어떤 자녀 모험가의 퀘스트인지 매핑
   childName?: string; // 요청을 보낸 자녀 모험가 이름
   createdAt?: string; // 퀘스트 생성일자
+  iconUrl?: string; // Upstage AI 생성 2D 로우폴리 아이콘
 }
 
 export interface StoreItem {

@@ -631,13 +631,20 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                                 </div>
                               )}
                               
-                              {isCompleted ? (
-                                <span className="text-xl mb-1">👣</span>
-                              ) : isLocked ? (
-                                <span className="text-lg text-slate-655 mb-1">🔒</span>
-                              ) : (
-                                <span className="text-xl mb-1">⚔️</span>
-                              )}
+                              <div className="w-10 h-10 flex items-center justify-center mb-1.5 relative overflow-hidden rounded-xl bg-slate-900/40 p-1 border border-slate-750/30">
+                                {q.iconUrl ? (
+                                  <img 
+                                    src={q.iconUrl} 
+                                    alt="Quest Icon" 
+                                    className={`w-full h-full object-cover rounded-lg ${isLocked ? 'opacity-25 grayscale' : ''}`} 
+                                  />
+                                ) : (
+                                  <span className="text-xl">{isCompleted ? '👣' : isLocked ? '🔒' : '⚔️'}</span>
+                                )}
+                                {isLocked && q.iconUrl && (
+                                  <div className="absolute inset-0 bg-slate-950/30 flex items-center justify-center text-[10px]">🔒</div>
+                                )}
+                              </div>
                               
                               <p className="text-[9px] font-black leading-tight max-w-[80px] truncate">{q.title}</p>
                               <p className="text-[7px] text-slate-400 mt-0.5">{q.rewardExp} EXP</p>
