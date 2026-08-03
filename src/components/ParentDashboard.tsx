@@ -9,7 +9,7 @@ import { AIReadingModal } from '@/components/AIReadingModal';
 import { QuestBuilder } from '@/components/QuestBuilder';
 import {
   TrendingUp, Award, Zap, AlertCircle, ShoppingBag, ShieldAlert,
-  Clock, Plus, Check, RefreshCw, LogOut, CheckCircle, HelpCircle, ArrowRight
+  Clock, Plus, Check, RefreshCw, LogOut, CheckCircle, HelpCircle, ArrowRight, ArrowLeft
 } from 'lucide-react';
 
 interface ParentDashboardProps {
@@ -299,6 +299,12 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
             className="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg transition shadow-md"
           >
             <Plus className="w-3 h-3" /> 설계
+          </button>
+          <button
+            onClick={onLogout}
+            className="flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 text-[10px] font-bold px-2.5 py-1.5 rounded-lg transition border border-slate-300 shadow-sm"
+          >
+            <ArrowLeft className="w-3 h-3" /> 뒤로가기
           </button>
           <button
             onClick={onLogout}
