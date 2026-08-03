@@ -539,8 +539,14 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                     </div>
                   ) : (
                     <div className="relative w-full min-h-[380px] rounded-2xl border border-slate-300 bg-slate-950 p-6 shadow-inner flex flex-col md:flex-row justify-between items-end gap-6 overflow-visible">
-                      {/* 던전 배경 데코레이션 */}
-                      <div className="absolute inset-0 bg-gradient-to-b from-[#111625] via-[#1b2238] to-[#0c0f1a] opacity-95 rounded-2xl" />
+                      {/* 던전 배경 이미지 및 오버레이 */}
+                      <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
+                        <div 
+                          className="absolute inset-0 bg-cover bg-center opacity-30 blur-[0.5px]" 
+                          style={{ backgroundImage: "url('/family_tycoon_map.jpg')" }}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-b from-[#111625]/90 via-[#1b2238]/92 to-[#0c0f1a]/95" />
+                      </div>
                       
                       {/* 횃불 애니메이션 효과 */}
                       <div className="absolute top-4 left-6 flex flex-col items-center select-none z-10">
@@ -619,56 +625,56 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                       <div className="w-36 h-40 flex-shrink-0 relative bg-transparent overflow-visible select-none flex items-end z-10 self-center md:self-end">
                         
                         {/* 왼쪽 타워 */}
-                        <div className="absolute left-0 bottom-0 w-8 h-36 bg-slate-400 border-2 border-slate-700 flex flex-col justify-between z-10 rounded-t-sm">
+                        <div className="absolute left-0 bottom-0 w-8 h-36 bg-[#2a344d] border-2 border-[#151a29] flex flex-col justify-between z-10 rounded-t-sm">
                           {/* 성벽 총안 (Battlements) */}
                           <div className="flex justify-between -mt-2 px-0.5">
-                            <div className="w-2.5 h-2 bg-slate-400 border-t-2 border-x-2 border-slate-700" />
-                            <div className="w-2.5 h-2 bg-slate-400 border-t-2 border-x-2 border-slate-700" />
+                            <div className="w-2.5 h-2 bg-[#2a344d] border-t-2 border-x-2 border-[#151a29]" />
+                            <div className="w-2.5 h-2 bg-[#2a344d] border-t-2 border-x-2 border-[#151a29]" />
                           </div>
                           {/* 감시창 */}
-                          <div className="w-2.5 h-4 bg-slate-800 rounded-md border border-slate-600 mx-auto mt-4" />
+                          <div className="w-2.5 h-4 bg-slate-900 rounded-md border border-slate-700 mx-auto mt-4" />
                           {/* 로우 블록 돌 무늬 선 */}
-                          <div className="border-t border-slate-500 w-full opacity-50 mt-10" />
-                          <div className="border-t border-slate-500 w-full opacity-50 mb-6" />
+                          <div className="border-t border-slate-600 w-full opacity-30 mt-10" />
+                          <div className="border-t border-slate-600 w-full opacity-30 mb-6" />
                         </div>
 
                         {/* 오른쪽 타워 */}
-                        <div className="absolute right-0 bottom-0 w-8 h-36 bg-slate-400 border-2 border-slate-700 flex flex-col justify-between z-10 rounded-t-sm">
+                        <div className="absolute right-0 bottom-0 w-8 h-36 bg-[#2a344d] border-2 border-[#151a29] flex flex-col justify-between z-10 rounded-t-sm">
                           {/* 성벽 총안 (Battlements) */}
                           <div className="flex justify-between -mt-2 px-0.5">
-                            <div className="w-2.5 h-2 bg-slate-400 border-t-2 border-x-2 border-slate-700" />
-                            <div className="w-2.5 h-2 bg-slate-400 border-t-2 border-x-2 border-slate-700" />
+                            <div className="w-2.5 h-2 bg-[#2a344d] border-t-2 border-x-2 border-[#151a29]" />
+                            <div className="w-2.5 h-2 bg-[#2a344d] border-t-2 border-x-2 border-[#151a29]" />
                           </div>
                           {/* 감시창 */}
-                          <div className="w-2.5 h-4 bg-slate-800 rounded-md border border-slate-600 mx-auto mt-4" />
+                          <div className="w-2.5 h-4 bg-slate-900 rounded-md border border-slate-700 mx-auto mt-4" />
                           {/* 로우 블록 돌 무늬 선 */}
-                          <div className="border-t border-slate-500 w-full opacity-50 mt-10" />
-                          <div className="border-t border-slate-500 w-full opacity-50 mb-6" />
+                          <div className="border-t border-slate-600 w-full opacity-30 mt-10" />
+                          <div className="border-t border-slate-600 w-full opacity-30 mb-6" />
                         </div>
 
                         {/* 중간 연결 성벽 및 게이트 아치 */}
-                        <div className="absolute inset-x-8 bottom-0 h-28 bg-slate-350 border-t-2 border-slate-700 z-0 flex flex-col justify-end">
+                        <div className="absolute inset-x-8 bottom-0 h-28 bg-[#20273a] border-t-2 border-[#151a29] z-0 flex flex-col justify-end">
                           {/* 중간 성벽 총안 */}
                           <div className="flex justify-around -mt-2 absolute top-0 inset-x-0">
-                            <div className="w-3 h-2 bg-slate-350 border-t-2 border-x-2 border-slate-700" />
-                            <div className="w-3 h-2 bg-slate-350 border-t-2 border-x-2 border-slate-700" />
+                            <div className="w-3 h-2 bg-[#20273a] border-t-2 border-x-2 border-[#151a29]" />
+                            <div className="w-3 h-2 bg-[#20273a] border-t-2 border-x-2 border-[#151a29]" />
                           </div>
                           
                           {/* 성문 아치 입구 */}
-                          <div className="w-16 h-20 bg-slate-900 border-t-2 border-x-2 border-slate-700 rounded-t-full mx-auto relative overflow-hidden self-end">
+                          <div className="w-16 h-20 bg-slate-950 border-t-2 border-x-2 border-[#151a29] rounded-t-full mx-auto relative overflow-hidden self-end">
                             {/* 실시간으로 하강하는 쇠창살 문 (Portcullis Gate) */}
                             <div 
                               className="absolute inset-0 bg-transparent flex justify-around p-1 h-full transition-transform duration-1000 z-20"
                               style={{ transform: `translateY(${-100 + timeState.gateProgress}%)` }}
                             >
-                              <div className="w-1 h-full bg-slate-600 border-x border-slate-800" />
-                              <div className="w-1 h-full bg-slate-600 border-x border-slate-800" />
-                              <div className="w-1 h-full bg-slate-600 border-x border-slate-800" />
+                              <div className="w-1 h-full bg-slate-500 border-x border-slate-900" />
+                              <div className="w-1 h-full bg-slate-500 border-x border-slate-900" />
+                              <div className="w-1 h-full bg-slate-500 border-x border-slate-900" />
                               
                               {/* 가로 보강대 */}
-                              <div className="absolute top-1/4 inset-x-0 h-1 bg-slate-700 border-y border-slate-850" />
-                              <div className="absolute top-2/4 inset-x-0 h-1 bg-slate-700 border-y border-slate-850" />
-                              <div className="absolute top-3/4 inset-x-0 h-1 bg-slate-700 border-y border-slate-850" />
+                              <div className="absolute top-1/4 inset-x-0 h-1 bg-slate-700 border-y border-slate-900" />
+                              <div className="absolute top-2/4 inset-x-0 h-1 bg-slate-700 border-y border-slate-900" />
+                              <div className="absolute top-3/4 inset-x-0 h-1 bg-slate-700 border-y border-slate-900" />
                             </div>
                             
                             {/* 아치 문 안쪽 라벨 */}
