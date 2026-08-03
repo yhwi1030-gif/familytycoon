@@ -84,6 +84,11 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisStep, setAnalysisStep] = useState(0);
   
+  // Upstage Solar Pro 3.0 아이템 생성기 모사 상태
+  const [isGeneratingItemIcon, setIsGeneratingItemIcon] = useState(false);
+  const [generatingItemName, setGeneratingItemName] = useState('');
+  const [itemGenerationStep, setItemGenerationStep] = useState(0);
+
   // 역제안(밀당) 모달 상태
   const [activeNegotiateQuest, setActiveNegotiateQuest] = useState<Quest | null>(null);
   const [negotiateGold, setNegotiateGold] = useState(500);
@@ -212,20 +217,39 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
       return;
     }
 
-    const updatedChild = { ...child, gold: child.gold - item.price };
-    await api.updateProfile(updatedChild);
+    // Upstage Solar Pro 3.0 아이템 생성기 기동 시뮬레이션
+    setIsGeneratingItemIcon(true);
+    setGeneratingItemName(item.name);
+    setItemGenerationStep(1);
 
-    const updatedItem: StoreItem = { ...item, status: 'requested' };
-    await api.updateStoreItem(updatedItem);
+    const timer1 = setTimeout(() => setItemGenerationStep(2), 1000);
+    const timer2 = setTimeout(() => setItemGenerationStep(3), 2200);
 
-    await api.addNotification({
-      message: `🛍️ 자녀가 길드 상점에서 [${item.name}] 구매 승인을 요청했습니다.`,
-      type: 'item_request',
-      targetId: item.id
-    });
+    setTimeout(async () => {
+      // 1. 골드 차감 및 자녀 인벤토리에 아이템 즉시 직행 추가
+      const currentInventory = child.inventory || [];
+      const updatedChild = { 
+        ...child, 
+        gold: child.gold - item.price,
+        inventory: [...currentInventory, item.id]
+      };
+      await api.updateProfile(updatedChild);
 
-    await loadData();
-    alert(`🛍️ [구매 요청] [${item.name}] 구매 요청을 전송했습니다. 길드마스터가 승인하면 쿠폰이 발행됩니다.`);
+      // 2. 상점 아이템 상태를 'purchased'로 갱신 (부모 결재 스킵)
+      const updatedItem: StoreItem = { ...item, status: 'purchased' };
+      await api.updateStoreItem(updatedItem);
+
+      // 3. 마스터에게 상점 구매 완료 통지 알림 발송
+      await api.addNotification({
+        message: `🛍️ 자녀가 [${item.name}] 아이템을 구매 완료하여 인벤토리에 즉시 추가되었습니다.`,
+        type: 'general',
+        targetId: item.id
+      });
+
+      setIsGeneratingItemIcon(false);
+      await loadData();
+      alert(`🛍️ [Upstage Solar Pro 3.0] 고화질 아이템 리소스 렌더링이 완료되었습니다! 가방(🎒)을 열어 사용해 보세요.`);
+    }, 3200);
   };
 
   const handlePayoutSubmit = async () => {
@@ -935,16 +959,16 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
         </div>
       )}
 
-      {/* 밀당 골드 역제안 모달 */}
+      {/* 밀당 골드 협상하기 모달 */}
       {activeNegotiateQuest && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <div className="w-full max-w-sm bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-2xl space-y-6">
             <div className="text-center">
               <span className="inline-flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 px-2.5 py-0.5 rounded-full text-[10px] font-bold mb-2">
-                🤝 퀘스트 보상 밀당(역제안)
+                🤝 퀘스트 보상 밀당(협상하기)
               </span>
               <h3 className="text-md font-bold text-white">[{activeNegotiateQuest.title}]</h3>
-              <p className="text-xs text-slate-400 mt-1">보상 금액에 대해 역제안해보세요.</p>
+              <p className="text-xs text-slate-400 mt-1">길드마스터가 제안한 {activeNegotiateQuest.rewardGold}G 보상에 대해 협상을 진행해 보세요.</p>
             </div>
 
             <div className="space-y-4 bg-slate-950/60 p-4 rounded-2xl border border-slate-850">
@@ -978,8 +1002,49 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                 onClick={handleNegotiationSubmit}
                 className="py-3 bg-indigo-600 text-white font-bold rounded-xl text-xs shadow-md"
               >
-                ⚡ 역제안 협상 요청
+                ⚡ 보상 협상 요청
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Upstage Solar Pro 3.0 아이템 아이콘 생성기 모달 */}
+      {isGeneratingItemIcon && (
+        <div className="fixed inset-0 z-55 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-sm bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-2xl text-center space-y-6 relative overflow-hidden select-none">
+            {/* 레이저 주사선 스캔 모션 */}
+            <div className="absolute inset-x-0 h-0.5 bg-amber-500 shadow-[0_0_8px_#f59e0b] animate-[bounce_1.8s_infinite] top-0" />
+
+            <div className="space-y-2">
+              <span className="inline-flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider animate-pulse mx-auto">
+                🤖 Upstage Solar Pro 3.0 Icon Generator
+              </span>
+              <h3 className="text-base font-extrabold text-white mt-2">[{generatingItemName}]</h3>
+              <p className="text-[10px] text-slate-400">텍스트 분석 기반 맞춤형 로우폴리 리소스를 실시간 생성하고 있습니다.</p>
+            </div>
+
+            {/* 진행율 표시 바 */}
+            <div className="space-y-1.5 text-left">
+              <div className="flex justify-between text-[9px] text-amber-350 font-bold">
+                <span>{itemGenerationStep === 1 ? 'Prompting Solar Pro 3.0...' : itemGenerationStep === 2 ? 'De-noising & Style Matching...' : 'Finalizing Vector Texture...'}</span>
+                <span>{itemGenerationStep === 1 ? '35%' : itemGenerationStep === 2 ? '70%' : '100%'}</span>
+              </div>
+              <div className="w-full bg-slate-950 border border-slate-850 h-2 rounded-full overflow-hidden p-0.5">
+                <div 
+                  className="bg-gradient-to-r from-amber-500 to-indigo-500 h-full rounded-full transition-all duration-300"
+                  style={{ width: itemGenerationStep === 1 ? '35%' : itemGenerationStep === 2 ? '70%' : '100%' }}
+                />
+              </div>
+            </div>
+
+            {/* 실시간 빌드 로그 */}
+            <div className="bg-slate-950 border border-slate-850 p-3.5 rounded-2xl text-[9px] font-mono text-left text-slate-400 space-y-1 h-24 overflow-y-auto">
+              {itemGenerationStep >= 1 && <p className="text-amber-400">✓ [SOLAR] Solar Pro 3.0 LLM: "가방 아이콘/텍스처" 파싱 개시</p>}
+              {itemGenerationStep >= 1 && <p className="text-slate-500">✓ [SOLAR] 매칭 키워드: "{generatingItemName.slice(0, 10)}" 스타일 매핑</p>}
+              {itemGenerationStep >= 2 && <p className="text-indigo-400">✓ [DIFF] 2D 로우폴리 노이즈 제거 및 메쉬 드로잉 중...</p>}
+              {itemGenerationStep >= 2 && <p className="text-slate-500">✓ [DIFF] 픽셀 그리드 보정 및 쉐이더 라이팅 연산 완료</p>}
+              {itemGenerationStep >= 3 && <p className="text-emerald-400">✓ [SYS] 생성 이미지 병합 완료! 즉시 인벤토리에 지급 대기</p>}
             </div>
           </div>
         </div>
