@@ -61,6 +61,10 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
   const handleStartSignup = () => {
     // 신규 가족 회원가입 시 기존 완성형 데모 데이터는 공란(empty) 상태로 초기화합니다.
     localStorage.setItem('ff_profiles', JSON.stringify([]));
+    localStorage.removeItem('ff_quests');
+    localStorage.removeItem('ff_notifications');
+    localStorage.removeItem('ff_quest_icons');
+    localStorage.removeItem('ff_current_user_id');
     setProfiles([]);
     setShowSignupPage(true);
     setShowSignupGuideModal(true); // 길드마스터 반드시 등록 안내 팝업 활성화
