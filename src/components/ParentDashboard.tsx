@@ -261,6 +261,49 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
     await loadData();
   };
 
+  const handleApproveSelfQuestProposal = async (q: Quest) => {
+    const all = await api.getQuests();
+    const target = all.find(item => item.id === q.id);
+    if (target) {
+      target.status = 'active';
+      await api.saveQuests(all);
+      
+      const notis = await api.getNotifications();
+      const noti = notis.find(n => n.type === 'self_quest_proposal' && n.targetId === q.id);
+      if (noti) {
+        await api.resolveNotification(noti.id);
+      }
+      
+      await api.addNotification({
+        message: `🛡️ [제안 수락] 자녀의 셀프 미션 [${q.title}]을 승인하여 수락하였습니다.`,
+        type: 'general'
+      });
+      
+      await loadData();
+      alert(`🛡️ [제안 수락] 자녀의 셀프 미션 [${q.title}]을 승인하여 수락하였습니다.`);
+    }
+  };
+
+  const handleRejectSelfQuestProposal = async (q: Quest) => {
+    const all = await api.getQuests();
+    const filtered = all.filter(item => item.id !== q.id);
+    await api.saveQuests(filtered);
+    
+    const notis = await api.getNotifications();
+    const noti = notis.find(n => n.type === 'self_quest_proposal' && n.targetId === q.id);
+    if (noti) {
+      await api.resolveNotification(noti.id);
+    }
+
+    await api.addNotification({
+      message: `❌ [제안 거절] 자녀의 셀프 미션 제안을 반려하였습니다.`,
+      type: 'general'
+    });
+
+    await loadData();
+    alert(`❌ [제안 거절] 자녀의 셀프 미션 제안을 반려하였습니다.`);
+  };
+
   return (
     <div className="min-h-screen bg-[#FAF8F5] text-slate-800 font-sans pb-16">
       
@@ -464,12 +507,29 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
                         </div>
                         <h4 className="text-sm font-extrabold text-slate-800 mt-1.5">{q.title}</h4>
                       </div>
-                      <button
-                        onClick={() => handleQuestAction(q)}
-                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition shadow-md"
-                      >
-                        {q.category === '독서' ? '✨ AI 독서 치트키' : '완료 승인'}
-                      </button>
+                      {q.type === 'self' ? (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleRejectSelfQuestProposal(q)}
+                            className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-xl transition"
+                          >
+                            거절
+                          </button>
+                          <button
+                            onClick={() => handleApproveSelfQuestProposal(q)}
+                            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition shadow active:scale-95 flex items-center gap-1"
+                          >
+                            🛡️ 제안 수락
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleQuestAction(q)}
+                          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition shadow-md"
+                        >
+                          {q.category === '독서' ? '✨ AI 독서 치트키' : '완료 승인'}
+                        </button>
+                      )}
                     </div>
                   ))
                 )}
@@ -769,12 +829,12 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
                 ⚖️ 상점 교환 & 이용권 심사 센터
               </h3>
               <div className="space-y-3">
-                {notifications.filter(n => !n.resolved && (n.type === 'gold_request' || n.type === 'item_request' || n.type === 'item_use_request' || n.type === 'self_quest_proposal')).length === 0 ? (
+                {notifications.filter(n => !n.resolved && (n.type === 'gold_request' || n.type === 'item_request' || n.type === 'item_use_request')).length === 0 ? (
                   <div className="text-center py-12 text-slate-400 text-xs font-bold border-2 border-dashed border-[#EBE6DD] rounded-2xl bg-white/30">
                     현재 대기 중인 구매 결재나 실물 이용권 사용 신청 내역이 없습니다.
                   </div>
                 ) : (
-                  notifications.filter(n => !n.resolved && (n.type === 'gold_request' || n.type === 'item_request' || n.type === 'item_use_request' || n.type === 'self_quest_proposal')).map(noti => (
+                  notifications.filter(n => !n.resolved && (n.type === 'gold_request' || n.type === 'item_request' || n.type === 'item_use_request')).map(noti => (
                     <div key={noti.id} className={`p-4 border rounded-2xl space-y-3 shadow-sm ${noti.type === 'item_use_request' ? 'bg-emerald-50/30 border-emerald-200' : 'bg-white border-[#EBE6DD]'}`}>
                       <div className="flex justify-between items-start">
                         <p className="text-xs font-bold text-slate-800">{noti.message}</p>
