@@ -2,7 +2,7 @@ import { Profile, Quest, StoreItem, AppNotification } from '@/types';
 import { supabase, isSupabaseConfigured as isSupabaseConfiguredRaw } from './supabaseClient';
 
 // Supabase DB 쓰기나 스키마 에러 감지 시 로컬스토리지 모드로 자동 긴급 백업 전환
-const isSupabaseConfigured = isSupabaseConfiguredRaw && (() => {
+let isSupabaseConfigured = isSupabaseConfiguredRaw && (() => {
   if (typeof window !== 'undefined') {
     return localStorage.getItem('ff_supabase_disabled') !== 'true';
   }
@@ -13,6 +13,7 @@ const handleSupabaseError = (err: any) => {
   console.error("Supabase Operation Failed, falling back to LocalStorage:", err);
   if (typeof window !== 'undefined') {
     localStorage.setItem('ff_supabase_disabled', 'true');
+    isSupabaseConfigured = false; // 동적으로 모듈 변수 값을 즉각 차단하여 로컬 저장 강제 유도
     // 데이터 흐름 단절 방지를 위해 세션을 LocalStorage로 즉시 안전 리다이렉트
     window.location.reload();
   }
