@@ -560,26 +560,37 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
                         <span className="text-slate-400 text-[9px] block mb-0.5 font-bold">{new Date(n.createdAt).toLocaleTimeString()}</span>
                         <p className="font-semibold leading-relaxed text-slate-700">{n.message}</p>
                       </div>
-                      {n.type === 'quest_request' && n.targetId && (
-                        <button
-                          onClick={async () => {
-                            const questsAll = await api.getQuests();
-                            const targetQ = questsAll.find(q => q.id === n.targetId);
-                            if (targetQ) {
-                              if (targetQ.status !== 'request_approval') {
-                                alert('이미 처리(완료)된 퀘스트입니다.');
-                                return;
+                      {n.type === 'quest_request' && n.targetId && (() => {
+                        const targetQ = quests.find(q => q.id === n.targetId);
+                        const isCompleted = targetQ ? targetQ.status === 'completed' : false;
+                        return (
+                          <button
+                            disabled={isCompleted}
+                            onClick={async () => {
+                              if (targetQ) {
+                                if (targetQ.status === 'completed') {
+                                  alert('이미 완료된 퀘스트입니다.');
+                                  return;
+                                }
+                                if (targetQ.status !== 'request_approval') {
+                                  alert('아직 자녀가 인증을 제출하지 않았거나 진행중인 상태입니다.');
+                                  return;
+                                }
+                                await handleQuestAction(targetQ);
+                              } else {
+                                alert('존재하지 않거나 삭제된 퀘스트입니다.');
                               }
-                              await handleQuestAction(targetQ);
-                            } else {
-                              alert('존재하지 않거나 삭제된 퀘스트입니다.');
-                            }
-                          }}
-                          className="shrink-0 px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white text-[10px] font-black rounded-lg transition shadow-sm"
-                        >
-                          🔎 검수하기
-                        </button>
-                      )}
+                            }}
+                            className={`shrink-0 px-2.5 py-1.5 active:scale-95 text-white text-[10px] font-black rounded-lg transition shadow-sm ${
+                              isCompleted 
+                                ? 'bg-emerald-600 cursor-not-allowed opacity-90' 
+                                : 'bg-indigo-600 hover:bg-indigo-500'
+                            }`}
+                          >
+                            {isCompleted ? '✓ 완료됨' : '🔎 검수하기'}
+                          </button>
+                        );
+                      })()}
                     </div>
                   ))
                 )}
