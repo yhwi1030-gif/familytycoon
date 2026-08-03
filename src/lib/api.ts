@@ -1,5 +1,22 @@
 import { Profile, Quest, StoreItem, AppNotification } from '@/types';
-import { supabase, isSupabaseConfigured } from './supabaseClient';
+import { supabase, isSupabaseConfigured as isSupabaseConfiguredRaw } from './supabaseClient';
+
+// Supabase DB 쓰기나 스키마 에러 감지 시 로컬스토리지 모드로 자동 긴급 백업 전환
+const isSupabaseConfigured = isSupabaseConfiguredRaw && (() => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('ff_supabase_disabled') !== 'true';
+  }
+  return true;
+})();
+
+const handleSupabaseError = (err: any) => {
+  console.error("Supabase Operation Failed, falling back to LocalStorage:", err);
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('ff_supabase_disabled', 'true');
+    // 데이터 흐름 단절 방지를 위해 세션을 LocalStorage로 즉시 안전 리다이렉트
+    window.location.reload();
+  }
+};
 
 // 기본 초기화 mock 데이터 (Supabase 연결 안 되거나 데이터 리셋 시 사용)
 const DEFAULT_PROFILES: Profile[] = [
@@ -313,6 +330,7 @@ export const api = {
       const { error } = await supabase.from('profiles').upsert(dbPayload);
       if (error) {
         console.error("Supabase updateProfile error (falling back to LocalStorage):", error);
+        handleSupabaseError(error);
         // Fallback to LocalStorage
         const list = getStored(KEYS.PROFILES, DEFAULT_PROFILES);
         const idx = list.findIndex(p => p.id === profile.id);
@@ -414,7 +432,12 @@ export const api = {
     try {
       // Supabase 퀘스트 대량 동기화
       for (const q of quests) {
-        await supabase.from('quests').upsert(mapQuestToDB(q));
+        const { error } = await supabase.from('quests').upsert(mapQuestToDB(q));
+        if (error) {
+          console.error("Supabase upsert quest error:", error);
+          handleSupabaseError(error);
+          throw error; // 강제로 catch 블록으로 이동시켜 로컬 스토리지 폴백 수행
+        }
       }
     } catch (e) {
       console.error("Supabase saveQuests Exception:", e);
@@ -445,6 +468,7 @@ export const api = {
       const { error } = await supabase.from('quests').insert(mapQuestToDB(newQuest));
       if (error) {
         console.error("Supabase addQuest error:", error);
+        handleSupabaseError(error);
         const quests = getStored<Quest[]>(KEYS.QUESTS, []);
         quests.push(newQuest);
         setStored(KEYS.QUESTS, quests);
