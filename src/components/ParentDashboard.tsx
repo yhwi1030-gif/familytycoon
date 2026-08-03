@@ -49,8 +49,8 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
     selectedChildIdRef.current = selectedChildId;
   }, [selectedChildId]);
 
-  const loadData = (overrideId?: string) => {
-    const pList = api.getProfiles();
+  const loadData = async (overrideId?: string) => {
+    const pList = await api.getProfiles();
     setProfiles(pList);
     
     const children = pList.filter(p => p.role === 'child');
@@ -70,8 +70,10 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
       setChild(null);
     }
     
-    setQuests(api.getQuests());
-    setNotifications(api.getNotifications());
+    const qList = await api.getQuests();
+    setQuests(qList);
+    const nList = await api.getNotifications();
+    setNotifications(nList);
   };
 
   useEffect(() => {
@@ -83,38 +85,38 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
     return () => clearInterval(interval);
   }, []);
 
-  const handleQuestAction = (q: Quest) => {
+  const handleQuestAction = async (q: Quest) => {
     if (q.category === '독서' && q.status === 'request_approval') {
       setSelectedQuest(q);
       setIsReadingModalOpen(true);
     } else {
       // 일반 승인 처리
-      parentApproveQuest(q.id, 'approve');
-      loadData();
+      await parentApproveQuest(q.id, 'approve');
+      await loadData();
     }
   };
 
-  const handleAIApprove = () => {
+  const handleAIApprove = async () => {
     if (selectedQuest) {
-      parentApproveQuest(selectedQuest.id, 'approve');
+      await parentApproveQuest(selectedQuest.id, 'approve');
       setIsReadingModalOpen(false);
       setSelectedQuest(null);
-      loadData();
+      await loadData();
     }
   };
 
-  const handleAIReject = () => {
+  const handleAIReject = async () => {
     if (selectedQuest) {
-      parentApproveQuest(selectedQuest.id, 'retry');
+      await parentApproveQuest(selectedQuest.id, 'retry');
       setIsReadingModalOpen(false);
       setSelectedQuest(null);
-      loadData();
+      await loadData();
     }
   };
 
   // 신규 퀘스트 발행 완료 콜백
-  const handleAddQuest = (data: { title: string; category: string; type: 'main' | 'flash'; rewardValue: number; dueTime?: string }) => {
-    api.addQuest({
+  const handleAddQuest = async (data: { title: string; category: string; type: 'main' | 'flash'; rewardValue: number; dueTime?: string }) => {
+    await api.addQuest({
       title: data.title,
       category: data.category,
       type: data.type,
@@ -124,15 +126,15 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
       dueTime: data.dueTime
     });
     // 알림 전송
-    api.addNotification({
+    await api.addNotification({
       message: `⚡ 길드마스터가 새로운 ${data.type === 'main' ? '메인' : '돌발'} 미션 [${data.title}]을 발행했습니다!`,
       type: 'general'
     });
-    loadData();
+    await loadData();
   };
 
   // 독려 메시지 전송 (톤앤매너 다변화 및 5종 프리셋 무작위 선택)
-  const handleCheer = (tone: 'sweet' | 'strict' | 'funny', questTitle: string) => {
+  const handleCheer = async (tone: 'sweet' | 'strict' | 'funny', questTitle: string) => {
     const childName = child ? child.name.split(' ')[0] : '모험가';
     
     const messages = {
@@ -163,7 +165,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
     const pool = messages[tone];
     const chosenMessage = pool[Math.floor(Math.random() * pool.length)];
     
-    api.addNotification({
+    await api.addNotification({
       message: chosenMessage,
       type: 'general'
     });
@@ -173,37 +175,37 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
   };
 
   // 상점 교환/이용권 수락 및 거절 처리
-  const handleResolveNotification = (noti: AppNotification, action: 'approve' | 'reject') => {
-    const profiles = api.getProfiles();
+  const handleResolveNotification = async (noti: AppNotification, action: 'approve' | 'reject') => {
+    const profiles = await api.getProfiles();
     const childIdx = profiles.findIndex(p => p.role === 'child');
     const child = childIdx !== -1 ? profiles[childIdx] : null;
 
     if (action === 'approve') {
       // 1. 승인 알림 추가
-      api.addNotification({
+      await api.addNotification({
         message: `🎉 [승인 완료] ${noti.message.replace('요청했습니다.', '건이 최종 승인 완료되었습니다.')}`,
         type: 'general'
       });
 
       // 2. 상점 아이템 구매 완료 처리 및 자녀 인벤토리(가방) 추가 연동
       if (noti.type === 'item_request' && noti.targetId) {
-        const storeItems = api.getStoreItems();
+        const storeItems = await api.getStoreItems();
         const item = storeItems.find(i => i.id === noti.targetId);
         if (item) {
           item.status = 'purchased';
-          api.updateStoreItem(item);
+          await api.updateStoreItem(item);
 
           if (child) {
             const currentInventory = child.inventory || [];
             child.inventory = [...currentInventory, item.id];
-            api.updateProfile(child);
+            await api.updateProfile(child);
           }
         }
       }
       
       // 3. 이용권 실물 사용 요청 승인 처리 (정산 알림 추가)
       if (noti.type === 'item_use_request' && noti.meta?.itemName) {
-        api.addNotification({
+        await api.addNotification({
           message: `🎟️ [사용 승인 완료] 자녀가 요청한 [${noti.meta.itemName}] 실물 사용이 승인 정산 완료되었습니다.`,
           type: 'general'
         });
@@ -211,16 +213,16 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
     } else {
       // 반려 처리시 아이템 구매 가능한 상태로 롤백
       if (noti.type === 'item_request' && noti.targetId) {
-        const storeItems = api.getStoreItems();
+        const storeItems = await api.getStoreItems();
         const item = storeItems.find(i => i.id === noti.targetId);
         if (item) {
           item.status = 'available';
-          api.updateStoreItem(item);
+          await api.updateStoreItem(item);
         }
       }
       // 이용권 사용 반려 처리
       if (noti.type === 'item_use_request' && noti.meta?.itemName) {
-        api.addNotification({
+        await api.addNotification({
           message: `⚠️ [사용 반려] 자녀의 [${noti.meta.itemName}] 사용이 반려되었습니다. (아이템 복구 필요시 자녀 인벤토리에 환원)`,
           type: 'general'
         });
@@ -229,17 +231,17 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
         if (child && noti.meta?.itemId) {
           const currentInventory = child.inventory || [];
           child.inventory = [...currentInventory, noti.meta.itemId];
-          api.updateProfile(child);
+          await api.updateProfile(child);
         }
       }
       // 반려 알림 추가
-      api.addNotification({
+      await api.addNotification({
         message: `⚠️ [협상/반려] ${noti.message.replace('요청했습니다.', '건이 조정 반려/협상 보류 처리되었습니다.')}`,
         type: 'general'
       });
     }
-    api.resolveNotification(noti.id);
-    loadData();
+    await api.resolveNotification(noti.id);
+    await loadData();
   };
 
   return (

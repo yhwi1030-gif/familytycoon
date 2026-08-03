@@ -1,12 +1,12 @@
 import { api } from '@/lib/api';
 
-export function addMockNotification(
+export async function addMockNotification(
   type: 'quest_request' | 'quest_approved' | 'quest_rejected' | 'gold_request' | 'gold_approved' | 'gold_rejected' | 'self_quest_proposal' | 'item_request' | 'general',
   message: string,
   targetId?: string,
   meta?: any
 ) {
-  return api.addNotification({
+  return await api.addNotification({
     message,
     type,
     targetId,
@@ -15,17 +15,17 @@ export function addMockNotification(
 }
 
 // 1. 자녀 -> 부모: 독서 퀘스트 완료 후 사진 인증 전송 요청
-export function childRequestQuestApproval(questId: string, title: string, imageUrl: string, childId?: string, childName?: string) {
-  const quests = api.getQuests();
+export async function childRequestQuestApproval(questId: string, title: string, imageUrl: string, childId?: string, childName?: string) {
+  const quests = await api.getQuests();
   const idx = quests.findIndex(q => q.id === questId);
   if (idx !== -1) {
     quests[idx].status = 'request_approval';
     quests[idx].imageUrl = imageUrl;
     quests[idx].childId = childId;
     quests[idx].childName = childName;
-    api.saveQuests(quests);
+    await api.saveQuests(quests);
 
-    addMockNotification(
+    await addMockNotification(
       'quest_request',
       `🛡️ [${childName || '자녀'}] 모험가가 [${title}] 완료 승인을 요청했습니다. AI 하브루타 요약 검수가 가능합니다.`,
       questId,
@@ -35,13 +35,13 @@ export function childRequestQuestApproval(questId: string, title: string, imageU
 }
 
 // 2. 부모 -> 자녀: 퀘스트 승인 완료 (경험치/골드 배정)
-export function parentApproveQuest(questId: string, approveStatus: 'approve' | 'retry') {
-  const quests = api.getQuests();
+export async function parentApproveQuest(questId: string, approveStatus: 'approve' | 'retry') {
+  const quests = await api.getQuests();
   const questIdx = quests.findIndex(q => q.id === questId);
   if (questIdx === -1) return;
 
   const quest = quests[questIdx];
-  const profiles = api.getProfiles();
+  const profiles = await api.getProfiles();
   const childIdx = profiles.findIndex(p => p.role === 'child');
   
   if (childIdx === -1) return;
@@ -75,11 +75,11 @@ export function parentApproveQuest(questId: string, approveStatus: 'approve' | '
     while (child.exp >= requiredExp) {
       child.exp -= requiredExp;
       child.level += 1;
-      addMockNotification('general', `🎉 민우가 레벨 ${child.level}에 도달했습니다! 새로운 상점 물건이 해금됩니다.`, child.id);
+      await addMockNotification('general', `🎉 민우가 레벨 ${child.level}에 도달했습니다! 새로운 상점 물건이 해금됩니다.`, child.id);
     }
 
-    api.updateProfile(child);
-    addMockNotification(
+    await api.updateProfile(child);
+    await addMockNotification(
       'quest_approved',
       `💚 길드마스터가 [${quest.title}] 승인을 수락하였습니다. 보상이 정상 지급되었습니다!`,
       questId
@@ -90,27 +90,27 @@ export function parentApproveQuest(questId: string, approveStatus: 'approve' | '
     child.stats!.willpower = Math.max(0, child.stats!.willpower - 5);
     child.stress = Math.min(100, child.stress + 15); // 반려 스트레스
     
-    api.updateProfile(child);
-    addMockNotification(
+    await api.updateProfile(child);
+    await addMockNotification(
       'quest_rejected',
       `❌ [${quest.title}] 건이 반려되었습니다. '다시 읽기' 퀘스트가 제안되었습니다.`,
       questId
     );
   }
 
-  api.saveQuests(quests);
+  await api.saveQuests(quests);
 }
 
 // 3. 자녀 -> 부모: 골드 실제 현금화 요청
-export function childRequestGoldPayout(amount: number) {
-  const profiles = api.getProfiles();
+export async function childRequestGoldPayout(amount: number) {
+  const profiles = await api.getProfiles();
   const child = profiles.find(p => p.role === 'child');
   if (!child || child.gold < amount) return false;
 
   child.gold -= amount;
-  api.updateProfile(child);
+  await api.updateProfile(child);
 
-  addMockNotification(
+  await addMockNotification(
     'gold_request',
     `💰 자녀가 실제 용돈 계좌이체 ${amount}원 전환(1G=1원)을 요청했습니다.`,
     child.id,
@@ -120,12 +120,12 @@ export function childRequestGoldPayout(amount: number) {
 }
 
 // 4. 자녀 -> 부모: 돌발 퀘스트 보상 골드 역제안 (밀당)
-export function childCounterProposeQuest(questId: string, proposedGold: number) {
-  const quests = api.getQuests();
+export async function childCounterProposeQuest(questId: string, proposedGold: number) {
+  const quests = await api.getQuests();
   const quest = quests.find(q => q.id === questId);
   if (!quest) return;
 
-  addMockNotification(
+  await addMockNotification(
     'self_quest_proposal',
     `🤝 자녀가 돌발 미션 [${quest.title}]에 대한 보상 골드를 ${proposedGold}G로 역제안(밀당)해왔습니다.`,
     questId,

@@ -93,13 +93,16 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
   const [isPayoutOpen, setIsPayoutOpen] = useState(false);
   const [payoutAmount, setPayoutAmount] = useState(1000);
 
-  const loadData = () => {
-    const list = api.getProfiles();
+  const loadData = async () => {
+    const list = await api.getProfiles();
     const current = list.find(p => p.id === user.id);
     if (current) setChild(current);
-    setQuests(api.getQuests());
-    setStoreItems(api.getStoreItems());
-    setNotifications(api.getNotifications());
+    const qList = await api.getQuests();
+    setQuests(qList);
+    const sList = await api.getStoreItems();
+    setStoreItems(sList);
+    const nList = await api.getNotifications();
+    setNotifications(nList);
   };
 
   useEffect(() => {
@@ -120,10 +123,10 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
     setConfirmQuest(q);
   };
 
-  const handleCameraCaptureConfirm = () => {
+  const handleCameraCaptureConfirm = async () => {
     if (activeCameraQuest) {
       const displayUrl = cameraMode === 'upload' ? 'https://picsum.photos/400/300?random=1' : 'https://picsum.photos/400/300';
-      childRequestQuestApproval(
+      await childRequestQuestApproval(
         activeCameraQuest.id,
         activeCameraQuest.title,
         displayUrl,
@@ -133,24 +136,24 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
       setActiveCameraQuest(null);
       setCameraMode('idle');
       setUploadedFile(null);
-      loadData();
+      await loadData();
     }
   };
 
-  const handleNegotiationSubmit = () => {
+  const handleNegotiationSubmit = async () => {
     if (activeNegotiateQuest) {
-      childCounterProposeQuest(activeNegotiateQuest.id, negotiateGold);
+      await childCounterProposeQuest(activeNegotiateQuest.id, negotiateGold);
       setActiveNegotiateQuest(null);
-      loadData();
+      await loadData();
       alert(`🤝 길드마스터에게 보상 조정 (${negotiateGold}G) 역제안을 올렸습니다.`);
     }
   };
 
-  const handleSelfQuestSubmit = (e: React.FormEvent) => {
+  const handleSelfQuestSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selfQuestTitle.trim()) return;
 
-    api.addQuest({
+    await api.addQuest({
       title: selfQuestTitle,
       category: '기타',
       type: 'self',
@@ -159,18 +162,18 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
       rewardGold: selfQuestGold
     });
 
-    api.addNotification({
+    await api.addNotification({
       message: `🧚‍♀️ 자녀가 주도적으로 셀프 퀘스트 [${selfQuestTitle}]을 스스로 설계하여 도전 중입니다.`,
       type: 'self_quest_proposal'
     });
 
     setSelfQuestTitle('');
     setIsSelfQuestOpen(false);
-    loadData();
+    await loadData();
     alert(`⚡ 셀프 모험 [${selfQuestTitle}]을 스스로 등록하여 도전을 시작했습니다!`);
   };
 
-  const handlePurchaseItem = (item: StoreItem) => {
+  const handlePurchaseItem = async (item: StoreItem) => {
     if (child.level < item.requiredLevel) {
       alert(`🔒 레벨 제한! 캐릭터 레벨 ${item.requiredLevel} 이상이 필요합니다.`);
       return;
@@ -181,22 +184,22 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
     }
 
     const updatedChild = { ...child, gold: child.gold - item.price };
-    api.updateProfile(updatedChild);
+    await api.updateProfile(updatedChild);
 
     const updatedItem: StoreItem = { ...item, status: 'requested' };
-    api.updateStoreItem(updatedItem);
+    await api.updateStoreItem(updatedItem);
 
-    api.addNotification({
+    await api.addNotification({
       message: `🛍️ 자녀가 길드 상점에서 [${item.name}] 구매 승인을 요청했습니다.`,
       type: 'item_request',
       targetId: item.id
     });
 
-    loadData();
+    await loadData();
     alert(`🛍️ [구매 요청] [${item.name}] 구매 요청을 전송했습니다. 길드마스터가 승인하면 쿠폰이 발행됩니다.`);
   };
 
-  const handlePayoutSubmit = () => {
+  const handlePayoutSubmit = async () => {
     if (child.level < 5) {
       alert('🔒 골드 실제 현금화는 캐릭터 레벨 5 이상부터 요청할 수 있습니다.');
       return;
@@ -206,10 +209,10 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
       return;
     }
 
-    const success = childRequestGoldPayout(payoutAmount);
+    const success = await childRequestGoldPayout(payoutAmount);
     if (success) {
       setIsPayoutOpen(false);
-      loadData();
+      await loadData();
       alert(`💰 ${payoutAmount}원 현금 전환 요청을 완료했습니다!`);
     }
   };
@@ -371,10 +374,10 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                           <button
                             key={idx}
                             disabled={!item}
-                            onClick={() => {
+                            onClick={async () => {
                               if (item) {
                                 // 1. 마스터에게 알림 전령 전송
-                                api.addNotification({
+                                await api.addNotification({
                                   message: `🔔 [이용권 사용 요청] 자녀(${child.name.split(' ')[0]})가 획득 보관 중이던 [${item.name}] 이용권 실물 사용을 요청했습니다.`,
                                   type: 'item_use_request',
                                   targetId: item.id,
@@ -384,8 +387,8 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                                 const updatedInventory = [...(child.inventory || [])];
                                 updatedInventory.splice(idx, 1);
                                 const updatedChild = { ...child, inventory: updatedInventory };
-                                api.updateProfile(updatedChild);
-                                loadData();
+                                await api.updateProfile(updatedChild);
+                                await loadData();
                                 alert(`🔔 [전령 발송] 마스터에게 [${item.name}] 사용 전령 메시지를 전달했습니다!`);
                               }
                             }}

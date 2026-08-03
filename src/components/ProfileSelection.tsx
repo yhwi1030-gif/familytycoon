@@ -39,7 +39,7 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
   const [showLoading, setShowLoading] = useState(false);
 
   useEffect(() => {
-    setProfiles(api.getProfiles());
+    api.getProfiles().then(setProfiles);
   }, []);
 
   const handleStartAdventure = () => {
@@ -95,7 +95,7 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
     setIsEditing(true);
   };
 
-  const handleSaveEdit = (e: React.FormEvent) => {
+  const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedProfile) return;
 
@@ -104,15 +104,15 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
       name: editName,
       pin: editPin
     };
-    const list = api.updateProfile(updated);
+    const list = await api.updateProfile(updated);
     setProfiles(list);
     setIsEditing(false);
     setSelectedProfile(null);
   };
 
-  const handleDeleteProfile = (id: string) => {
+  const handleDeleteProfile = async (id: string) => {
     if (confirm("정말로 이 프로필을 길드에서 영구 삭제하시겠습니까?")) {
-      const list = api.deleteProfile(id);
+      const list = await api.deleteProfile(id);
       setProfiles(list);
       setIsEditing(false);
       setSelectedProfile(null);
@@ -123,8 +123,8 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
     setOnboardingRole(role);
   };
 
-  const handleOnboardingComplete = (data: any) => {
-    const list = api.getProfiles();
+  const handleOnboardingComplete = async (data: any) => {
+    const list = await api.getProfiles();
     const isSignupFlow = onboardingRole === 'parent' && tempSignupData !== null;
     
     const newId = isSignupFlow
@@ -152,8 +152,17 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
     };
 
     const updatedList = isSignupFlow ? [newProfile] : [...list, newProfile];
-    localStorage.setItem('ff_profiles', JSON.stringify(updatedList));
-    setProfiles(updatedList);
+    
+    if (isSignupFlow) {
+      localStorage.setItem('ff_profiles', JSON.stringify(updatedList));
+      setProfiles(updatedList);
+      // Supabase에도 명시적으로 저장
+      await api.updateProfile(newProfile);
+    } else {
+      const dbList = await api.updateProfile(newProfile);
+      setProfiles(dbList);
+    }
+
     setOnboardingRole(null);
     setTempSignupData(null);
     
