@@ -550,7 +550,7 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                 <div className="mt-4 space-y-4 animate-in fade-in duration-200">
                   
                   {/* 상단: 타이머 UI */}
-                  <div className="bg-[#1e1b29] text-slate-100 rounded-2xl p-4 flex flex-col sm:flex-row justify-between items-center gap-3 border border-[#3c3654] shadow-inner">
+                  <div className="bg-slate-900 text-slate-100 rounded-2xl p-4 flex flex-col sm:flex-row justify-between items-center gap-3 border border-slate-800 shadow-md">
                     <div className="flex items-center gap-2">
                       <span className="text-xl">⏱️</span>
                       <div>
@@ -558,9 +558,9 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                         <p className="text-sm font-black text-white font-bw">{timeState.currentTimeStr}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 bg-[#2d293d] px-3.5 py-1.5 rounded-xl border border-[#443e5c]">
-                      <span className="text-xs text-rose-400 font-bold">던전 마감까지 남은 시간:</span>
-                      <span className="text-xs font-black text-rose-300 font-bw">{timeState.timeLeftStr}</span>
+                    <div className="flex items-center gap-2 bg-rose-950/65 px-3.5 py-1.5 rounded-xl border border-rose-500/30 shadow-md shadow-rose-950/10">
+                      <span className="text-xs text-rose-300 font-bold">던전 마감까지 남은 시간:</span>
+                      <span className="text-xs font-black text-rose-200 font-bw">{timeState.timeLeftStr}</span>
                     </div>
                   </div>
 
@@ -604,11 +604,11 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                           const isActive = !isCompleted && prevCompleted;
                           const isLocked = !isCompleted && !prevCompleted;
                           
-                          let stateColor = 'bg-slate-800/80 border-slate-700 text-slate-400 shadow-md';
+                          let stateColor = 'bg-[#1e293b]/90 border-slate-600 text-slate-400 shadow-md';
                           if (isCompleted) {
-                            stateColor = 'bg-indigo-950/60 border-indigo-500 text-indigo-300 shadow-lg shadow-indigo-500/20';
+                            stateColor = 'bg-[#0f2e22]/95 border-[#10b981] text-[#a7f3d0] shadow-lg shadow-[#10b981]/20 border-2';
                           } else if (isActive) {
-                            stateColor = 'bg-amber-950/60 border-amber-500 text-amber-200 shadow-lg shadow-amber-500/30 animate-pulse border-2';
+                            stateColor = 'bg-[#2d1b10]/95 border-[#f59e0b] text-[#fde68a] shadow-lg shadow-[#f59e0b]/30 animate-pulse border-2';
                           }
                           
                           // 와이어프레임에 구현된 지그재그 높낮이 느낌을 연출 (짝수 인덱스는 약간 솟아오르게)
