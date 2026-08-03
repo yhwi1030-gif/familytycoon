@@ -380,22 +380,21 @@ export const api = {
     return list.find(p => p.id === id) || list[0];
   },
 
-  // --- 퀘스트 관련 API ---
   getQuests: async (): Promise<Quest[]> => {
     if (!isSupabaseConfigured) {
-      return getStored(KEYS.QUESTS, DEFAULT_QUESTS);
+      return getStored(KEYS.QUESTS, []);
     }
 
     try {
       const { data, error } = await supabase.from('quests').select('*');
       if (error) {
         console.error("Supabase getQuests error:", error);
-        return getStored(KEYS.QUESTS, DEFAULT_QUESTS);
+        return getStored(KEYS.QUESTS, []);
       }
       return (data || []).map(mapQuestFromDB);
     } catch (e) {
       console.error("Supabase getQuests Exception:", e);
-      return getStored(KEYS.QUESTS, DEFAULT_QUESTS);
+      return getStored(KEYS.QUESTS, []);
     }
   },
 
@@ -436,7 +435,7 @@ export const api = {
     }
 
     if (!isSupabaseConfigured) {
-      const quests = getStored<Quest[]>(KEYS.QUESTS, DEFAULT_QUESTS);
+      const quests = getStored<Quest[]>(KEYS.QUESTS, []);
       quests.push(newQuest);
       setStored(KEYS.QUESTS, quests);
       return newQuest;
@@ -446,14 +445,14 @@ export const api = {
       const { error } = await supabase.from('quests').insert(mapQuestToDB(newQuest));
       if (error) {
         console.error("Supabase addQuest error:", error);
-        const quests = getStored<Quest[]>(KEYS.QUESTS, DEFAULT_QUESTS);
+        const quests = getStored<Quest[]>(KEYS.QUESTS, []);
         quests.push(newQuest);
         setStored(KEYS.QUESTS, quests);
       }
       return newQuest;
     } catch (e) {
       console.error("Supabase addQuest Exception:", e);
-      const quests = getStored<Quest[]>(KEYS.QUESTS, DEFAULT_QUESTS);
+      const quests = getStored<Quest[]>(KEYS.QUESTS, []);
       quests.push(newQuest);
       setStored(KEYS.QUESTS, quests);
       return newQuest;
@@ -651,11 +650,12 @@ export const api = {
   // 시스템 리셋 데모 기능
   resetToDefault: async (): Promise<void> => {
     if (typeof window !== 'undefined') {
-      localStorage.removeItem(KEYS.PROFILES);
-      localStorage.removeItem(KEYS.QUESTS);
-      localStorage.removeItem(KEYS.STORE_ITEMS);
-      localStorage.removeItem(KEYS.NOTIFICATIONS);
+      localStorage.setItem(KEYS.PROFILES, JSON.stringify(DEFAULT_PROFILES));
+      localStorage.setItem(KEYS.QUESTS, JSON.stringify(DEFAULT_QUESTS));
+      localStorage.setItem(KEYS.STORE_ITEMS, JSON.stringify(DEFAULT_STORE_ITEMS));
+      localStorage.setItem(KEYS.NOTIFICATIONS, JSON.stringify(DEFAULT_NOTIFICATIONS));
       localStorage.removeItem(KEYS.CURRENT_USER_ID);
+      localStorage.removeItem('ff_quest_icons');
 
       if (isSupabaseConfigured) {
         // Supabase 초기화 데이터 엎어치기
@@ -695,6 +695,29 @@ export const api = {
         }
       }
       window.location.reload();
+    }
+  },
+
+  // 신규 가입 전용 데이터 완전 격리 소거 기능
+  clearAllData: async (): Promise<void> => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(KEYS.PROFILES, JSON.stringify([]));
+      localStorage.setItem(KEYS.QUESTS, JSON.stringify([]));
+      localStorage.setItem(KEYS.STORE_ITEMS, JSON.stringify([]));
+      localStorage.setItem(KEYS.NOTIFICATIONS, JSON.stringify([]));
+      localStorage.removeItem(KEYS.CURRENT_USER_ID);
+      localStorage.removeItem('ff_quest_icons');
+    }
+
+    if (isSupabaseConfigured) {
+      try {
+        await supabase.from('profiles').delete().neq('id', 'keep_all');
+        await supabase.from('quests').delete().neq('id', 'keep_all');
+        await supabase.from('store_items').delete().neq('id', 'keep_all');
+        await supabase.from('notifications').delete().neq('id', 'keep_all');
+      } catch (e) {
+        console.error("Supabase clearAllData Exception:", e);
+      }
     }
   }
 };
