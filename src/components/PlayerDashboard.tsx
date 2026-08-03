@@ -174,7 +174,7 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
       await childCounterProposeQuest(activeNegotiateQuest.id, negotiateGold);
       setActiveNegotiateQuest(null);
       await loadData();
-      alert(`🤝 길드마스터에게 보상 조정 (${negotiateGold}G) 역제안을 올렸습니다.`);
+      alert(`🤝 길드마스터에게 보상 조정 (${negotiateGold}G) 협상 요청을 전달했습니다.`);
     }
   };
 
@@ -807,7 +807,7 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                                 }}
                                 className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-xl border border-[#EBE6DD] transition"
                               >
-                                🤝 역제안
+                                🤝 협상하기
                               </button>
                               <button
                                 onClick={() => handleQuestCompleteClick(q)}
@@ -1244,16 +1244,16 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
         </div>
       )}
 
-      {/* 밀당 골드 역제안 모달 */}
+      {/* 밀당 골드 협상하기 모달 */}
       {activeNegotiateQuest && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <div className="w-full max-w-sm bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-2xl space-y-6">
             <div className="text-center">
               <span className="inline-flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 px-2.5 py-0.5 rounded-full text-[10px] font-bold mb-2">
-                🤝 퀘스트 보상 밀당(역제안)
+                🤝 퀘스트 보상 밀당(협상하기)
               </span>
               <h3 className="text-md font-bold text-white">[{activeNegotiateQuest.title}]</h3>
-              <p className="text-xs text-slate-400 mt-1">길드마스터가 제안한 {activeNegotiateQuest.rewardGold}G 보상에 대해 역제안해보세요.</p>
+              <p className="text-xs text-slate-400 mt-1">길드마스터가 제안한 {activeNegotiateQuest.rewardGold}G 보상에 대해 협상을 진행해 보세요.</p>
             </div>
 
             {/* 슬라이더 제어 */}
@@ -1288,7 +1288,7 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                 onClick={handleNegotiationSubmit}
                 className="py-3 bg-indigo-600 text-white font-bold rounded-xl text-xs shadow-md"
               >
-                ⚡ 역제안 협상 요청
+                ⚡ 보상 협상 요청
               </button>
             </div>
           </div>
