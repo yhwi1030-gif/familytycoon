@@ -91,7 +91,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
   }, []);
 
   const handleQuestAction = async (q: Quest) => {
-    if (q.category === '독서' && q.status === 'request_approval') {
+    if ((q.category === '독서' || q.category === '학습') && q.status === 'request_approval') {
       setSelectedQuest(q);
       setIsReadingModalOpen(true);
     } else {
@@ -784,7 +784,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
 
       {/* AI 독서 스캔 모달 */}
       <AIReadingModal
-        questTitle={selectedQuest?.title || ''}
+        quest={selectedQuest}
         isOpen={isReadingModalOpen}
         onClose={() => { setIsReadingModalOpen(false); setSelectedQuest(null); }}
         onApprove={handleAIApprove}

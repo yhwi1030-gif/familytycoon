@@ -80,6 +80,10 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
   // 스캔한 가짜 파일 전송용 파일명 모사
   const [uploadedFile, setUploadedFile] = useState<string | null>(null);
   
+  // Upstage Layout Parser AI 분석 상태
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisStep, setAnalysisStep] = useState(0);
+  
   // 역제안(밀당) 모달 상태
   const [activeNegotiateQuest, setActiveNegotiateQuest] = useState<Quest | null>(null);
   const [negotiateGold, setNegotiateGold] = useState(500);
@@ -129,20 +133,40 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
   };
 
   const handleCameraCaptureConfirm = async () => {
-    if (activeCameraQuest) {
+    if (!activeCameraQuest) return;
+
+    // Upstage OCR & Layout Parser 분석 모드 작동
+    setIsAnalyzing(true);
+    setAnalysisStep(1);
+
+    // 단계별 가상 텍스트 분석 시뮬레이션
+    const timer1 = setTimeout(() => setAnalysisStep(2), 1200);
+    const timer2 = setTimeout(() => setAnalysisStep(3), 2450);
+
+    setTimeout(async () => {
+      const isBook = activeCameraQuest.category === '독서';
+      const parsedText = isBook
+        ? `[Upstage Layout Parser - 독서록 검증 완료]\n- 문서 유형: 줄글 형태 독서 감상 소감문\n- 도서명 추출: "어린 왕자"\n- 핵심 문장: "가장 중요한 것은 눈에 보이지 않아"\n- 자필 텍스트 매칭도: 98.4%\n- 요약: 자녀가 성실하게 작성한 독서 감상문 본문을 AI가 레이아웃 스캔 및 텍스트 디코딩하였습니다.`
+        : `[Upstage Layout Parser - 수학 문제집 검증 완료]\n- 문서 유형: 수학 문제 풀이 흔적\n- 문제 추출: "2x + 5 = 11, x의 값을 구하시오."\n- 자녀 해법 텍스트: "x = 3"\n- 필체 검증: 자녀 본인 서명 및 풀이 패턴 100% 매칭\n- 요약: 문제집의 필기 수식을 Upstage OCR로 해독하여 올바른 풀이 정답(x=3)을 판독했습니다.`;
+
       const displayUrl = cameraMode === 'upload' ? 'https://picsum.photos/400/300?random=1' : 'https://picsum.photos/400/300';
+      const payloadUrl = `${displayUrl}##${encodeURIComponent(parsedText)}`;
+
       await childRequestQuestApproval(
         activeCameraQuest.id,
         activeCameraQuest.title,
-        displayUrl,
+        payloadUrl,
         child.id,
         child.name
       );
+
+      setIsAnalyzing(false);
+      setAnalysisStep(0);
       setActiveCameraQuest(null);
       setCameraMode('idle');
       setUploadedFile(null);
       await loadData();
-    }
+    }, 3800);
   };
 
   const handleNegotiationSubmit = async () => {
@@ -1076,6 +1100,43 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
               <p className="text-[10px] text-slate-400 mt-1 font-semibold">증빙 방식(카메라 직접 촬영 또는 스캔 파일 첨부)을 선택하세요.</p>
             </div>
 
+            {isAnalyzing ? (
+              <div className="py-6 px-4 bg-slate-950/90 rounded-2xl border border-slate-850 space-y-4 relative overflow-hidden select-none">
+                {/* 레이저 스캐너 라인 애니메이션 */}
+                <div className="absolute inset-x-0 h-0.5 bg-indigo-500 shadow-[0_0_8px_#6366f1] animate-[bounce_2s_infinite] top-0" />
+                
+                {/* AI Upstage Scan Animation */}
+                <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-xl mx-auto shadow-inner animate-pulse">
+                  🤖
+                </div>
+                
+                <div>
+                  <h4 className="text-xs font-extrabold text-white">
+                    {analysisStep === 1 ? 'Upstage Layout Parser 기동 중...' : analysisStep === 2 ? '문서 구조 분석 및 텍스트 디코딩...' : '분석 완료! 승인 요청 전송 준비'}
+                  </h4>
+                  <p className="text-[9px] text-indigo-400 mt-1 font-semibold">자필 독서 소감문 및 문제집 풀이 흔적 검출</p>
+                </div>
+
+                {/* 진행 상황 상태 바 */}
+                <div className="w-full bg-slate-850 h-1.5 rounded-full overflow-hidden">
+                  <div 
+                    className="bg-indigo-500 h-full transition-all duration-300"
+                    style={{ width: analysisStep === 1 ? '30%' : analysisStep === 2 ? '70%' : '100%' }}
+                  />
+                </div>
+
+                {/* 실시간 텍스트 디코더 로그 피드 */}
+                <div className="bg-slate-900 border border-slate-850 p-3 rounded-xl text-[9px] font-mono text-left text-slate-400 space-y-1 h-24 overflow-y-auto">
+                  {analysisStep >= 1 && <p className="text-indigo-400">✓ [SYS] Upstage Layout Parser API 연동 완료</p>}
+                  {analysisStep >= 1 && <p className="text-slate-350">✓ [SYS] 문서 영역 검출 및 문단 블록 분할 중...</p>}
+                  {analysisStep >= 2 && <p className="text-indigo-400">✓ [OCR] 손글씨 인식 텍스트 디코딩 개시</p>}
+                  {analysisStep >= 2 && <p className="text-slate-350">✓ [OCR] 추출된 자필 서명 분석률 99.1% 매칭</p>}
+                  {analysisStep >= 3 && <p className="text-emerald-400">✓ [AI] 분석 검수 보고서 작성 완료! 전송 대기</p>}
+                </div>
+              </div>
+            ) : (
+              <>
+
             {/* 초기 상태: 모드 선택 유도 */}
             {cameraMode === 'idle' && (
               <div className="py-8 px-4 bg-slate-950/60 rounded-2xl border border-slate-850 space-y-3">
@@ -1169,6 +1230,8 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
               >
                 닫기
               </button>
+            )}
+              </>
             )}
           </div>
         </div>
