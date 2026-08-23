@@ -310,7 +310,15 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
       {/* 헤더 네비게이션 */}
       <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-[#EBE6DD] py-3 px-6 flex justify-between items-center shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="text-2xl select-none">🧙‍♀️</div>
+          <div className="w-8 h-8 rounded-lg overflow-hidden border border-slate-200 shrink-0 flex items-center justify-center bg-slate-100">
+            {user.avatar === '🧙‍♀️' ? (
+              <img src="/mama.png" alt="Guildmaster" className="w-full h-full object-cover" />
+            ) : user.avatar === '🧙‍♂️' ? (
+              <img src="/papa.png" alt="Guildmaster" className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-xl select-none">{user.avatar}</span>
+            )}
+          </div>
           <div>
             <h1 className="text-sm md:text-md font-black tracking-tight flex items-center gap-1.5 font-bw">
               <span className="bg-gradient-to-r from-[#AC52F2] to-[#E879F9] bg-clip-text text-transparent inline-block">패밀리 던전 타이쿤</span> <span className="text-indigo-600 font-bold text-[9px] bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full font-sans">길드마스터 모드</span>
