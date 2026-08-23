@@ -25,6 +25,7 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
   // 신규 퀘스트 실시간 유입 팝업 모사 제어용 상태
   const [newArrivalQuests, setNewArrivalQuests] = useState<Quest[]>([]);
   const isFirstLoad = useRef(true);
+  const questsRef = useRef<Quest[]>([]);
   
   // 퀘스트 접기/펼치기 제어 상태 (자녀 모드용)
   const [isMainQuestsCollapsed, setIsMainQuestsCollapsed] = useState(false);
@@ -122,7 +123,7 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
 
     // 신규 수신 퀘스트 실시간 감지 (첫 마운트 로딩 이후 추가 유입 감지)
     if (!isFirstLoad.current) {
-      const newArrivals = filteredQuests.filter(q => q.status === 'active' && !quests.some(eq => eq.id === q.id));
+      const newArrivals = filteredQuests.filter(q => q.status === 'active' && !questsRef.current.some(eq => eq.id === q.id));
       if (newArrivals.length > 0) {
         setNewArrivalQuests(prev => {
           const merged = [...prev];
@@ -138,6 +139,7 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
       isFirstLoad.current = false;
     }
 
+    questsRef.current = filteredQuests;
     setQuests(filteredQuests);
     const sList = await api.getStoreItems();
     setStoreItems(sList);
