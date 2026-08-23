@@ -312,9 +312,9 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg overflow-hidden border border-slate-200 shrink-0 flex items-center justify-center bg-slate-100">
             {user.avatar === '🧙‍♀️' ? (
-              <img src="/mama.png" alt="Guildmaster" className="w-full h-full object-cover" />
+              <img src="/mama.png" alt="Guildmaster" className="w-full h-full object-contain p-0.5" />
             ) : user.avatar === '🧙‍♂️' ? (
-              <img src="/papa.png" alt="Guildmaster" className="w-full h-full object-cover" />
+              <img src="/papa.png" alt="Guildmaster" className="w-full h-full object-contain p-0.5" />
             ) : (
               <span className="text-xl select-none">{user.avatar}</span>
             )}

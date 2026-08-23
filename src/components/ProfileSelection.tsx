@@ -524,9 +524,9 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
                 <div className="w-16 h-16 rounded-2xl bg-indigo-950/30 group-hover:bg-indigo-950/50 border border-slate-800 flex items-center justify-center overflow-hidden transition select-none mb-4">
                   {p.role === 'parent' ? (
                     p.avatar === '🧙‍♀️' ? (
-                      <img src="/mama.png" alt="Guildmaster Mama" className="w-full h-full object-cover" />
+                      <img src="/mama.png" alt="Guildmaster Mama" className="w-full h-full object-contain p-1" />
                     ) : p.avatar === '🧙‍♂️' ? (
-                      <img src="/papa.png" alt="Sub Guildmaster Papa" className="w-full h-full object-cover" />
+                      <img src="/papa.png" alt="Sub Guildmaster Papa" className="w-full h-full object-contain p-1" />
                     ) : (
                       <span className="text-4xl">{p.avatar}</span>
                     )
