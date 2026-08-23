@@ -47,6 +47,7 @@ export interface Quest {
   status: QuestStatus;
   imageUrl?: string; // 자녀 인증용 이미지 모사 URL
   dueTime?: string; // 마감 시간 (예: "16:30")
+  scheduledDate?: string; // 예약 발송일자 (예: "2026-08-25")
   streakCount?: number; // 연속 성공 횟수 (메인/셀프 퀘스트용)
   childId?: string; // 어떤 자녀 모험가의 퀘스트인지 매핑
   childName?: string; // 요청을 보낸 자녀 모험가 이름

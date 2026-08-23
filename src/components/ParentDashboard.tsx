@@ -74,6 +74,13 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
     const todayStr = new Date().toDateString();
     const filteredQuests = qList.filter(q => {
       const qDate = new Date(q.createdAt || new Date()).toDateString();
+      if (q.scheduledDate) {
+        const sDate = new Date(q.scheduledDate);
+        const today = new Date();
+        sDate.setHours(0,0,0,0);
+        today.setHours(0,0,0,0);
+        return sDate.toDateString() === todayStr || sDate > today;
+      }
       return qDate === todayStr;
     });
     setQuests(filteredQuests);
@@ -699,6 +706,10 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
                         <div className="col-span-1 sm:col-span-5 flex flex-wrap gap-1.5 justify-start sm:justify-end items-center">
                           {q.status === 'completed' ? (
                             <span className="text-xs text-emerald-600 font-bold px-3 py-1 bg-emerald-50 rounded-lg border border-emerald-200">✓ 완료됨</span>
+                          ) : q.status === 'pending' ? (
+                            <span className="text-xs text-amber-600 font-bold px-3 py-1 bg-amber-50 rounded-lg border border-amber-250 flex items-center gap-1 font-sans">
+                              🕒 {q.scheduledDate} 예약 발송 대기
+                            </span>
                           ) : (
                             <>
                               <button
@@ -799,6 +810,10 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
                         <div className="col-span-1 sm:col-span-5 flex flex-wrap gap-1.5 justify-start sm:justify-end items-center">
                           {q.status === 'completed' ? (
                             <span className="text-xs text-emerald-600 font-bold px-3 py-1 bg-emerald-50 rounded-lg border border-emerald-200">✓ 완료됨</span>
+                          ) : q.status === 'pending' ? (
+                            <span className="text-xs text-amber-600 font-bold px-3 py-1 bg-amber-50 rounded-lg border border-amber-250 flex items-center gap-1 font-sans">
+                              🕒 {q.scheduledDate} 예약 발송 대기
+                            </span>
                           ) : (
                             <>
                               <button

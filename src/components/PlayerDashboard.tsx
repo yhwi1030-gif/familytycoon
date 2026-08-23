@@ -1,6 +1,4 @@
-'use client';
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { api } from '@/lib/api';
 import { childRequestQuestApproval, childRequestGoldPayout, childCounterProposeQuest } from '@/lib/questController';
 import { Profile, Quest, StoreItem, AppNotification } from '@/types';
@@ -23,6 +21,10 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
   const [quests, setQuests] = useState<Quest[]>([]);
   const [storeItems, setStoreItems] = useState<StoreItem[]>([]);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  
+  // 신규 퀘스트 실시간 유입 팝업 모사 제어용 상태
+  const [newArrivalQuests, setNewArrivalQuests] = useState<Quest[]>([]);
+  const isFirstLoad = useRef(true);
   
   // 퀘스트 접기/펼치기 제어 상태 (자녀 모드용)
   const [isMainQuestsCollapsed, setIsMainQuestsCollapsed] = useState(false);
@@ -108,10 +110,34 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
     if (current) setChild(current);
     const qList = await api.getQuests();
     const todayStr = new Date().toDateString();
+    
+    // 예약 발송 퀘스트 필터링 적용 (오늘 날짜 발송분만 노출)
     const filteredQuests = qList.filter(q => {
       const qDate = new Date(q.createdAt || new Date()).toDateString();
+      if (q.scheduledDate) {
+        return new Date(q.scheduledDate).toDateString() === todayStr;
+      }
       return qDate === todayStr;
     });
+
+    // 신규 수신 퀘스트 실시간 감지 (첫 마운트 로딩 이후 추가 유입 감지)
+    if (!isFirstLoad.current) {
+      const newArrivals = filteredQuests.filter(q => q.status === 'active' && !quests.some(eq => eq.id === q.id));
+      if (newArrivals.length > 0) {
+        setNewArrivalQuests(prev => {
+          const merged = [...prev];
+          newArrivals.forEach(na => {
+            if (!merged.some(m => m.id === na.id)) {
+              merged.push(na);
+            }
+          });
+          return merged;
+        });
+      }
+    } else {
+      isFirstLoad.current = false;
+    }
+
     setQuests(filteredQuests);
     const sList = await api.getStoreItems();
     setStoreItems(sList);
@@ -1506,6 +1532,50 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                 YES
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* 신규 퀘스트 도착 알림 팝업 모달 */}
+      {newArrivalQuests.length > 0 && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-in fade-in duration-300">
+          <div className="w-full max-w-sm bg-gradient-to-b from-[#1E1B4B] to-[#0F0E26] border border-amber-500/40 rounded-3xl p-6 shadow-2xl text-center space-y-4 animate-in zoom-in duration-200 border-2">
+            <div className="w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-4xl mx-auto animate-bounce">
+              ✉️
+            </div>
+            <div>
+              <h3 className="text-lg font-black text-amber-400 font-bw">📜 새로운 퀘스트 도착!</h3>
+              <p className="text-xs text-slate-350 mt-1">길드마스터로부터 새로운 임무가 전달되었습니다.</p>
+            </div>
+            
+            <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-3 text-left max-h-48 overflow-y-auto space-y-2.5">
+              {newArrivalQuests.map((q, idx) => (
+                <div key={idx} className="flex gap-2.5 items-start bg-slate-950/40 p-2.5 rounded-xl border border-slate-850">
+                  <span className="text-xl shrink-0 p-1 bg-indigo-950/50 rounded-lg border border-indigo-900/30">
+                    {q.category === '독서' ? '📖' : q.category === '학습' ? '📚' : q.category === '생활' ? '🏠' : q.category === '심부름' ? '🛒' : q.category === '청소' ? '🧹' : '🐶'}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1">
+                      <span className={`text-[8px] font-black px-1 rounded-sm border ${
+                        q.type === 'main' 
+                          ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/25' 
+                          : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25'
+                      }`}>
+                        {q.type === 'main' ? '메인' : '돌발'}
+                      </span>
+                      <span className="text-[9px] text-amber-500 font-bold">+{q.rewardExp || q.rewardGold}{q.type === 'main' ? 'EXP' : 'G'}</span>
+                    </div>
+                    <p className="text-xs font-bold text-slate-100 mt-1 truncate">{q.title}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setNewArrivalQuests([])}
+              className="w-full py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black rounded-xl text-xs shadow-lg transition active:scale-95 flex items-center justify-center gap-1"
+            >
+              🛡️ 임무 확인 완료
+            </button>
           </div>
         </div>
       )}

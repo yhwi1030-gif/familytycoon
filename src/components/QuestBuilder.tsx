@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Trash2, Plus, Send } from 'lucide-react';
 
 interface QuestBuilderProps {
-  onAddQuests: (quests: Array<{ title: string; category: string; type: 'main' | 'flash'; rewardValue: number; dueTime?: string; iconUrl?: string }>) => void;
+  onAddQuests: (quests: Array<{ title: string; category: string; type: 'main' | 'flash'; rewardValue: number; dueTime?: string; iconUrl?: string; scheduledDate?: string }>) => void;
   onClose: () => void;
 }
 
@@ -13,8 +13,15 @@ export const QuestBuilder: React.FC<QuestBuilderProps> = ({ onAddQuests, onClose
   const [rewardValue, setRewardValue] = useState(20);
   const [dueTime, setDueTime] = useState('18:00'); // 기본 마감 시간 18:00 설정
   
+  // 예약 일정 타입 설정 ('today' | 'future')
+  const [scheduleType, setScheduleType] = useState<'today' | 'future'>('today');
+  const [scheduledDate, setScheduledDate] = useState(() => {
+    const tomorrow = new Date(Date.now() + 86400000);
+    return tomorrow.toISOString().split('T')[0];
+  });
+
   // 임시 보관 퀘스트 큐 리스트
-  const [tempQuests, setTempQuests] = useState<Array<{ title: string; category: string; type: 'main' | 'flash'; rewardValue: number; dueTime?: string }>>([]);
+  const [tempQuests, setTempQuests] = useState<Array<{ title: string; category: string; type: 'main' | 'flash'; rewardValue: number; dueTime?: string; scheduledDate?: string }>>([]);
 
   // Upstage AI 이미지 생성 시뮬레이션 상태
   const [isGeneratingIcon, setIsGeneratingIcon] = useState(false);
@@ -31,7 +38,8 @@ export const QuestBuilder: React.FC<QuestBuilderProps> = ({ onAddQuests, onClose
         category,
         type,
         rewardValue,
-        dueTime: type === 'flash' ? dueTime : undefined
+        dueTime: type === 'flash' ? dueTime : undefined,
+        scheduledDate: scheduleType === 'future' ? scheduledDate : undefined
       }
     ]);
     
@@ -53,7 +61,8 @@ export const QuestBuilder: React.FC<QuestBuilderProps> = ({ onAddQuests, onClose
         category,
         type,
         rewardValue,
-        dueTime: type === 'flash' ? dueTime : undefined
+        dueTime: type === 'flash' ? dueTime : undefined,
+        scheduledDate: scheduleType === 'future' ? scheduledDate : undefined
       });
     }
 
@@ -107,7 +116,7 @@ export const QuestBuilder: React.FC<QuestBuilderProps> = ({ onAddQuests, onClose
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 overflow-y-auto">
       <div className={`w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl animate-in fade-in zoom-in duration-200 text-slate-100 transition-all duration-300 ${
-        tempQuests.length > 0 ? 'max-w-2xl' : 'max-w-md'
+        tempQuests.length > 0 ? 'max-w-3xl' : 'max-w-md'
       }`}>
         <div className="flex justify-between items-center mb-6 border-b border-slate-800 pb-4">
           <h3 className="text-lg font-bold text-white flex items-center gap-2">
@@ -166,17 +175,22 @@ export const QuestBuilder: React.FC<QuestBuilderProps> = ({ onAddQuests, onClose
                   <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-2.5">
                     📦 발행 예정 퀘스트 큐
                   </h4>
-                  <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
+                  <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
                     {tempQuests.map((q, idx) => (
                       <div key={idx} className="p-3 bg-slate-950/60 border border-slate-850 rounded-2xl flex justify-between items-center shadow-sm">
                         <div className="min-w-0 flex-1 pr-2">
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex flex-wrap items-center gap-1">
                             <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
                               {q.category}
                             </span>
                             <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
                               {q.type === 'main' ? '루틴' : '돌발'}
                             </span>
+                            {q.scheduledDate && (
+                              <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-pink-500/10 text-pink-400 border border-pink-500/20">
+                                🕒 {q.scheduledDate} 예약
+                              </span>
+                            )}
                           </div>
                           <h5 className="text-xs font-bold text-slate-100 mt-1 truncate">{q.title}</h5>
                           <p className="text-[9px] text-slate-500 mt-0.5">보상: {q.rewardValue}{q.type === 'main' ? 'EXP' : 'G'}</p>
@@ -270,6 +284,7 @@ export const QuestBuilder: React.FC<QuestBuilderProps> = ({ onAddQuests, onClose
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     className="w-full bg-slate-950 border border-slate-850 rounded-xl p-2.5 text-xs text-slate-200 outline-none focus:border-indigo-500 font-medium"
+                    required={tempQuests.length === 0}
                   />
                 </div>
 
@@ -292,7 +307,45 @@ export const QuestBuilder: React.FC<QuestBuilderProps> = ({ onAddQuests, onClose
                   </div>
                 </div>
 
-                {/* 마감 시간 입력 */}
+                {/* 예약 발송 설정 추가 */}
+                <div className="space-y-2 bg-slate-950/40 p-3 rounded-2xl border border-slate-850">
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                    📅 발송 일정 설정
+                  </label>
+                  <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-950 rounded-xl border border-slate-850">
+                    <button
+                      type="button"
+                      onClick={() => setScheduleType('today')}
+                      className={`py-1.5 rounded-lg text-[10px] font-bold transition ${
+                        scheduleType === 'today' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      ⚡ 오늘 즉시 발송
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setScheduleType('future')}
+                      className={`py-1.5 rounded-lg text-[10px] font-bold transition ${
+                        scheduleType === 'future' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      📅 미래 발송 예약
+                    </button>
+                  </div>
+
+                  {scheduleType === 'future' && (
+                    <input
+                      type="date"
+                      value={scheduledDate}
+                      min={new Date().toISOString().split('T')[0]}
+                      onChange={(e) => setScheduledDate(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-850 rounded-xl p-2.5 text-xs text-slate-200 outline-none focus:border-indigo-500 font-bold"
+                      required
+                    />
+                  )}
+                </div>
+
+                {/* 마감 시간 입력 (돌발 퀘스트 전용) */}
                 {type === 'flash' && (
                   <div className="space-y-3.5 bg-slate-950/40 p-3.5 rounded-2xl border border-slate-850">
                     <label className="block text-xs font-black text-slate-400 uppercase tracking-wider flex items-center gap-1">
@@ -355,8 +408,8 @@ export const QuestBuilder: React.FC<QuestBuilderProps> = ({ onAddQuests, onClose
 
                 <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-850 text-[10px] text-slate-400">
                   {type === 'main'
-                    ? '💡 메인 퀘스트는 매일 00:00에 리셋되며, 완료 시 캐릭터 레벨 성장 경험치만 부여됩니다.'
-                    : '💡 돌발 퀘스트는 완료 시 실제 화폐와 연동되는 골드(1G=1원)가 지급되며, 자녀가 역제안(밀당)을 할 수 있습니다.'}
+                    ? '💡 메인 퀘스트는 지정된 발송 예정일 00:00에 자녀 창에 나타나며, 완료 시 캐릭터 경험치가 부여됩니다.'
+                    : '💡 돌발 퀘스트는 지정된 발송 예정일에 자녀 창에 나타나며 완료 시 골드가 지급됩니다.'}
                 </div>
 
                 {/* 액션 버튼 */}

@@ -1,4 +1,4 @@
-import { Profile, Quest, StoreItem, AppNotification } from '@/types';
+import { Profile, Quest, StoreItem, AppNotification, QuestStatus } from '@/types';
 import { supabase, isSupabaseConfigured as isSupabaseConfiguredRaw } from './supabaseClient';
 
 // Supabase DB 쓰기나 스키마 에러 감지 시 로컬스토리지 모드로 자동 긴급 백업 전환
@@ -147,25 +147,36 @@ const saveLocalQuestIcon = (id: string, iconUrl: string) => {
 };
 
 // DB 맵핑 헬퍼 함수들 (DB 컬럼 오류를 방지하기 위해 icon_url은 Supabase에 보내지 않음)
-const mapQuestToDB = (q: any) => ({
-  id: q.id,
-  type: q.type,
-  title: q.title,
-  category: q.category,
-  reward_type: q.rewardType,
-  reward_exp: q.rewardExp,
-  reward_gold: q.rewardGold,
-  status: q.status,
-  streak_count: q.streakCount,
-  child_id: q.childId,
-  child_name: q.childName,
-  due_time: q.dueTime,
-  image_url: q.imageUrl,
-  created_at: q.createdAt
-});
+const mapQuestToDB = (q: any) => {
+  let packedDueTime = q.dueTime || '';
+  if (q.scheduledDate) {
+    packedDueTime = `${packedDueTime}|${q.scheduledDate}`;
+  }
+  return {
+    id: q.id,
+    type: q.type,
+    title: q.title,
+    category: q.category,
+    reward_type: q.rewardType,
+    reward_exp: q.rewardExp,
+    reward_gold: q.rewardGold,
+    status: q.status,
+    streak_count: q.streakCount,
+    child_id: q.childId,
+    child_name: q.childName,
+    due_time: packedDueTime,
+    image_url: q.imageUrl,
+    created_at: q.createdAt
+  };
+};
 
 const mapQuestFromDB = (q: any): Quest => {
   const localIcon = getLocalQuestIcon(q.id);
+  const rawDueTime = q.due_time || q.dueTime || '';
+  const parts = rawDueTime.split('|');
+  const dueTime = parts[0] || '';
+  const scheduledDate = parts[1] || undefined;
+
   return {
     id: q.id,
     type: q.type,
@@ -178,7 +189,8 @@ const mapQuestFromDB = (q: any): Quest => {
     streakCount: q.streak_count !== undefined ? q.streak_count : q.streakCount,
     childId: q.child_id || q.childId,
     childName: q.child_name || q.childName,
-    dueTime: q.due_time || q.dueTime,
+    dueTime: dueTime,
+    scheduledDate: scheduledDate,
     imageUrl: q.image_url || q.imageUrl,
     createdAt: q.created_at || q.createdAt,
     iconUrl: localIcon || q.icon_url || q.iconUrl
@@ -400,21 +412,55 @@ export const api = {
   },
 
   getQuests: async (): Promise<Quest[]> => {
+    let quests: Quest[] = [];
     if (!isSupabaseConfigured) {
-      return getStored(KEYS.QUESTS, []);
+      quests = getStored(KEYS.QUESTS, []);
+    } else {
+      try {
+        const { data, error } = await supabase.from('quests').select('*');
+        if (error) {
+          console.error("Supabase getQuests error:", error);
+          quests = getStored(KEYS.QUESTS, []);
+        } else {
+          quests = (data || []).map(mapQuestFromDB);
+        }
+      } catch (e) {
+        console.error("Supabase getQuests Exception:", e);
+        quests = getStored(KEYS.QUESTS, []);
+      }
     }
 
-    try {
-      const { data, error } = await supabase.from('quests').select('*');
-      if (error) {
-        console.error("Supabase getQuests error:", error);
-        return getStored(KEYS.QUESTS, []);
+    // 예약 발송 자동 활성화 (scheduledDate가 오늘과 같거나 과거인 pending 상태의 퀘스트를 active로 전환)
+    const todayStr = new Date().toDateString();
+    let hasChanges = false;
+    const updatedQuests = quests.map(q => {
+      if (q.status === 'pending' && q.scheduledDate) {
+        const sDate = new Date(q.scheduledDate);
+        const today = new Date();
+        sDate.setHours(0,0,0,0);
+        today.setHours(0,0,0,0);
+        if (sDate <= today) {
+          hasChanges = true;
+          return { ...q, status: 'active' as QuestStatus };
+        }
       }
-      return (data || []).map(mapQuestFromDB);
-    } catch (e) {
-      console.error("Supabase getQuests Exception:", e);
-      return getStored(KEYS.QUESTS, []);
+      return q;
+    });
+
+    if (hasChanges) {
+      // 비동기 백그라운드 저장 처리
+      setStored(KEYS.QUESTS, updatedQuests);
+      if (isSupabaseConfigured) {
+        Promise.all(
+          updatedQuests
+            .filter(q => q.status === 'active' && quests.find(oq => oq.id === q.id)?.status === 'pending')
+            .map(q => supabase.from('quests').upsert(mapQuestToDB(q)))
+        ).catch(err => console.error("Error background sync activated quests:", err));
+      }
+      return updatedQuests;
     }
+
+    return quests;
   },
 
   saveQuests: async (quests: Quest[]): Promise<void> => {
@@ -447,10 +493,11 @@ export const api = {
   },
 
   addQuest: async (quest: Omit<Quest, 'id' | 'status'>): Promise<Quest> => {
+    const isFuture = quest.scheduledDate ? new Date(quest.scheduledDate).toDateString() !== new Date().toDateString() && new Date(quest.scheduledDate) > new Date() : false;
     const newQuest: Quest = {
       ...quest,
       id: 'q_' + Math.random().toString(36).substr(2, 9),
-      status: 'active',
+      status: isFuture ? 'pending' : 'active',
       createdAt: new Date().toISOString()
     };
 
