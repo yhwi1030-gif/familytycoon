@@ -343,40 +343,56 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
   };
 
   const handleApproveNegotiation = async (noti: AppNotification) => {
-    if (!noti.targetId || !noti.meta?.proposedGold) return;
-    const allQuests = await api.getQuests();
-    const quest = allQuests.find(q => q.id === noti.targetId);
-    if (quest) {
-      quest.rewardGold = noti.meta.proposedGold;
-      quest.status = 'active';
-      await api.saveQuests(allQuests);
+    if (noti.targetId && noti.meta?.proposedGold) {
+      const allQuests = await api.getQuests();
+      const quest = allQuests.find(q => q.id === noti.targetId);
+      if (quest) {
+        quest.rewardGold = noti.meta.proposedGold;
+        quest.status = 'active';
+        await api.saveQuests(allQuests);
+      }
+      await api.resolveNotification(noti.id);
+      await api.addNotification({
+        message: `🛡️ [협상 승인] 길드마스터가 돌발 미션 [${quest ? quest.title : '돌발 미션'}]의 보상 협상을 수락했습니다! 보상이 ${noti.meta.proposedGold}G로 인상되었습니다.`,
+        type: 'cheer'
+      });
+      alert('🤝 협상을 수락하여 보상 골드를 조정하였습니다.');
+    } else {
+      await api.resolveNotification(noti.id);
+      await api.addNotification({
+        message: `🛡️ [셀프 승인] 길드마스터가 셀프 퀘스트 도전을 승인하고 지지해 줍니다! 열심히 도전하세요!`,
+        type: 'cheer'
+      });
+      alert('🤝 자녀의 셀프 퀘스트 설계를 승인하고 응원 메시지를 보냈습니다.');
     }
-    await api.resolveNotification(noti.id);
-    await api.addNotification({
-      message: `🛡️ [협상 승인] 길드마스터가 돌발 미션 [${quest ? quest.title : '돌발 미션'}]의 보상 협상을 수락했습니다! 보상이 ${noti.meta.proposedGold}G로 인상되었습니다.`,
-      type: 'cheer'
-    });
     setNewNegotiationNoti(null);
     await loadData();
-    alert('🤝 협상을 수락하여 보상 골드를 조정하였습니다.');
   };
 
   const handleRejectNegotiation = async (noti: AppNotification) => {
-    if (!noti.targetId) return;
-    const allQuests = await api.getQuests();
-    const quest = allQuests.find(q => q.id === noti.targetId);
-    if (quest) {
-      quest.status = 'active';
-      await api.saveQuests(allQuests);
+    if (noti.targetId) {
+      const allQuests = await api.getQuests();
+      const quest = allQuests.find(q => q.id === noti.targetId);
+      if (quest) {
+        quest.status = 'active';
+        await api.saveQuests(allQuests);
+      }
+      await api.resolveNotification(noti.id);
+      await api.addNotification({
+        message: `⚠️ [협상 반려] 길드마스터가 돌발 미션 [${quest ? quest.title : '돌발 미션'}]의 보상 협상을 거절했습니다. 기존 보상으로 진행해 주세요.`,
+        type: 'cheer'
+      });
+      alert('❌ 협상을 거절하여 기존 보상으로 유지됩니다.');
+    } else {
+      await api.resolveNotification(noti.id);
+      await api.addNotification({
+        message: `⚠️ [셀프 반려] 길드마스터가 셀프 퀘스트 도전을 반려했습니다. 다른 미션으로 다시 제안해 주세요.`,
+        type: 'cheer'
+      });
+      alert('❌ 자녀의 셀프 퀘스트 설계를 반려했습니다.');
     }
-    await api.resolveNotification(noti.id);
-    await api.addNotification({
-      message: `⚠️ [협상 반려] 길드마스터가 돌발 미션 [${quest ? quest.title : '돌발 미션'}]의 보상 협상을 거절했습니다. 기존 보상으로 진행해 주세요.`,
-      type: 'cheer'
-    });
     setNewNegotiationNoti(null);
     await loadData();
-    alert('❌ 협상을 거절하여 기존 보상으로 유지됩니다.');
   };
 
   return (
