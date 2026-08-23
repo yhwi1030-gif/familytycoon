@@ -86,6 +86,7 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
   const [cameraMode, setCameraMode] = useState<'idle' | 'capture' | 'upload'>('idle');
   // 스캔한 가짜 파일 전송용 파일명 모사
   const [uploadedFile, setUploadedFile] = useState<string | null>(null);
+  const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null);
   
   // Upstage Layout Parser AI 분석 상태
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -232,7 +233,9 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
         ? `[Upstage Layout Parser - 독서록 검증 완료]\n- 문서 유형: 줄글 형태 독서 감상 소감문\n- 도서명 추출: "어린 왕자"\n- 핵심 문장: "가장 중요한 것은 눈에 보이지 않아"\n- 자필 텍스트 매칭도: 98.4%\n- 요약: 자녀가 성실하게 작성한 독서 감상문 본문을 AI가 레이아웃 스캔 및 텍스트 디코딩하였습니다.`
         : `[Upstage Layout Parser - 수학 문제집 검증 완료]\n- 문서 유형: 수학 문제 풀이 흔적\n- 문제 추출: "2x + 5 = 11, x의 값을 구하시오."\n- 자녀 해법 텍스트: "x = 3"\n- 필체 검증: 자녀 본인 서명 및 풀이 패턴 100% 매칭\n- 요약: 문제집의 필기 수식을 Upstage OCR로 해독하여 올바른 풀이 정답(x=3)을 판독했습니다.`;
 
-      const displayUrl = cameraMode === 'upload' ? 'https://picsum.photos/400/300?random=1' : 'https://picsum.photos/400/300';
+      const displayUrl = cameraMode === 'upload' && uploadedFileUrl 
+        ? uploadedFileUrl 
+        : 'https://picsum.photos/400/300';
       const payloadUrl = `${displayUrl}##${encodeURIComponent(parsedText)}`;
 
       await childRequestQuestApproval(
@@ -248,6 +251,7 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
       setActiveCameraQuest(null);
       setCameraMode('idle');
       setUploadedFile(null);
+      setUploadedFileUrl(null);
       await loadData();
     }, 3800);
   };
@@ -257,6 +261,17 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
     if (file) {
       setUploadedFile(file.name);
       setCameraMode('upload');
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          if (event.target?.result) {
+            setUploadedFileUrl(event.target.result as string);
+          }
+        };
+        reader.readAsDataURL(file);
+      } else {
+        setUploadedFileUrl('https://images.unsplash.com/photo-1568667256549-094345857637?w=400&auto=format&fit=crop');
+      }
     }
   };
 
