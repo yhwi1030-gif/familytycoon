@@ -27,7 +27,7 @@ export async function childRequestQuestApproval(questId: string, title: string, 
 
     await addMockNotification(
       'quest_request',
-      `🛡️ [${childName || '자녀'}] 모험가가 [${title}] 완료 승인을 요청했습니다. AI 하브루타 요약 검수가 가능합니다.`,
+      `🛡️ [${childName || '자녀'}] 모험가가 [${title}] 완료 승인을 요청했습니다.`,
       questId,
       { imageUrl, title, childId, childName }
     );
