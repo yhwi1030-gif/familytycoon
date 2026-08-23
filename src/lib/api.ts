@@ -780,6 +780,7 @@ export const api = {
       localStorage.removeItem(KEYS.CURRENT_USER_ID);
       localStorage.removeItem('ff_quest_icons');
       localStorage.removeItem('ff_notified_quest_ids'); // 팝업 누적 감지 이력 리셋
+      localStorage.removeItem('ff_notified_noti_ids'); // 부모 팝업 누적 감지 이력 리셋
     }
 
     if (isSupabaseConfigured) {
@@ -800,6 +801,7 @@ export const api = {
       localStorage.setItem(KEYS.QUESTS, JSON.stringify([]));
       localStorage.removeItem('ff_quest_icons');
       localStorage.removeItem('ff_notified_quest_ids'); // 팝업 누적 감지 이력 리셋
+      localStorage.removeItem('ff_notified_noti_ids'); // 부모 팝업 누적 감지 이력 리셋
     }
     if (isSupabaseConfigured) {
       try {

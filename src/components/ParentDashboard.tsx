@@ -23,6 +23,10 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
   const [quests, setQuests] = useState<Quest[]>([]);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   
+  // 역제안 실시간 팝업 수신 상태
+  const [newNegotiationNoti, setNewNegotiationNoti] = useState<AppNotification | null>(null);
+  const isFirstLoadNoti = React.useRef(true);
+  
   // 모달 제어 상태
   const [isReadingModalOpen, setIsReadingModalOpen] = useState(false);
   const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null);
@@ -86,6 +90,33 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
     setQuests(filteredQuests);
     const nList = await api.getNotifications();
     setNotifications(nList);
+
+    // 신규 역제안(밀당) 알림 실시간 팝업 감지
+    const notifiedNotiIdsStr = typeof window !== 'undefined' ? (localStorage.getItem('ff_notified_noti_ids') || '[]') : '[]';
+    let notifiedNotiIds: string[] = [];
+    try {
+      notifiedNotiIds = JSON.parse(notifiedNotiIdsStr);
+    } catch (e) {
+      notifiedNotiIds = [];
+    }
+
+    if (isFirstLoadNoti.current) {
+      isFirstLoadNoti.current = false;
+      const initialActiveNotiIds = nList.filter(n => n.type === 'self_quest_proposal').map(n => n.id);
+      const mergedNotiIds = Array.from(new Set([...notifiedNotiIds, ...initialActiveNotiIds]));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('ff_notified_noti_ids', JSON.stringify(mergedNotiIds));
+      }
+    } else {
+      const newNegotiations = nList.filter(n => n.type === 'self_quest_proposal' && !notifiedNotiIds.includes(n.id));
+      if (newNegotiations.length > 0) {
+        setNewNegotiationNoti(newNegotiations[0]);
+        const updatedNotifiedNotiIds = Array.from(new Set([...notifiedNotiIds, ...newNegotiations.map(n => n.id)]));
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('ff_notified_noti_ids', JSON.stringify(updatedNotifiedNotiIds));
+        }
+      }
+    }
   };
 
   useEffect(() => {
@@ -955,6 +986,50 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
           onAddQuests={handleAddQuests}
           onClose={() => setIsQuestBuilderOpen(false)}
         />
+      )}
+      {/* 역제안(밀당) 실시간 알림 팝업 모달 */}
+      {newNegotiationNoti && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
+          <div className="w-full max-w-sm bg-gradient-to-b from-[#111827] to-[#1F2937] border border-amber-500/40 rounded-3xl p-6 shadow-2xl text-center space-y-4 animate-in zoom-in duration-200 border-2">
+            <div className="w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-4xl mx-auto animate-bounce">
+              🤝
+            </div>
+            <div>
+              <h3 className="text-lg font-black text-amber-400 font-bw">🤝 골드 역제안(밀당) 도착!</h3>
+              <p className="text-xs text-slate-300 mt-1">자녀로부터 새로운 보상 협상 요청이 들어왔습니다.</p>
+            </div>
+            
+            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 text-left space-y-2">
+              <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                {newNegotiationNoti.message}
+              </p>
+              {newNegotiationNoti.meta?.proposedGold && (
+                <div className="mt-3 flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-850">
+                  <span className="text-[10px] text-slate-400 font-bold font-sans">제안된 골드 보상:</span>
+                  <span className="text-sm font-black text-amber-400">{newNegotiationNoti.meta.proposedGold} G</span>
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                onClick={() => {
+                  setNewNegotiationNoti(null);
+                  setActiveTab('home'); // 홈 탭의 인증 요청 센터로 강제 이동
+                }}
+                className="w-full py-3 bg-[#AC52F2] hover:bg-[#9734e0] text-white font-bold rounded-xl text-xs transition shadow-md flex items-center justify-center gap-1 active:scale-95"
+              >
+                🔍 수락/거절 검수
+              </button>
+              <button
+                onClick={() => setNewNegotiationNoti(null)}
+                className="w-full py-3 bg-slate-800 hover:bg-slate-750 text-slate-300 font-bold rounded-xl text-xs transition border border-slate-700 active:scale-95"
+              >
+                닫기
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
     </div>
