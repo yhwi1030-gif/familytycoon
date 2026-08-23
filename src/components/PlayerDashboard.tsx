@@ -264,9 +264,33 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
       if (file.type.startsWith('image/')) {
         const reader = new FileReader();
         reader.onload = (event) => {
-          if (event.target?.result) {
-            setUploadedFileUrl(event.target.result as string);
-          }
+          const img = new Image();
+          img.onload = () => {
+            const maxDim = 400;
+            let width = img.width;
+            let height = img.height;
+            if (width > height) {
+              if (width > maxDim) {
+                height = Math.round((height * maxDim) / width);
+                width = maxDim;
+              }
+            } else {
+              if (height > maxDim) {
+                width = Math.round((width * maxDim) / height);
+                height = maxDim;
+              }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              ctx.drawImage(img, 0, 0, width, height);
+              const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+              setUploadedFileUrl(compressedBase64);
+            }
+          };
+          img.src = event.target?.result as string;
         };
         reader.readAsDataURL(file);
       } else {
