@@ -129,27 +129,27 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
       await loadData();
     }
   };
-
-  // 신규 퀘스트 발행 완료 콜백
-  const handleAddQuest = async (data: { title: string; category: string; type: 'main' | 'flash'; rewardValue: number; dueTime?: string; iconUrl?: string }) => {
-    await api.addQuest({
-      title: data.title,
-      category: data.category,
-      type: data.type,
-      rewardType: data.type === 'main' ? 'exp' : 'gold',
-      rewardExp: data.type === 'main' ? data.rewardValue : 0,
-      rewardGold: data.type === 'flash' ? data.rewardValue : 0,
-      dueTime: data.dueTime,
-      iconUrl: data.iconUrl
-    });
-    // 알림 전송
-    await api.addNotification({
-      message: `⚡ 길드마스터가 새로운 ${data.type === 'main' ? '메인' : '돌발'} 미션 [${data.title}]을 발행했습니다!`,
-      type: 'general'
-    });
+  // 신규 퀘스트 일괄 발행 완료 콜백
+  const handleAddQuests = async (questsData: Array<{ title: string; category: string; type: 'main' | 'flash'; rewardValue: number; dueTime?: string; iconUrl?: string }>) => {
+    for (const data of questsData) {
+      await api.addQuest({
+        title: data.title,
+        category: data.category,
+        type: data.type,
+        rewardType: data.type === 'main' ? 'exp' : 'gold',
+        rewardExp: data.type === 'main' ? data.rewardValue : 0,
+        rewardGold: data.type === 'flash' ? data.rewardValue : 0,
+        dueTime: data.dueTime,
+        iconUrl: data.iconUrl
+      });
+      // 알림 전송
+      await api.addNotification({
+        message: `⚡ 길드마스터가 새로운 ${data.type === 'main' ? '메인' : '돌발'} 미션 [${data.title}]을 발행했습니다!`,
+        type: 'general'
+      });
+    }
     await loadData();
   };
-
   // 독려 메시지 전송 (톤앤매너 다변화 및 5종 프리셋 무작위 선택)
   const handleCheer = async (tone: 'sweet' | 'strict' | 'funny', questTitle: string) => {
     const childName = child ? child.name.split(' ')[0] : '모험가';
@@ -937,7 +937,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
       {/* 퀘스트 빌더 모달 */}
       {isQuestBuilderOpen && (
         <QuestBuilder
-          onAddQuest={handleAddQuest}
+          onAddQuests={handleAddQuests}
           onClose={() => setIsQuestBuilderOpen(false)}
         />
       )}

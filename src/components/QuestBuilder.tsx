@@ -1,24 +1,63 @@
 import React, { useState } from 'react';
+import { Trash2, Plus, Send } from 'lucide-react';
 
 interface QuestBuilderProps {
-  onAddQuest: (questData: { title: string; category: string; type: 'main' | 'flash'; rewardValue: number; dueTime?: string; iconUrl?: string }) => void;
+  onAddQuests: (quests: Array<{ title: string; category: string; type: 'main' | 'flash'; rewardValue: number; dueTime?: string; iconUrl?: string }>) => void;
   onClose: () => void;
 }
 
-export const QuestBuilder: React.FC<QuestBuilderProps> = ({ onAddQuest, onClose }) => {
+export const QuestBuilder: React.FC<QuestBuilderProps> = ({ onAddQuests, onClose }) => {
   const [type, setType] = useState<'main' | 'flash'>('main');
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('학습');
   const [rewardValue, setRewardValue] = useState(20);
   const [dueTime, setDueTime] = useState('18:00'); // 기본 마감 시간 18:00 설정
   
+  // 임시 보관 퀘스트 큐 리스트
+  const [tempQuests, setTempQuests] = useState<Array<{ title: string; category: string; type: 'main' | 'flash'; rewardValue: number; dueTime?: string }>>([]);
+
   // Upstage AI 이미지 생성 시뮬레이션 상태
   const [isGeneratingIcon, setIsGeneratingIcon] = useState(false);
   const [generationStep, setGenerationStep] = useState(0);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAddToList = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!title.trim()) return;
+
+    setTempQuests([
+      ...tempQuests,
+      {
+        title,
+        category,
+        type,
+        rewardValue,
+        dueTime: type === 'flash' ? dueTime : undefined
+      }
+    ]);
+    
+    // 다음 입력 편의를 위해 제목 초기화
+    setTitle('');
+  };
+
+  const handleRemoveFromList = (idx: number) => {
+    setTempQuests(tempQuests.filter((_, i) => i !== idx));
+  };
+
+  const handlePublishAll = () => {
+    let finalQuests = [...tempQuests];
+    
+    // 만약 현재 폼에도 채워진 미작성 내용이 있다면 포함시킴
+    if (title.trim()) {
+      finalQuests.push({
+        title,
+        category,
+        type,
+        rewardValue,
+        dueTime: type === 'flash' ? dueTime : undefined
+      });
+    }
+
+    if (finalQuests.length === 0) return;
 
     // Upstage AI 2D 로우폴리 이미지 생성 개시
     setIsGeneratingIcon(true);
@@ -28,49 +67,57 @@ export const QuestBuilder: React.FC<QuestBuilderProps> = ({ onAddQuest, onClose 
     const timer2 = setTimeout(() => setGenerationStep(3), 2200);
 
     setTimeout(() => {
-      // 입력 문구를 바탕으로 업스테이지 AI 2D 로우폴리 매칭 아이콘 생성
-      let finalIconUrl = 'https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=120&auto=format&fit=crop'; // 기본 펜/스케치
-      const t = title.toLowerCase();
-      
-      if (category === '독서' || t.includes('독서') || t.includes('책')) {
-        finalIconUrl = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=120&auto=format&fit=crop';
-      } else if (category === '학습' || t.includes('학습지') || t.includes('숙제') || t.includes('공부')) {
-        finalIconUrl = 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=120&auto=format&fit=crop';
-      } else if (category === '생활' || t.includes('양치') || t.includes('이불') || t.includes('기상')) {
-        if (t.includes('양치') || t.includes('칫솔') || t.includes('이닦기')) {
-          finalIconUrl = 'https://images.unsplash.com/photo-1559599189-fe84dea4eb79?w=120&auto=format&fit=crop';
-        } else if (t.includes('이불') || t.includes('정리') || t.includes('침대')) {
-          finalIconUrl = 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=120&auto=format&fit=crop';
-        } else {
-          finalIconUrl = 'https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=120&auto=format&fit=crop';
+      // 입력 문구를 바탕으로 각 미션별 알맞은 2D 로우폴리 매칭 아이콘 자동 생성
+      const processedQuests = finalQuests.map(q => {
+        let finalIconUrl = 'https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=120&auto=format&fit=crop'; // 기본 펜/스케치
+        const t = q.title.toLowerCase();
+        
+        if (q.category === '독서' || t.includes('독서') || t.includes('책')) {
+          finalIconUrl = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=120&auto=format&fit=crop';
+        } else if (q.category === '학습' || t.includes('학습지') || t.includes('숙제') || t.includes('공부')) {
+          finalIconUrl = 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=120&auto=format&fit=crop';
+        } else if (q.category === '생활' || t.includes('양치') || t.includes('이불') || t.includes('기상')) {
+          if (t.includes('양치') || t.includes('칫솔') || t.includes('이닦기')) {
+            finalIconUrl = 'https://images.unsplash.com/photo-1559599189-fe84dea4eb79?w=120&auto=format&fit=crop';
+          } else if (t.includes('이불') || t.includes('정리') || t.includes('침대')) {
+            finalIconUrl = 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=120&auto=format&fit=crop';
+          } else {
+            finalIconUrl = 'https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=120&auto=format&fit=crop';
+          }
+        } else if (q.category === '심부름' || t.includes('우유') || t.includes('사오기') || t.includes('마트')) {
+          finalIconUrl = 'https://images.unsplash.com/photo-1528750955906-c98b84384950?w=120&auto=format&fit=crop';
+        } else if (q.category === '청소' || t.includes('빗자루') || t.includes('거실') || t.includes('청소')) {
+          finalIconUrl = 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=120&auto=format&fit=crop';
+        } else if (q.category === '반려동물' || t.includes('산책') || t.includes('사료')) {
+          finalIconUrl = 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=120&auto=format&fit=crop';
         }
-      } else if (category === '심부름' || t.includes('우유') || t.includes('사오기') || t.includes('마트')) {
-        finalIconUrl = 'https://images.unsplash.com/photo-1528750955906-c98b84384950?w=120&auto=format&fit=crop';
-      } else if (category === '청소' || t.includes('빗자루') || t.includes('거실') || t.includes('청소')) {
-        finalIconUrl = 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=120&auto=format&fit=crop';
-      } else if (category === '반려동물' || t.includes('산책') || t.includes('사료')) {
-        finalIconUrl = 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=120&auto=format&fit=crop';
-      }
 
-      onAddQuest({
-        title,
-        category,
-        type,
-        rewardValue,
-        dueTime: type === 'flash' ? dueTime : undefined,
-        iconUrl: finalIconUrl
+        return {
+          ...q,
+          iconUrl: finalIconUrl
+        };
       });
-      
+
+      onAddQuests(processedQuests);
       setIsGeneratingIcon(false);
       onClose();
     }, 3200);
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
-      <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl animate-in fade-in zoom-in duration-200 text-slate-100">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 overflow-y-auto">
+      <div className={`w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl animate-in fade-in zoom-in duration-200 text-slate-100 transition-all duration-300 ${
+        tempQuests.length > 0 ? 'max-w-2xl' : 'max-w-md'
+      }`}>
         <div className="flex justify-between items-center mb-6 border-b border-slate-800 pb-4">
-          <h3 className="text-lg font-bold text-white">✨ 새로운 길드 퀘스트 설계</h3>
+          <h3 className="text-lg font-bold text-white flex items-center gap-2">
+            <span>✨ 새로운 길드 퀘스트 설계</span>
+            {tempQuests.length > 0 && (
+              <span className="text-xs bg-indigo-500 text-white px-2 py-0.5 rounded-full font-sans font-black">
+                {tempQuests.length}개 보관중
+              </span>
+            )}
+          </h3>
           <button onClick={onClose} className="text-slate-400 hover:text-white transition text-lg">&times;</button>
         </div>
 
@@ -85,9 +132,11 @@ export const QuestBuilder: React.FC<QuestBuilderProps> = ({ onAddQuest, onClose 
 
             <div>
               <h4 className="text-sm font-extrabold text-white">
-                {generationStep === 1 ? 'Upstage AI 이미지 생성 기동...' : generationStep === 2 ? '2D 로우폴리 아바타 아이콘 변환...' : '아이콘 벡터 렌더링 완료!'}
+                {generationStep === 1 ? 'Upstage AI 이미지 생성기 분석 중...' : generationStep === 2 ? '다중 퀘스트 2D 로우폴리 아바타 아이콘 변환...' : '아이콘 벡터 렌더링 완료!'}
               </h4>
-              <p className="text-[10px] text-indigo-400 mt-1 font-semibold">퀘스트 명칭 분석: [{title}]</p>
+              <p className="text-[10px] text-indigo-400 mt-1 font-semibold">
+                총 {tempQuests.length + (title.trim() ? 1 : 0)}개의 퀘스트 배치 인코딩 가동 중
+              </p>
             </div>
 
             {/* 상태바 */}
@@ -99,203 +148,250 @@ export const QuestBuilder: React.FC<QuestBuilderProps> = ({ onAddQuest, onClose 
             </div>
 
             {/* 디코더 로그 */}
-            <div className="bg-slate-900 border border-slate-800/80 p-3.5 rounded-xl text-[10px] font-mono text-left text-slate-400 space-y-1 h-24 overflow-y-auto shadow-inner">
+            <div className="bg-slate-950 border border-slate-850 p-3.5 rounded-xl text-[10px] font-mono text-left text-slate-400 space-y-1 h-24 overflow-y-auto shadow-inner">
               {generationStep >= 1 && <p className="text-indigo-400">✓ [AI] Upstage Solar Text-to-Image 파이프라인 기동</p>}
-              {generationStep >= 1 && <p className="text-slate-350">✓ [AI] 키워드 검출: "{title.slice(0, 8)}" 및 분위기 추출</p>}
-              {generationStep >= 2 && <p className="text-indigo-400">✓ [AI] 저사양 2D Low-Poly 아이콘 스타일 인코딩</p>}
-              {generationStep >= 2 && <p className="text-slate-350">✓ [AI] 기하학적 폴리곤 메쉬 렌더링 완료 (100% 매칭)</p>}
-              {generationStep >= 3 && <p className="text-emerald-400">✓ [AI] 아이콘 텍스쳐 병합 및 이미지 최종 생성 완료!</p>}
+              {generationStep >= 1 && <p className="text-slate-350">✓ [AI] 다중 퀘스트 제목 키워드 분석 및 레이아웃 스캔</p>}
+              {generationStep >= 2 && <p className="text-indigo-400">✓ [AI] 저사양 2D Low-Poly 아이콘 스타일 배치 인코딩</p>}
+              {generationStep >= 2 && <p className="text-slate-350">✓ [AI] 개별 퀘스트 맞춤형 메쉬 구조화 렌더링</p>}
+              {generationStep >= 3 && <p className="text-emerald-400">✓ [AI] 모든 퀘스트 아이콘 벡터 디코딩 및 일괄 패키징 성공!</p>}
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-          {/* 퀘스트 타입 */}
-          <div>
-            <label className="block text-xs font-bold text-slate-400 mb-2 uppercase">퀘스트 대분류</label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => { setType('main'); setRewardValue(20); }}
-                className={`py-2.5 rounded-xl border text-sm font-bold transition ${
-                  type === 'main'
-                    ? 'bg-indigo-600 border-indigo-500 text-white'
-                    : 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-750'
-                }`}
-              >
-                메인 (루틴 / EXP 전용)
-              </button>
-              <button
-                type="button"
-                onClick={() => { setType('flash'); setRewardValue(500); }}
-                className={`py-2.5 rounded-xl border text-sm font-bold transition ${
-                  type === 'flash'
-                    ? 'bg-emerald-600 border-emerald-500 text-white'
-                    : 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-750'
-                }`}
-              >
-                돌발 (심부름 / Gold 전용)
-              </button>
-            </div>
-          </div>
+          <div className={`grid gap-6 ${tempQuests.length > 0 ? 'grid-cols-1 md:grid-cols-12' : 'grid-cols-1'}`}>
+            
+            {/* 왼쪽 열: 임시 보관함 목록 (복수 퀘스트 등록 시에만 노출) */}
+            {tempQuests.length > 0 && (
+              <div className="md:col-span-5 space-y-3.5 border-r border-slate-800/80 pr-6 flex flex-col justify-between">
+                <div>
+                  <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-2.5">
+                    📦 발행 예정 퀘스트 큐
+                  </h4>
+                  <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
+                    {tempQuests.map((q, idx) => (
+                      <div key={idx} className="p-3 bg-slate-950/60 border border-slate-850 rounded-2xl flex justify-between items-center shadow-sm">
+                        <div className="min-w-0 flex-1 pr-2">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                              {q.category}
+                            </span>
+                            <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                              {q.type === 'main' ? '루틴' : '돌발'}
+                            </span>
+                          </div>
+                          <h5 className="text-xs font-bold text-slate-100 mt-1 truncate">{q.title}</h5>
+                          <p className="text-[9px] text-slate-500 mt-0.5">보상: {q.rewardValue}{q.type === 'main' ? 'EXP' : 'G'}</p>
+                        </div>
+                        <button
+                          onClick={() => handleRemoveFromList(idx)}
+                          className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition"
+                          title="삭제"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
 
-          {/* 분류 */}
-          <div>
-            <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase">세부 카테고리</label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-850 rounded-xl p-3 text-sm text-slate-200 outline-none focus:border-indigo-500"
-            >
-              {type === 'main' ? (
-                <>
-                  <option value="생활">🏠 생활 (기상, 양치 등)</option>
-                  <option value="학습">📚 학습 (학습지, 숙제 등)</option>
-                  <option value="독서">📖 독서 (독서, 기록장 등)</option>
-                </>
-              ) : (
-                <>
-                  <option value="심부름">🛒 심부름 (우유, 편의점)</option>
-                  <option value="청소">🧹 청소 (거실, 방 청소)</option>
-                  <option value="반려동물">🐶 반려동물 (산책, 사료)</option>
-                </>
-              )}
-            </select>
-          </div>
-
-          {/* 퀘스트 이름 */}
-          <div>
-            <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase">퀘스트 미션 내용</label>
-            <input
-              type="text"
-              placeholder="예: 강아지 몽이 산책 시키기"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-850 rounded-xl p-3 text-sm text-slate-200 outline-none focus:border-indigo-500 font-medium"
-              required
-            />
-          </div>
-
-          {/* 보상 */}
-          <div>
-            <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase">
-              보상 설정 ({type === 'main' ? '경험치 EXP' : '골드 Gold'})
-            </label>
-            <div className="flex items-center gap-3">
-              <input
-                type="number"
-                value={rewardValue}
-                onChange={(e) => setRewardValue(Number(e.target.value))}
-                className="flex-1 bg-slate-950 border border-slate-850 rounded-xl p-3 text-sm text-slate-200 outline-none focus:border-indigo-500 font-bold"
-                min="1"
-              />
-              <span className="text-sm font-bold text-indigo-400">
-                {type === 'main' ? 'EXP' : 'G'}
-              </span>
-            </div>
-          </div>
-
-          {/* 마감 시간 입력 (돌발 퀘스트 전용 - 직접 입력 / 선택 옵션화) */}
-          {type === 'flash' && (
-            <div className="space-y-3.5 animate-in fade-in duration-250 bg-slate-950/40 p-3.5 rounded-2xl border border-slate-850">
-              <label className="block text-xs font-black text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                ⏱️ 퀘스트 마감 제한 시간
-              </label>
-              
-              {/* 직접 시간 지정 vs 빠른 분/시간 선택 토글 버튼 */}
-              <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-950 rounded-xl border border-slate-850">
-                <button
-                  type="button"
-                  onClick={() => {
-                    // 프리셋 선택 -> 기본 '30분 내' 설정
-                    setDueTime('30분 내');
-                  }}
-                  className={`py-1.5 rounded-lg text-[10px] font-bold transition ${
-                    !dueTime.includes(':')
-                      ? 'bg-emerald-600 text-white shadow-sm'
-                      : 'text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  ⏱️ 빠른 마감시간 선택
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    // 직접 시각 입력 -> 기본 시각 '18:00' 설정
-                    setDueTime('18:00');
-                  }}
-                  className={`py-1.5 rounded-lg text-[10px] font-bold transition ${
-                    dueTime.includes(':')
-                      ? 'bg-emerald-600 text-white shadow-sm'
-                      : 'text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  ✍️ 특정 시각 직접 입력
-                </button>
+                <div className="pt-4 border-t border-slate-800/80 space-y-2">
+                  <button
+                    onClick={handlePublishAll}
+                    className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition shadow-md flex items-center justify-center gap-1.5 active:scale-95"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    <span>🚀 {tempQuests.length}개 퀘스트 일괄 발송</span>
+                  </button>
+                </div>
               </div>
+            )}
 
-              {/* 입력 모드 분기 */}
-              {!dueTime.includes(':') ? (
-                /* 빠른 선택 프리셋 버튼 구역 */
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { label: '⚡ 30분 내', value: '30분 내' },
-                    { label: '⏰ 1시간 내', value: '1시간 내' },
-                    { label: '🌙 오늘 저녁', value: '오늘 저녁까지' },
-                    { label: '💤 오늘 밤', value: '오늘 자정까지' }
-                  ].map(preset => (
+            {/* 오른쪽 열: 퀘스트 입력 폼 */}
+            <div className={`${tempQuests.length > 0 ? 'md:col-span-7' : 'w-full'} space-y-4`}>
+              <form onSubmit={(e) => { e.preventDefault(); handleAddToList(); }} className="space-y-4">
+                {/* 퀘스트 타입 */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 mb-2 uppercase">퀘스트 대분류</label>
+                  <div className="grid grid-cols-2 gap-2">
                     <button
-                      key={preset.value}
                       type="button"
-                      onClick={() => setDueTime(preset.value)}
-                      className={`py-2 rounded-xl text-xs font-semibold border transition ${
-                        dueTime === preset.value
-                          ? 'bg-emerald-500/10 border-emerald-500 text-emerald-400'
-                          : 'bg-slate-900 border-slate-850 text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                      onClick={() => { setType('main'); setRewardValue(20); }}
+                      className={`py-2 rounded-xl border text-xs font-bold transition ${
+                        type === 'main'
+                          ? 'bg-indigo-600 border-indigo-500 text-white'
+                          : 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-750'
                       }`}
                     >
-                      {preset.label}
+                      메인 (루틴 / EXP)
                     </button>
-                  ))}
+                    <button
+                      type="button"
+                      onClick={() => { setType('flash'); setRewardValue(500); }}
+                      className={`py-2 rounded-xl border text-xs font-bold transition ${
+                        type === 'flash'
+                          ? 'bg-emerald-600 border-emerald-500 text-white'
+                          : 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-750'
+                      }`}
+                    >
+                      돌발 (심부름 / Gold)
+                    </button>
+                  </div>
                 </div>
-              ) : (
-                /* 특정 시각 타임 피커 입력 구역 */
-                <div className="flex gap-2">
+
+                {/* 분류 */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase">세부 카테고리</label>
+                  <select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-850 rounded-xl p-2.5 text-xs text-slate-200 outline-none focus:border-indigo-500"
+                  >
+                    {type === 'main' ? (
+                      <>
+                        <option value="생활">🏠 생활 (기상, 양치 등)</option>
+                        <option value="학습">📚 학습 (학습지, 숙제 등)</option>
+                        <option value="독서">📖 독서 (독서, 기록장 등)</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="심부름">🛒 심부름 (우유, 편의점)</option>
+                        <option value="청소">🧹 청소 (거실, 방 청소)</option>
+                        <option value="반려동물">🐶 반려동물 (산책, 사료)</option>
+                      </>
+                    )}
+                  </select>
+                </div>
+
+                {/* 퀘스트 이름 */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase">퀘스트 미션 내용</label>
                   <input
-                    type="time"
-                    value={dueTime}
-                    onChange={(e) => setDueTime(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-850 rounded-xl p-3 text-sm text-slate-200 outline-none focus:border-emerald-500 font-bold"
-                    required
+                    type="text"
+                    placeholder="예: 학습지 2페이지 풀기"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-850 rounded-xl p-2.5 text-xs text-slate-200 outline-none focus:border-indigo-500 font-medium"
                   />
                 </div>
-              )}
+
+                {/* 보상 */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase">
+                    보상 설정 ({type === 'main' ? '경험치 EXP' : '골드 Gold'})
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="number"
+                      value={rewardValue}
+                      onChange={(e) => setRewardValue(Number(e.target.value))}
+                      className="flex-1 bg-slate-950 border border-slate-850 rounded-xl p-2.5 text-xs text-slate-200 outline-none focus:border-indigo-500 font-bold"
+                      min="1"
+                    />
+                    <span className="text-xs font-bold text-indigo-400">
+                      {type === 'main' ? 'EXP' : 'G'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* 마감 시간 입력 */}
+                {type === 'flash' && (
+                  <div className="space-y-3.5 bg-slate-950/40 p-3.5 rounded-2xl border border-slate-850">
+                    <label className="block text-xs font-black text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                      ⏱️ 마감 제한 시간
+                    </label>
+                    <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-950 rounded-xl border border-slate-850">
+                      <button
+                        type="button"
+                        onClick={() => setDueTime('30분 내')}
+                        className={`py-1.5 rounded-lg text-[9px] font-bold transition ${
+                          !dueTime.includes(':') ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        ⏱️ 빠른 마감
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDueTime('18:00')}
+                        className={`py-1.5 rounded-lg text-[9px] font-bold transition ${
+                          dueTime.includes(':') ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        ✍️ 직접 입력
+                      </button>
+                    </div>
+
+                    {!dueTime.includes(':') ? (
+                      <div className="grid grid-cols-2 gap-2">
+                        {[
+                          { label: '⚡ 30분 내', value: '30분 내' },
+                          { label: '⏰ 1시간 내', value: '1시간 내' },
+                          { label: '🌙 오늘 저녁', value: '오늘 저녁까지' },
+                          { label: '💤 오늘 밤', value: '오늘 자정까지' }
+                        ].map(preset => (
+                          <button
+                            key={preset.value}
+                            type="button"
+                            onClick={() => setDueTime(preset.value)}
+                            className={`py-1.5 rounded-xl text-[10px] font-semibold border transition ${
+                              dueTime === preset.value
+                                ? 'bg-emerald-500/10 border-emerald-500 text-emerald-400'
+                                : 'bg-slate-900 border-slate-850 text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                            }`}
+                          >
+                            {preset.label}
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <input
+                        type="time"
+                        value={dueTime}
+                        onChange={(e) => setDueTime(e.target.value)}
+                        className="w-full bg-slate-950 border border-slate-850 rounded-xl p-2.5 text-xs text-slate-200 outline-none focus:border-emerald-500 font-bold"
+                        required
+                      />
+                    )}
+                  </div>
+                )}
+
+                <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-850 text-[10px] text-slate-400">
+                  {type === 'main'
+                    ? '💡 메인 퀘스트는 매일 00:00에 리셋되며, 완료 시 캐릭터 레벨 성장 경험치만 부여됩니다.'
+                    : '💡 돌발 퀘스트는 완료 시 실제 화폐와 연동되는 골드(1G=1원)가 지급되며, 자녀가 역제안(밀당)을 할 수 있습니다.'}
+                </div>
+
+                {/* 액션 버튼 */}
+                <div className="grid grid-cols-2 gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={handleAddToList}
+                    className="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-300 font-bold transition text-xs flex items-center justify-center gap-1 active:scale-95"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>임시 리스트 추가</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handlePublishAll}
+                    className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition text-xs shadow-md flex items-center justify-center gap-1 active:scale-95"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    <span>{tempQuests.length > 0 ? '전체 발행' : '즉시 단일 발행'}</span>
+                  </button>
+                </div>
+                
+                {tempQuests.length === 0 && (
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="w-full py-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-850 text-slate-400 font-bold transition text-[10px] text-center block"
+                  >
+                    닫기
+                  </button>
+                )}
+              </form>
             </div>
-          )}
 
-          {/* 가이드 추천 안내 */}
-          <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-850 text-[11px] text-slate-400">
-            {type === 'main'
-              ? '💡 메인 퀘스트는 매일 00:00에 리셋되며, 완료 시 캐릭터 레벨 성장 경험치만 부여됩니다.'
-              : '💡 돌발 퀘스트는 완료 시 실제 화폐와 연동되는 골드(1G=1원)가 지급되며, 자녀가 역제안(밀당)을 할 수 있습니다.'}
           </div>
-
-          {/* 버튼 */}
-          <div className="grid grid-cols-2 gap-2 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-300 font-bold transition text-xs"
-            >
-              취소
-            </button>
-            <button
-              type="submit"
-              className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition text-xs shadow-md"
-            >
-              ⚡ 퀘스트 전송 및 발행
-            </button>
-          </div>
-        </form>
         )}
       </div>
     </div>
