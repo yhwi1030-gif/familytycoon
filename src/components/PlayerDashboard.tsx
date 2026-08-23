@@ -121,9 +121,25 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
       return qDate === todayStr;
     });
 
-    // 신규 수신 퀘스트 실시간 감지 (첫 마운트 로딩 이후 추가 유입 감지)
-    if (!isFirstLoad.current) {
-      const newArrivals = filteredQuests.filter(q => q.status === 'active' && !questsRef.current.some(eq => eq.id === q.id));
+    // 신규 수신 퀘스트 실시간 감지 (LocalStorage 기반 영구 중복 차단)
+    const notifiedIdsStr = typeof window !== 'undefined' ? (localStorage.getItem('ff_notified_quest_ids') || '[]') : '[]';
+    let notifiedIds: string[] = [];
+    try {
+      notifiedIds = JSON.parse(notifiedIdsStr);
+    } catch (e) {
+      notifiedIds = [];
+    }
+
+    if (isFirstLoad.current) {
+      isFirstLoad.current = false;
+      // 첫 진입 시점에 이미 활성화되어 있는 기존 퀘스트들은 알림 대상에서 자동 제외 처리
+      const initialActiveIds = filteredQuests.filter(q => q.status === 'active').map(q => q.id);
+      const mergedIds = Array.from(new Set([...notifiedIds, ...initialActiveIds]));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('ff_notified_quest_ids', JSON.stringify(mergedIds));
+      }
+    } else {
+      const newArrivals = filteredQuests.filter(q => q.status === 'active' && !notifiedIds.includes(q.id));
       if (newArrivals.length > 0) {
         setNewArrivalQuests(prev => {
           const merged = [...prev];
@@ -134,9 +150,12 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
           });
           return merged;
         });
+
+        const updatedNotifiedIds = Array.from(new Set([...notifiedIds, ...newArrivals.map(q => q.id)]));
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('ff_notified_quest_ids', JSON.stringify(updatedNotifiedIds));
+        }
       }
-    } else {
-      isFirstLoad.current = false;
     }
 
     questsRef.current = filteredQuests;

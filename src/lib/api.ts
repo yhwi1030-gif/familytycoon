@@ -779,6 +779,7 @@ export const api = {
       localStorage.setItem(KEYS.NOTIFICATIONS, JSON.stringify([]));
       localStorage.removeItem(KEYS.CURRENT_USER_ID);
       localStorage.removeItem('ff_quest_icons');
+      localStorage.removeItem('ff_notified_quest_ids'); // 팝업 누적 감지 이력 리셋
     }
 
     if (isSupabaseConfigured) {
@@ -798,6 +799,7 @@ export const api = {
     if (typeof window !== 'undefined') {
       localStorage.setItem(KEYS.QUESTS, JSON.stringify([]));
       localStorage.removeItem('ff_quest_icons');
+      localStorage.removeItem('ff_notified_quest_ids'); // 팝업 누적 감지 이력 리셋
     }
     if (isSupabaseConfigured) {
       try {
