@@ -643,7 +643,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
                         <span className="text-slate-400 text-[9px] block mb-0.5 font-bold">{new Date(n.createdAt).toLocaleTimeString()}</span>
                         <p className="font-semibold leading-relaxed text-slate-700">{n.message}</p>
                       </div>
-                      {n.type === 'quest_request' && n.targetId && (() => {
+                       {n.type === 'quest_request' && n.targetId && (() => {
                         const targetQ = quests.find(q => q.id === n.targetId);
                         const isCompleted = targetQ ? targetQ.status === 'completed' : false;
                         return (
@@ -674,6 +674,25 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
                           </button>
                         );
                       })()}
+                      {n.type === 'self_quest_proposal' && (
+                        <button
+                          disabled={n.resolved}
+                          onClick={() => {
+                            if (n.resolved) {
+                              alert('이미 처리 완료된 역제안입니다.');
+                              return;
+                            }
+                            setNewNegotiationNoti(n); // 모달 다시 띄워주기
+                          }}
+                          className={`shrink-0 px-2.5 py-1.5 active:scale-95 text-white text-[10px] font-black rounded-lg transition shadow-sm ${
+                            n.resolved
+                              ? 'bg-emerald-600 cursor-not-allowed opacity-90'
+                              : 'bg-indigo-600 hover:bg-indigo-500'
+                          }`}
+                        >
+                          {n.resolved ? '✓ 처리됨' : '🤝 확인하기'}
+                        </button>
+                      )}
                     </div>
                   ))
                 )}
