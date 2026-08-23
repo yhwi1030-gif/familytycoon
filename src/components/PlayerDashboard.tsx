@@ -673,7 +673,7 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                           const isCompleted = q.status === 'completed';
                           const prevCompleted = arr.slice(0, idx).every(item => item.status === 'completed');
                           const isActive = !isCompleted && prevCompleted;
-                          const isLocked = !isCompleted && !prevCompleted;
+                          const isLocked = false; // 순차 제한 잠금 제거
                           
                           let stateColor = 'bg-[#1e293b]/90 border-slate-600 text-slate-400 shadow-md';
                           if (isCompleted) {
