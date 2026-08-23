@@ -58,7 +58,7 @@ export const AIReadingModal: React.FC<AIReadingModalProps> = ({
               <img 
                 src={displayImageUrl} 
                 alt="자녀 인증샷" 
-                className="w-full h-44 object-cover rounded-2xl border border-slate-800 shadow-inner"
+                className="w-full max-h-96 object-contain bg-slate-950 rounded-2xl border border-slate-800 shadow-inner p-1"
               />
             </div>
           )}
