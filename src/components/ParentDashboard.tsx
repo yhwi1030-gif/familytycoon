@@ -222,7 +222,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
     
     await api.addNotification({
       message: chosenMessage,
-      type: 'general'
+      type: 'cheer'
     });
     
     setCheeringStatus(questTitle);

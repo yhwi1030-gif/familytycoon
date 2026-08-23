@@ -27,6 +27,10 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
   const isFirstLoad = useRef(true);
   const questsRef = useRef<Quest[]>([]);
   
+  // 길드마스터 독려 메시지 실시간 팝업 제어용 상태
+  const [newCheerNoti, setNewCheerNoti] = useState<AppNotification | null>(null);
+  const isFirstLoadCheer = useRef(true);
+  
   // 퀘스트 접기/펼치기 제어 상태 (자녀 모드용)
   const [isMainQuestsCollapsed, setIsMainQuestsCollapsed] = useState(false);
   const [isFlashQuestsCollapsed, setIsFlashQuestsCollapsed] = useState(false);
@@ -164,6 +168,33 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
     setStoreItems(sList);
     const nList = await api.getNotifications();
     setNotifications(nList);
+
+    // 신규 독려 알림 실시간 감지 (LocalStorage 기반 영구 중복 차단)
+    const notifiedCheerIdsStr = typeof window !== 'undefined' ? (localStorage.getItem('ff_notified_cheer_ids') || '[]') : '[]';
+    let notifiedCheerIds: string[] = [];
+    try {
+      notifiedCheerIds = JSON.parse(notifiedCheerIdsStr);
+    } catch (e) {
+      notifiedCheerIds = [];
+    }
+
+    if (isFirstLoadCheer.current) {
+      isFirstLoadCheer.current = false;
+      const initialCheerIds = nList.filter(n => n.type === 'cheer').map(n => n.id);
+      const mergedCheerIds = Array.from(new Set([...notifiedCheerIds, ...initialCheerIds]));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('ff_notified_cheer_ids', JSON.stringify(mergedCheerIds));
+      }
+    } else {
+      const newCheers = nList.filter(n => n.type === 'cheer' && !notifiedCheerIds.includes(n.id));
+      if (newCheers.length > 0) {
+        setNewCheerNoti(newCheers[0]);
+        const updatedNotifiedCheerIds = Array.from(new Set([...notifiedCheerIds, ...newCheers.map(n => n.id)]));
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('ff_notified_cheer_ids', JSON.stringify(updatedNotifiedCheerIds));
+        }
+      }
+    }
   };
 
   useEffect(() => {
@@ -1596,6 +1627,34 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
               className="w-full py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black rounded-xl text-xs shadow-lg transition active:scale-95 flex items-center justify-center gap-1"
             >
               🛡️ 임무 확인 완료
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 길드마스터(부모) 퀘스트 독려 알림 팝업 모달 */}
+      {newCheerNoti && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-in fade-in duration-300">
+          <div className="w-full max-w-sm bg-gradient-to-b from-[#1E1B4B] to-[#0F0E26] border border-amber-500/40 rounded-3xl p-6 shadow-2xl text-center space-y-4 animate-in zoom-in duration-200 border-2">
+            <div className="w-16 h-16 rounded-full bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-4xl mx-auto animate-bounce">
+              📣
+            </div>
+            <div>
+              <h3 className="text-lg font-black text-indigo-450 font-bw">📣 길드마스터의 독려 메시지</h3>
+              <p className="text-xs text-slate-350 mt-1">길드마스터로부터 특별 지령이 도착했습니다.</p>
+            </div>
+            
+            <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 text-left">
+              <p className="text-xs text-slate-100 leading-relaxed font-bold">
+                {newCheerNoti.message}
+              </p>
+            </div>
+
+            <button
+              onClick={() => setNewCheerNoti(null)}
+              className="w-full py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white font-black rounded-xl text-xs shadow-lg transition active:scale-95 flex items-center justify-center gap-1"
+            >
+              🛡️ 임무 완수하러 가기
             </button>
           </div>
         </div>
