@@ -252,6 +252,14 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
     }, 3800);
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setUploadedFile(file.name);
+      setCameraMode('upload');
+    }
+  };
+
   const handleNegotiationSubmit = async () => {
     if (activeNegotiateQuest) {
       await childCounterProposeQuest(activeNegotiateQuest.id, negotiateGold);
@@ -1297,16 +1305,15 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                 >
                   📷 실시간 카메라로 사진 촬영
                 </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCameraMode('upload');
-                    setUploadedFile('study_note_scanned_0726.pdf');
-                  }}
-                  className="w-full py-3 bg-slate-800 hover:bg-slate-750 hover:scale-105 active:scale-95 text-slate-200 font-bold rounded-xl text-xs transition duration-200 border border-slate-700/80 flex items-center justify-center gap-1.5"
-                >
+                <label className="w-full py-3 bg-slate-800 hover:bg-slate-750 hover:scale-105 active:scale-95 text-slate-200 font-bold rounded-xl text-xs transition duration-200 border border-slate-700/80 flex items-center justify-center gap-1.5 cursor-pointer">
                   📁 스캔한 파일 불러오기 및 전송
-                </button>
+                  <input
+                    type="file"
+                    className="hidden"
+                    onChange={handleFileChange}
+                    accept=".pdf,.png,.jpg,.jpeg,.gif"
+                  />
+                </label>
               </div>
             )}
 
