@@ -342,6 +342,43 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
     alert(`❌ [제안 거절] 자녀의 셀프 미션 제안을 반려하였습니다.`);
   };
 
+  const handleApproveNegotiation = async (noti: AppNotification) => {
+    if (!noti.targetId || !noti.meta?.proposedGold) return;
+    const allQuests = await api.getQuests();
+    const quest = allQuests.find(q => q.id === noti.targetId);
+    if (quest) {
+      quest.rewardGold = noti.meta.proposedGold;
+      quest.status = 'active';
+      await api.saveQuests(allQuests);
+    }
+    await api.resolveNotification(noti.id);
+    await api.addNotification({
+      message: `🛡️ [협상 승인] 길드마스터가 돌발 미션 [${quest ? quest.title : '돌발 미션'}]의 보상 협상을 수락했습니다! 보상이 ${noti.meta.proposedGold}G로 인상되었습니다.`,
+      type: 'cheer'
+    });
+    setNewNegotiationNoti(null);
+    await loadData();
+    alert('🤝 협상을 수락하여 보상 골드를 조정하였습니다.');
+  };
+
+  const handleRejectNegotiation = async (noti: AppNotification) => {
+    if (!noti.targetId) return;
+    const allQuests = await api.getQuests();
+    const quest = allQuests.find(q => q.id === noti.targetId);
+    if (quest) {
+      quest.status = 'active';
+      await api.saveQuests(allQuests);
+    }
+    await api.resolveNotification(noti.id);
+    await api.addNotification({
+      message: `⚠️ [협상 반려] 길드마스터가 돌발 미션 [${quest ? quest.title : '돌발 미션'}]의 보상 협상을 거절했습니다. 기존 보상으로 진행해 주세요.`,
+      type: 'cheer'
+    });
+    setNewNegotiationNoti(null);
+    await loadData();
+    alert('❌ 협상을 거절하여 기존 보상으로 유지됩니다.');
+  };
+
   return (
     <div className="min-h-screen bg-[#FAF8F5] text-slate-800 font-sans pb-16">
       
@@ -1011,23 +1048,26 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-3 pt-2">
+            <div className="grid grid-cols-2 gap-2.5 pt-2">
               <button
-                onClick={() => {
-                  setNewNegotiationNoti(null);
-                  setActiveTab('home'); // 홈 탭의 인증 요청 센터로 강제 이동
-                }}
-                className="w-full py-3 bg-[#AC52F2] hover:bg-[#9734e0] text-white font-bold rounded-xl text-xs transition shadow-md flex items-center justify-center gap-1 active:scale-95"
+                onClick={() => handleApproveNegotiation(newNegotiationNoti)}
+                className="py-3 bg-emerald-650 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition shadow-md flex items-center justify-center gap-1 active:scale-95"
               >
-                🔍 수락/거절 검수
+                ✅ 제안 수락
               </button>
               <button
-                onClick={() => setNewNegotiationNoti(null)}
-                className="w-full py-3 bg-slate-800 hover:bg-slate-750 text-slate-300 font-bold rounded-xl text-xs transition border border-slate-700 active:scale-95"
+                onClick={() => handleRejectNegotiation(newNegotiationNoti)}
+                className="py-3 bg-rose-650 hover:bg-rose-550 text-white font-bold rounded-xl text-xs transition shadow-md flex items-center justify-center gap-1 active:scale-95"
               >
-                닫기
+                ❌ 제안 거절
               </button>
             </div>
+            <button
+              onClick={() => setNewNegotiationNoti(null)}
+              className="w-full py-2 bg-slate-800 hover:bg-slate-750 text-slate-400 hover:text-slate-350 font-bold rounded-xl text-[10px] transition border border-slate-700 active:scale-95"
+            >
+              나중에 결정하기 (닫기)
+            </button>
           </div>
         </div>
       )}
