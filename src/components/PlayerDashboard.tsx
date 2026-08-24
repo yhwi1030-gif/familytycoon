@@ -35,6 +35,7 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
   const [isMainQuestsCollapsed, setIsMainQuestsCollapsed] = useState(false);
   const [isFlashQuestsCollapsed, setIsFlashQuestsCollapsed] = useState(false);
   const [isSelfQuestsCollapsed, setIsSelfQuestsCollapsed] = useState(false);
+  const [dungeonOpenHour, setDungeonOpenHour] = useState<number>(8);
 
   // 실시간 타이머 및 던전 문 제어 상태
   const [timeState, setTimeState] = useState({
@@ -62,14 +63,16 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
       const diffSecsLeft = diffSecs % 60;
       const timeLeftStr = `${String(diffHrs).padStart(2, '0')}시간 ${String(diffMins).padStart(2, '0')}분 ${String(diffSecsLeft).padStart(2, '0')}초`;
       
-      // 문 계산: 오전 8시(0%) ~ 밤 12시(100%)
-      const startSecs = 8 * 3600;
+      // 문 계산: 설정된 아침 오픈 시간 ~ 밤 12시(100%)
+      const openHour = typeof window !== 'undefined' ? (Number(localStorage.getItem('ff_dungeon_open_hour') || '8')) : 8;
+      setDungeonOpenHour(openHour);
+      const startSecs = openHour * 3600;
       let gateProgress = 0;
       if (currentTotalSecs >= startSecs) {
         gateProgress = ((currentTotalSecs - startSecs) / (totalSecsInDay - startSecs)) * 100;
         if (gateProgress > 100) gateProgress = 100;
       } else {
-        gateProgress = 100; // 자정 ~ 오전 8시 사이에는 완전 닫힘
+        gateProgress = 100; // 자정 ~ 오픈 시간 사이에는 완전 닫힘
       }
       
       setTimeState({ currentTimeStr, timeLeftStr, gateProgress });
@@ -895,7 +898,7 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                       {/* 게이트 상태 표시 텍스트 */}
                       <div className="absolute bottom-2 left-6 right-6 z-10 flex justify-between items-center text-[10px] text-slate-400 font-bold bg-slate-950/80 px-3 py-1 rounded-lg border border-slate-800">
                         <span>🏰 던전 폐쇄 진행도: <span className="text-rose-400 font-black">{Math.floor(timeState.gateProgress)}%</span></span>
-                        <span>⏰ 24:00 자동 완전 폐쇄 (오전 08:00 오픈)</span>
+                        <span>⏰ 24:00 자동 완전 폐쇄 (오전 {String(dungeonOpenHour).padStart(2, '0')}:00 오픈)</span>
                       </div>
                     </div>
                   )}

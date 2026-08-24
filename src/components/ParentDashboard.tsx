@@ -45,6 +45,13 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
   const [isMainQuestsCollapsed, setIsMainQuestsCollapsed] = useState(false);
   const [isFlashQuestsCollapsed, setIsFlashQuestsCollapsed] = useState(false);
   const [isSelfQuestsCollapsed, setIsSelfQuestsCollapsed] = useState(false);
+  const [dungeonOpenHour, setDungeonOpenHour] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('ff_dungeon_open_hour');
+      return saved ? Number(saved) : 8;
+    }
+    return 8;
+  });
 
   // setInterval 클로저 내부에서 최신 selectedChildId 상태값을 캡처하기 위한 Ref 참조
   const selectedChildIdRef = React.useRef<string | null>(null);
@@ -766,6 +773,36 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
                 >
                   ➕ 신규 퀘스트 설계
                 </button>
+              </div>
+            </div>
+
+            {/* 던전 게이트 아침 오픈 시간 설정 패널 */}
+            <div className="bg-white p-4 border border-[#EBE6DD] rounded-2xl shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <div>
+                <h4 className="text-xs font-bold text-slate-800 flex items-center gap-1.5 font-bw">
+                  🏰 던전 게이트(아침 활동 개방) 오픈 시간 설정
+                </h4>
+                <p className="text-[9px] text-slate-500 font-semibold mt-0.5">매일 아침 던전 문이 자동으로 열려 자녀가 활동할 수 있게 하는 시간을 설정합니다.</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-slate-700">오전</span>
+                <select
+                  value={dungeonOpenHour}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    setDungeonOpenHour(val);
+                    localStorage.setItem('ff_dungeon_open_hour', String(val));
+                  }}
+                  className="bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs text-slate-800 font-bold focus:outline-none focus:border-indigo-500"
+                >
+                  <option value={5}>05:00</option>
+                  <option value={6}>06:00</option>
+                  <option value={7}>07:00</option>
+                  <option value={8}>08:00</option>
+                  <option value={9}>09:00</option>
+                  <option value={10}>10:00</option>
+                </select>
+                <span className="text-xs font-bold text-slate-700">시</span>
               </div>
             </div>
 
