@@ -152,8 +152,11 @@ const mapQuestToDB = (q: any) => {
   if (q.scheduledDate) {
     packedDueTime = `${packedDueTime}|${q.scheduledDate}`;
   }
-  if (q.rewardStats) {
-    packedDueTime = `${packedDueTime}||${JSON.stringify(q.rewardStats)}`;
+  const meta: any = {};
+  if (q.rewardStats) meta.rewardStats = q.rewardStats;
+  if (q.sweetCheered !== undefined) meta.sweetCheered = q.sweetCheered;
+  if (Object.keys(meta).length > 0) {
+    packedDueTime = `${packedDueTime}||${JSON.stringify(meta)}`;
   }
   return {
     id: q.id,
@@ -179,6 +182,7 @@ const mapQuestFromDB = (q: any): Quest => {
   let dueTime = rawDueTime;
   let scheduledDate: string | undefined;
   let rewardStats: Partial<Stats> | undefined;
+  let sweetCheered: boolean | undefined;
 
   if (rawDueTime.includes('||')) {
     const mainParts = rawDueTime.split('||');
@@ -186,7 +190,16 @@ const mapQuestFromDB = (q: any): Quest => {
     dueTime = timeParts[0] || '';
     scheduledDate = timeParts[1] || undefined;
     try {
-      rewardStats = JSON.parse(mainParts[1]);
+      const parsed = JSON.parse(mainParts[1]);
+      if (parsed.rewardStats) {
+        rewardStats = parsed.rewardStats;
+      }
+      if (parsed.sweetCheered !== undefined) {
+        sweetCheered = parsed.sweetCheered;
+      }
+      if (!parsed.rewardStats && !parsed.sweetCheered) {
+        rewardStats = parsed;
+      }
     } catch (e) {
       rewardStats = undefined;
     }
@@ -211,6 +224,7 @@ const mapQuestFromDB = (q: any): Quest => {
     dueTime: dueTime,
     scheduledDate: scheduledDate,
     rewardStats: rewardStats,
+    sweetCheered: sweetCheered,
     imageUrl: q.image_url || q.imageUrl,
     createdAt: q.created_at || q.createdAt,
     iconUrl: localIcon || q.icon_url || q.iconUrl

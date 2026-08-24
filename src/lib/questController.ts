@@ -106,7 +106,7 @@ export async function parentApproveQuest(questId: string, approveStatus: 'approv
     // 반려 처리
     quest.status = 'active';
     child.stats!.willpower = Math.max(0, child.stats!.willpower - 5);
-    child.stress = Math.min(100, child.stress + 15); // 반려 스트레스
+    child.stress = Math.min(100, child.stress + 10); // 반려 스트레스
     
     await api.updateProfile(child);
     await addMockNotification(

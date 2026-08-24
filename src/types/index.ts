@@ -54,6 +54,7 @@ export interface Quest {
   createdAt?: string; // 퀘스트 생성일자
   iconUrl?: string; // Upstage AI 생성 2D 로우폴리 아이콘
   rewardStats?: Partial<Stats>; // 이 퀘스트 클리어 시 추가 지급할 스탯 능력치 보너스
+  sweetCheered?: boolean; // 다정한 메시지 스트레스 감소 1회성 검증용 플래그
 }
 
 export interface StoreItem {

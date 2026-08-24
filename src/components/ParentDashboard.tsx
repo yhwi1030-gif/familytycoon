@@ -190,8 +190,27 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
     await loadData();
   };
   // 독려 메시지 전송 (톤앤매너 다변화 및 5종 프리셋 무작위 선택)
-  const handleCheer = async (tone: 'sweet' | 'strict' | 'funny', questTitle: string) => {
+  const handleCheer = async (tone: 'sweet' | 'strict' | 'funny', q: Quest) => {
     const childName = child ? child.name.split(' ')[0] : '모험가';
+    const questTitle = q.title;
+    
+    // 다정한 메시지인 경우 스트레스 -5 적용 (단, 해당 퀘스트당 최초 1회만 적용됨)
+    if (tone === 'sweet') {
+      if (!q.sweetCheered) {
+        const allQuests = await api.getQuests();
+        const foundQ = allQuests.find(item => item.id === q.id);
+        if (foundQ) {
+          foundQ.sweetCheered = true;
+          await api.saveQuests(allQuests);
+        }
+        const profiles = await api.getProfiles();
+        const childIdx = profiles.findIndex(p => p.role === 'child');
+        if (childIdx !== -1) {
+          profiles[childIdx].stress = Math.max(0, profiles[childIdx].stress - 5);
+          await api.updateProfile(profiles[childIdx]);
+        }
+      }
+    }
     
     const messages = {
       sweet: [
@@ -217,7 +236,6 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
       ]
     };
 
-    // 무작위로 하나의 메시지 템플릿 선택
     const pool = messages[tone];
     const chosenMessage = pool[Math.floor(Math.random() * pool.length)];
     
@@ -817,19 +835,19 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
                           ) : (
                             <>
                               <button
-                                onClick={() => handleCheer('sweet', q.title)}
+                                onClick={() => handleCheer('sweet', q)}
                                 className="px-2 py-1.5 bg-white hover:bg-slate-50 text-[10px] font-bold text-emerald-600 rounded-lg transition border border-slate-200 flex items-center gap-1 active:scale-95 shadow-sm"
                               >
                                 😊 다정하게
                               </button>
                               <button
-                                onClick={() => handleCheer('strict', q.title)}
+                                onClick={() => handleCheer('strict', q)}
                                 className="px-2 py-1.5 bg-white hover:bg-slate-50 text-[10px] font-bold text-rose-600 rounded-lg transition border border-slate-200 flex items-center gap-1 active:scale-95 shadow-sm"
                               >
                                 🔥 단호하게
                               </button>
                               <button
-                                onClick={() => handleCheer('funny', q.title)}
+                                onClick={() => handleCheer('funny', q)}
                                 className="px-2 py-1.5 bg-white hover:bg-slate-50 text-[10px] font-bold text-amber-600 rounded-lg transition border border-slate-200 flex items-center gap-1 active:scale-95 shadow-sm"
                               >
                                 🤠 유머러스
@@ -921,19 +939,19 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
                           ) : (
                             <>
                               <button
-                                onClick={() => handleCheer('sweet', q.title)}
+                                onClick={() => handleCheer('sweet', q)}
                                 className="px-2 py-1.5 bg-white hover:bg-slate-50 text-[10px] font-bold text-emerald-600 rounded-lg transition border border-slate-200 flex items-center gap-1 active:scale-95 shadow-sm"
                               >
                                 😊 다정하게
                               </button>
                               <button
-                                onClick={() => handleCheer('strict', q.title)}
+                                onClick={() => handleCheer('strict', q)}
                                 className="px-2 py-1.5 bg-white hover:bg-slate-50 text-[10px] font-bold text-rose-600 rounded-lg transition border border-slate-200 flex items-center gap-1 active:scale-95 shadow-sm"
                               >
                                 🔥 단호하게
                               </button>
                               <button
-                                onClick={() => handleCheer('funny', q.title)}
+                                onClick={() => handleCheer('funny', q)}
                                 className="px-2 py-1.5 bg-white hover:bg-slate-50 text-[10px] font-bold text-amber-600 rounded-lg transition border border-slate-200 flex items-center gap-1 active:scale-95 shadow-sm"
                               >
                                 🤠 유머러스
@@ -1018,19 +1036,19 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
                           ) : (
                             <>
                               <button
-                                onClick={() => handleCheer('sweet', q.title)}
+                                onClick={() => handleCheer('sweet', q)}
                                 className="px-2 py-1.5 bg-white hover:bg-slate-50 text-[10px] font-bold text-purple-600 rounded-lg transition border border-slate-200 flex items-center gap-1 active:scale-95 shadow-sm"
                               >
                                 😊 다정하게
                               </button>
                               <button
-                                onClick={() => handleCheer('strict', q.title)}
+                                onClick={() => handleCheer('strict', q)}
                                 className="px-2 py-1.5 bg-white hover:bg-slate-50 text-[10px] font-bold text-rose-600 rounded-lg transition border border-slate-200 flex items-center gap-1 active:scale-95 shadow-sm"
                               >
                                 🔥 단호하게
                               </button>
                               <button
-                                onClick={() => handleCheer('funny', q.title)}
+                                onClick={() => handleCheer('funny', q)}
                                 className="px-2 py-1.5 bg-white hover:bg-slate-50 text-[10px] font-bold text-amber-600 rounded-lg transition border border-slate-200 flex items-center gap-1 active:scale-95 shadow-sm"
                               >
                                 🤠 유머러스
