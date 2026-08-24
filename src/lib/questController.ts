@@ -52,22 +52,40 @@ export async function parentApproveQuest(questId: string, approveStatus: 'approv
     quest.status = 'completed';
     
     // 게임 엔진 연동 스탯 보정
-    if (quest.category === '독서') {
-      child.stats!.intelligence += 15;
-      child.stats!.willpower += 20;
-      child.stress = Math.max(0, child.stress - 10);
-      child.exp += quest.rewardExp;
-    } else if (quest.category === '학습') {
-      child.stats!.intelligence += 20;
-      child.stats!.willpower += 15;
-      child.stress = Math.min(100, child.stress + 10);
-      child.exp += quest.rewardExp;
+    if (quest.rewardStats && Object.keys(quest.rewardStats).length > 0) {
+      if (!child.stats) {
+        child.stats = { intelligence: 10, willpower: 10, autonomy: 10, cooperation: 10, sensibility: 10 };
+      }
+      Object.entries(quest.rewardStats).forEach(([statKey, val]) => {
+        if (child.stats && statKey in child.stats) {
+          (child.stats as any)[statKey] += val;
+        }
+      });
+      if (quest.type === 'main') {
+        child.stress = Math.max(0, child.stress - 5);
+        child.exp += quest.rewardExp;
+      } else {
+        child.stress = Math.max(0, child.stress - 10);
+        child.gold += quest.rewardGold;
+      }
     } else {
-      // 심부름/청소 등 돌발 미션
-      child.stats!.autonomy += 15;
-      child.stats!.cooperation += 15;
-      child.stress = Math.max(0, child.stress - 15);
-      child.gold += quest.rewardGold;
+      if (quest.category === '독서') {
+        child.stats!.intelligence += 15;
+        child.stats!.willpower += 20;
+        child.stress = Math.max(0, child.stress - 10);
+        child.exp += quest.rewardExp;
+      } else if (quest.category === '학습') {
+        child.stats!.intelligence += 20;
+        child.stats!.willpower += 15;
+        child.stress = Math.min(100, child.stress + 10);
+        child.exp += quest.rewardExp;
+      } else {
+        // 심부름/청소 등 돌발 미션
+        child.stats!.autonomy += 15;
+        child.stats!.cooperation += 15;
+        child.stress = Math.max(0, child.stress - 15);
+        child.gold += quest.rewardGold;
+      }
     }
 
     // 경험치 누적 레벨업 판단

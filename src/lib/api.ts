@@ -1,4 +1,4 @@
-import { Profile, Quest, StoreItem, AppNotification, QuestStatus } from '@/types';
+import { Profile, Quest, StoreItem, AppNotification, QuestStatus, Stats } from '@/types';
 import { supabase, isSupabaseConfigured as isSupabaseConfiguredRaw } from './supabaseClient';
 
 // Supabase DB 쓰기나 스키마 에러 감지 시 로컬스토리지 모드로 자동 긴급 백업 전환
@@ -152,6 +152,9 @@ const mapQuestToDB = (q: any) => {
   if (q.scheduledDate) {
     packedDueTime = `${packedDueTime}|${q.scheduledDate}`;
   }
+  if (q.rewardStats) {
+    packedDueTime = `${packedDueTime}||${JSON.stringify(q.rewardStats)}`;
+  }
   return {
     id: q.id,
     type: q.type,
@@ -173,9 +176,25 @@ const mapQuestToDB = (q: any) => {
 const mapQuestFromDB = (q: any): Quest => {
   const localIcon = getLocalQuestIcon(q.id);
   const rawDueTime = q.due_time || q.dueTime || '';
-  const parts = rawDueTime.split('|');
-  const dueTime = parts[0] || '';
-  const scheduledDate = parts[1] || undefined;
+  let dueTime = rawDueTime;
+  let scheduledDate: string | undefined;
+  let rewardStats: Partial<Stats> | undefined;
+
+  if (rawDueTime.includes('||')) {
+    const mainParts = rawDueTime.split('||');
+    const timeParts = mainParts[0].split('|');
+    dueTime = timeParts[0] || '';
+    scheduledDate = timeParts[1] || undefined;
+    try {
+      rewardStats = JSON.parse(mainParts[1]);
+    } catch (e) {
+      rewardStats = undefined;
+    }
+  } else if (rawDueTime.includes('|')) {
+    const parts = rawDueTime.split('|');
+    dueTime = parts[0] || '';
+    scheduledDate = parts[1] || undefined;
+  }
 
   return {
     id: q.id,
@@ -191,6 +210,7 @@ const mapQuestFromDB = (q: any): Quest => {
     childName: q.child_name || q.childName,
     dueTime: dueTime,
     scheduledDate: scheduledDate,
+    rewardStats: rewardStats,
     imageUrl: q.image_url || q.imageUrl,
     createdAt: q.created_at || q.createdAt,
     iconUrl: localIcon || q.icon_url || q.iconUrl

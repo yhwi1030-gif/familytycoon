@@ -34,6 +34,7 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
   // 퀘스트 접기/펼치기 제어 상태 (자녀 모드용)
   const [isMainQuestsCollapsed, setIsMainQuestsCollapsed] = useState(false);
   const [isFlashQuestsCollapsed, setIsFlashQuestsCollapsed] = useState(false);
+  const [isSelfQuestsCollapsed, setIsSelfQuestsCollapsed] = useState(false);
 
   // 실시간 타이머 및 던전 문 제어 상태
   const [timeState, setTimeState] = useState({
@@ -969,6 +970,80 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                               >
                                 🤝 협상하기
                               </button>
+                              <button
+                                onClick={() => handleQuestCompleteClick(q)}
+                                className="px-4 py-2 bg-[#644EB0] hover:bg-[#523e96] text-white text-xs font-bold rounded-xl transition shadow-md"
+                              >
+                                {requiresPhoto(q) ? '📸 사진 인증' : '완료 체크'}
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* 내 마음대로 모험 섹션 (셀프 설계) - 투명도 20% 설정 */}
+            <div className="bg-white/20 border border-[#EBE6DD] backdrop-blur-md rounded-3xl p-5 shadow-sm transition-all duration-300">
+              <div 
+                onClick={() => setIsSelfQuestsCollapsed(!isSelfQuestsCollapsed)}
+                className="flex justify-between items-center cursor-pointer pb-3 border-b border-[#EBE6DD]"
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="text-xs text-[#AC52F2] bg-purple-50 border border-purple-200 px-2 py-0.5 rounded font-black">
+                    {quests.filter(q => q.type === 'self').length}
+                  </span>
+                  <h4 className="text-sm font-extrabold text-slate-800 flex items-center gap-1.5 font-bw">
+                    🧚‍♀️ 내 마음대로 모험 섹션 (셀프 설계)
+                  </h4>
+                </div>
+                <div className="flex items-center gap-1.5 text-slate-500 hover:text-slate-755 text-xs font-bold">
+                  <span>{isSelfQuestsCollapsed ? '펼치기 🔓' : '접기 🔒'}</span>
+                  <span className="text-md">{isSelfQuestsCollapsed ? '▼' : '▲'}</span>
+                </div>
+              </div>
+
+              {!isSelfQuestsCollapsed && (
+                <div className="mt-4 space-y-3 animate-in fade-in duration-200">
+                  {quests.filter(q => q.type === 'self').length === 0 ? (
+                    <div className="text-center py-12 text-slate-400 text-xs font-bold border-2 border-dashed border-[#EBE6DD] rounded-2xl bg-white/30">
+                      현재 등록된 내 마음대로 모험이 없습니다.
+                    </div>
+                  ) : (
+                    quests.filter(q => q.type === 'self').map(q => (
+                      <div
+                        key={q.id}
+                        className={`p-4 bg-white border border-[#EBE6DD] rounded-2xl flex justify-between items-center shadow-sm ${
+                          q.status === 'completed' ? 'opacity-65' : ''
+                        }`}
+                      >
+                        <div>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200">
+                            {q.category}
+                          </span>
+                          <h4 className="text-sm font-extrabold text-slate-800 mt-1">{q.title}</h4>
+                          <div className="flex flex-wrap items-center gap-2 mt-1">
+                            <span className="text-[10px] text-slate-500 font-bold">
+                              보상: 🪙 {q.rewardGold} G
+                            </span>
+                            <span className="text-[9px] text-[#AC52F2] bg-purple-50 border border-purple-200 px-2 py-0.5 rounded font-black flex items-center gap-1">
+                              스스로 설계한 모험
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          {q.status === 'completed' ? (
+                            <span className="text-xs text-emerald-600 font-bold">✓ 완료됨</span>
+                          ) : q.status === 'request_approval' ? (
+                            <span className="text-xs text-indigo-600 font-bold bg-indigo-50 px-3 py-1.5 rounded-xl border border-indigo-200 animate-pulse">
+                              ⌛ 검수 대기중
+                            </span>
+                          ) : (
+                            <div className="flex items-center gap-2">
                               <button
                                 onClick={() => handleQuestCompleteClick(q)}
                                 className="px-4 py-2 bg-[#644EB0] hover:bg-[#523e96] text-white text-xs font-bold rounded-xl transition shadow-md"

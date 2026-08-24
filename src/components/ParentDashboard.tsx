@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { parentApproveQuest, childCounterProposeQuest } from '@/lib/questController';
-import { Profile, Quest, AppNotification } from '@/types';
+import { Profile, Quest, AppNotification, Stats } from '@/types';
 import { RadarChart } from '@/components/RadarChart';
 import { AIReadingModal } from '@/components/AIReadingModal';
 import { QuestBuilder } from '@/components/QuestBuilder';
@@ -44,6 +44,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
   // 퀘스트 컨트롤 타워 섹션 접기/펼치기 상태 제어 (기획 추가 사항)
   const [isMainQuestsCollapsed, setIsMainQuestsCollapsed] = useState(false);
   const [isFlashQuestsCollapsed, setIsFlashQuestsCollapsed] = useState(false);
+  const [isSelfQuestsCollapsed, setIsSelfQuestsCollapsed] = useState(false);
 
   // setInterval 클로저 내부에서 최신 selectedChildId 상태값을 캡처하기 위한 Ref 참조
   const selectedChildIdRef = React.useRef<string | null>(null);
@@ -167,8 +168,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
       await loadData();
     }
   };
-  // 신규 퀘스트 일괄 발행 완료 콜백
-  const handleAddQuests = async (questsData: Array<{ title: string; category: string; type: 'main' | 'flash'; rewardValue: number; dueTime?: string; iconUrl?: string }>) => {
+  const handleAddQuests = async (questsData: Array<{ title: string; category: string; type: 'main' | 'flash'; rewardValue: number; dueTime?: string; iconUrl?: string; rewardStats?: Partial<Stats> }>) => {
     for (const data of questsData) {
       await api.addQuest({
         title: data.title,
@@ -178,7 +178,8 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
         rewardExp: data.type === 'main' ? data.rewardValue : 0,
         rewardGold: data.type === 'flash' ? data.rewardValue : 0,
         dueTime: data.dueTime,
-        iconUrl: data.iconUrl
+        iconUrl: data.iconUrl,
+        rewardStats: data.rewardStats
       });
       // 알림 전송
       await api.addNotification({
@@ -922,6 +923,103 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
                               <button
                                 onClick={() => handleCheer('sweet', q.title)}
                                 className="px-2 py-1.5 bg-white hover:bg-slate-50 text-[10px] font-bold text-emerald-600 rounded-lg transition border border-slate-200 flex items-center gap-1 active:scale-95 shadow-sm"
+                              >
+                                😊 다정하게
+                              </button>
+                              <button
+                                onClick={() => handleCheer('strict', q.title)}
+                                className="px-2 py-1.5 bg-white hover:bg-slate-50 text-[10px] font-bold text-rose-600 rounded-lg transition border border-slate-200 flex items-center gap-1 active:scale-95 shadow-sm"
+                              >
+                                🔥 단호하게
+                              </button>
+                              <button
+                                onClick={() => handleCheer('funny', q.title)}
+                                className="px-2 py-1.5 bg-white hover:bg-slate-50 text-[10px] font-bold text-amber-600 rounded-lg transition border border-slate-200 flex items-center gap-1 active:scale-95 shadow-sm"
+                              >
+                                🤠 유머러스
+                              </button>
+                              {q.status === 'request_approval' && (
+                                <button
+                                  onClick={() => handleQuestAction(q)}
+                                  className="px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-[10px] font-bold text-white rounded-lg transition shadow active:scale-95 ml-1"
+                                >
+                                  검수하기
+                                </button>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* SECTION 3: 내 마음대로 모험 (셀프 설계) 섹션 - 보라 계열 테마 */}
+            <div className="bg-[#FAF8FD] border border-[#E8D0F8] rounded-3xl p-5 shadow-sm transition-all duration-300 animate-in fade-in duration-200 mt-6">
+              <div 
+                onClick={() => setIsSelfQuestsCollapsed(!isSelfQuestsCollapsed)}
+                className="flex justify-between items-center cursor-pointer pb-3 border-b border-[#E8D0F8]"
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="text-xs text-purple-700 bg-purple-100 border border-purple-300 px-2 py-0.5 rounded font-black">
+                    {quests.filter(q => q.type === 'self').length}
+                  </span>
+                  <h4 className="text-sm font-extrabold text-purple-900 flex items-center gap-1.5 font-bw">
+                    🧚‍♀️ 내 마음대로 모험 섹션 (스스로 설계)
+                  </h4>
+                </div>
+                <div className="flex items-center gap-1.5 text-purple-700 hover:text-purple-900 text-xs font-bold">
+                  <span>{isSelfQuestsCollapsed ? '펼치기 🔓' : '접기 🔒'}</span>
+                  <span className="text-md">{isSelfQuestsCollapsed ? '▼' : '▲'}</span>
+                </div>
+              </div>
+
+              {!isSelfQuestsCollapsed && (
+                <div className="mt-4 space-y-3 animate-in fade-in duration-200">
+                  {/* 테이블 헤더 */}
+                  <div className="hidden sm:grid grid-cols-12 gap-4 px-4 py-2 text-[10px] font-black text-purple-800 border-b border-[#EAD5F9]">
+                    <div className="col-span-4">활동명 (스스로 설계)</div>
+                    <div className="col-span-3 text-center">퀘스트 상태 / 정보</div>
+                    <div className="col-span-5 text-right">퀘스트 완료 독려 메시지 전송</div>
+                  </div>
+
+                  {quests.filter(q => q.type === 'self').length === 0 ? (
+                    <div className="text-center py-12 text-purple-900/60 text-xs font-bold border-2 border-dashed border-[#E8D0F8] rounded-2xl bg-[#FAF8FD]">
+                      현재 활성화된 내 마음대로 모험이 없습니다.
+                    </div>
+                  ) : (
+                    quests.filter(q => q.type === 'self').map(q => (
+                      <div key={q.id} className="p-4 bg-white border border-[#EAD5F9] rounded-2xl grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
+                        <div className="col-span-1 sm:col-span-4">
+                          <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200">
+                            {q.category}
+                          </span>
+                          <h4 className="text-sm font-extrabold text-slate-800 mt-1.5">{q.title}</h4>
+                          <p className="text-[10px] text-slate-500 mt-0.5">보상: 🪙 {q.rewardGold} G</p>
+                        </div>
+                        <div className="col-span-1 sm:col-span-3 text-left sm:text-center flex flex-col sm:items-center justify-center gap-1.5">
+                          <span className="text-[10px] font-bold text-purple-700 bg-purple-50 px-2.5 py-1 rounded-lg border border-purple-200">
+                            스스로 설계한 모험
+                          </span>
+                          {(q.status === 'completed' || q.status === 'request_approval' || q.status === 'rejected') && (
+                            <button
+                              onClick={() => handleResetQuest(q.id)}
+                              className="text-[9px] font-bold text-rose-500 hover:text-white bg-rose-55 hover:bg-rose-600 border border-rose-250 px-2 py-0.5 rounded-md transition duration-200 shadow-sm flex items-center justify-center gap-0.5"
+                            >
+                              🔄 진행중 리셋
+                            </button>
+                          )}
+                        </div>
+                        <div className="col-span-1 sm:col-span-5 flex flex-wrap gap-1.5 justify-start sm:justify-end items-center">
+                          {q.status === 'completed' ? (
+                            <span className="text-xs text-emerald-600 font-bold px-3 py-1 bg-emerald-50 rounded-lg border border-emerald-200 font-sans">✓ 완료됨</span>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => handleCheer('sweet', q.title)}
+                                className="px-2 py-1.5 bg-white hover:bg-slate-50 text-[10px] font-bold text-purple-600 rounded-lg transition border border-slate-200 flex items-center gap-1 active:scale-95 shadow-sm"
                               >
                                 😊 다정하게
                               </button>

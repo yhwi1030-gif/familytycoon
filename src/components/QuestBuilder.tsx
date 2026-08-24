@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Trash2, Plus, Send } from 'lucide-react';
+import { Stats } from '@/types';
 
 interface QuestBuilderProps {
-  onAddQuests: (quests: Array<{ title: string; category: string; type: 'main' | 'flash'; rewardValue: number; dueTime?: string; iconUrl?: string; scheduledDate?: string }>) => void;
+  onAddQuests: (quests: Array<{ title: string; category: string; type: 'main' | 'flash'; rewardValue: number; dueTime?: string; iconUrl?: string; scheduledDate?: string; rewardStats?: Partial<Stats> }>) => void;
   onClose: () => void;
 }
 
@@ -21,11 +22,42 @@ export const QuestBuilder: React.FC<QuestBuilderProps> = ({ onAddQuests, onClose
   });
 
   // 임시 보관 퀘스트 큐 리스트
-  const [tempQuests, setTempQuests] = useState<Array<{ title: string; category: string; type: 'main' | 'flash'; rewardValue: number; dueTime?: string; scheduledDate?: string }>>([]);
+  const [tempQuests, setTempQuests] = useState<Array<{ title: string; category: string; type: 'main' | 'flash'; rewardValue: number; dueTime?: string; scheduledDate?: string; rewardStats?: Partial<Stats> }>>([]);
 
   // Upstage AI 이미지 생성 시뮬레이션 상태
   const [isGeneratingIcon, setIsGeneratingIcon] = useState(false);
   const [generationStep, setGenerationStep] = useState(0);
+
+  const getAutoStats = (titleStr: string, catStr: string) => {
+    const t = titleStr.toLowerCase();
+    const stats = { intelligence: 0, willpower: 0, autonomy: 0, cooperation: 0, sensibility: 0 };
+    if (!t) return stats;
+    
+    if (catStr === '독서' || t.includes('독서') || t.includes('책') || t.includes('읽기') || t.includes('독서록')) {
+      stats.intelligence = 15;
+      stats.willpower = 10;
+      stats.sensibility = 15;
+    } else if (catStr === '학습' || t.includes('학습지') || t.includes('숙제') || t.includes('공부') || t.includes('수학') || t.includes('국어') || t.includes('영어') || t.includes('한자') || t.includes('구몬') || t.includes('문제집')) {
+      stats.intelligence = 20;
+      stats.willpower = 15;
+    } else if (catStr === '청소' || t.includes('청소') || t.includes('정리') || t.includes('이불') || t.includes('빗자루') || t.includes('방청소') || t.includes('거실')) {
+      stats.willpower = 15;
+      stats.autonomy = 15;
+    } else if (catStr === '심부름' || t.includes('우유') || t.includes('마트') || t.includes('편의점') || t.includes('사오기') || t.includes('심부름')) {
+      stats.autonomy = 15;
+      stats.cooperation = 15;
+    } else if (catStr === '반려동물' || t.includes('산책') || t.includes('댕댕이') || t.includes('밥주기') || t.includes('강아지')) {
+      stats.cooperation = 20;
+      stats.sensibility = 15;
+    } else if (catStr === '생활' || t.includes('양치') || t.includes('세수') || t.includes('기상') || t.includes('잠자기') || t.includes('이닦기')) {
+      stats.willpower = 20;
+      stats.autonomy = 10;
+    } else {
+      stats.autonomy = 10;
+      stats.cooperation = 10;
+    }
+    return stats;
+  };
 
   const handleAddToList = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -39,7 +71,8 @@ export const QuestBuilder: React.FC<QuestBuilderProps> = ({ onAddQuests, onClose
         type,
         rewardValue,
         dueTime: type === 'flash' ? dueTime : undefined,
-        scheduledDate: scheduleType === 'future' ? scheduledDate : undefined
+        scheduledDate: scheduleType === 'future' ? scheduledDate : undefined,
+        rewardStats: getAutoStats(title, category)
       }
     ]);
     
@@ -54,7 +87,6 @@ export const QuestBuilder: React.FC<QuestBuilderProps> = ({ onAddQuests, onClose
   const handlePublishAll = () => {
     let finalQuests = [...tempQuests];
     
-    // 만약 현재 폼에도 채워진 미작성 내용이 있다면 포함시킴
     if (title.trim()) {
       finalQuests.push({
         title,
@@ -62,7 +94,8 @@ export const QuestBuilder: React.FC<QuestBuilderProps> = ({ onAddQuests, onClose
         type,
         rewardValue,
         dueTime: type === 'flash' ? dueTime : undefined,
-        scheduledDate: scheduleType === 'future' ? scheduledDate : undefined
+        scheduledDate: scheduleType === 'future' ? scheduledDate : undefined,
+        rewardStats: getAutoStats(title, category)
       });
     }
 
@@ -306,6 +339,32 @@ export const QuestBuilder: React.FC<QuestBuilderProps> = ({ onAddQuests, onClose
                     </span>
                   </div>
                 </div>
+
+                {/* Upstage Solar3 AI 자동 능력치 추천 */}
+                {(() => {
+                  const currentAutoStats = getAutoStats(title, category);
+                  const hasAutoStats = Object.values(currentAutoStats).some(v => v > 0);
+                  return (
+                    <div className="bg-slate-950/80 border border-slate-850 rounded-xl p-3.5 space-y-2">
+                      <span className="text-[10px] font-black text-indigo-400 flex items-center gap-1">
+                        🤖 Upstage Solar3 AI 자동 스탯 배정
+                      </span>
+                      {hasAutoStats ? (
+                        <div className="flex flex-wrap gap-1.5 pt-1">
+                          {currentAutoStats.intelligence > 0 && <span className="text-[9px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-lg">🎓 지력 (INT) +{currentAutoStats.intelligence}</span>}
+                          {currentAutoStats.willpower > 0 && <span className="text-[9px] bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-lg">🛡️ 성실성 (WIL) +{currentAutoStats.willpower}</span>}
+                          {currentAutoStats.autonomy > 0 && <span className="text-[9px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-lg">⚡ 주도성 (AUT) +{currentAutoStats.autonomy}</span>}
+                          {currentAutoStats.cooperation > 0 && <span className="text-[9px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-0.5 rounded-lg">🤝 협동심 (COP) +{currentAutoStats.cooperation}</span>}
+                          {currentAutoStats.sensibility > 0 && <span className="text-[9px] bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2 py-0.5 rounded-lg">💖 감성 (SEN) +{currentAutoStats.sensibility}</span>}
+                        </div>
+                      ) : (
+                        <span className="text-[9px] text-slate-500 font-semibold italic">
+                          퀘스트 미션 내용을 입력하면 Solar3 AI가 스탯 보너스를 실시간 분류합니다.
+                        </span>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 {/* 예약 발송 설정 추가 */}
                 <div className="space-y-2 bg-slate-950/40 p-3 rounded-2xl border border-slate-850">
