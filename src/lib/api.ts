@@ -464,21 +464,35 @@ export const api = {
       }
     }
 
-    // 예약 발송 자동 활성화 (scheduledDate가 오늘과 같거나 과거인 pending 상태의 퀘스트를 active로 전환)
-    const todayStr = new Date().toDateString();
+    // 예약 발송 및 TTL 이미지 소멸 처리
+    const nowMs = Date.now();
+    const TTL_MS = 24 * 60 * 60 * 1000; // 24시간 이미지 보관 한계
     let hasChanges = false;
+
     const updatedQuests = quests.map(q => {
-      if (q.status === 'pending' && q.scheduledDate) {
-        const sDate = new Date(q.scheduledDate);
+      let currentQ = { ...q };
+
+      // 24시간 이상 방치된 승인대기 이미지 자동 파기(TTL)
+      if (currentQ.status === 'request_approval' && currentQ.imageUrl && !currentQ.imageUrl.startsWith('deleted')) {
+        const uploadTime = currentQ.createdAt ? new Date(currentQ.createdAt).getTime() : nowMs;
+        if (nowMs - uploadTime > TTL_MS) {
+          const parts = currentQ.imageUrl.split('##');
+          currentQ.imageUrl = `deleted##${parts[1] || ''}`;
+          hasChanges = true;
+        }
+      }
+
+      if (currentQ.status === 'pending' && currentQ.scheduledDate) {
+        const sDate = new Date(currentQ.scheduledDate);
         const today = new Date();
         sDate.setHours(0,0,0,0);
         today.setHours(0,0,0,0);
         if (sDate <= today) {
           hasChanges = true;
-          return { ...q, status: 'active' as QuestStatus };
+          currentQ.status = 'active' as QuestStatus;
         }
       }
-      return q;
+      return currentQ;
     });
 
     if (hasChanges) {

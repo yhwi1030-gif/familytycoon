@@ -47,6 +47,12 @@ export async function parentApproveQuest(questId: string, approveStatus: 'approv
   if (childIdx === -1) return;
   let child = profiles[childIdx];
 
+  // 즉시 원본 이미지 파기 트리거 작동 (Auto-Delete Trigger)
+  if (quest.imageUrl) {
+    const parts = quest.imageUrl.split('##');
+    quest.imageUrl = `deleted##${parts[1] || ''}`;
+  }
+
   if (approveStatus === 'approve') {
     // 퀘스트 완료 처리
     quest.status = 'completed';

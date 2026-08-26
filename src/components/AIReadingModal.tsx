@@ -19,11 +19,14 @@ export const AIReadingModal: React.FC<AIReadingModalProps> = ({
 }) => {
   if (!isOpen || !quest) return null;
 
-  // URL 뒤의 ## 구분자 파싱하여 Upstage 레이아웃 파서 추출물 분리
   let displayImageUrl = quest.imageUrl || '';
+  let isErased = displayImageUrl.startsWith('deleted') || displayImageUrl === '';
   if (displayImageUrl.includes('##')) {
     const parts = displayImageUrl.split('##');
     displayImageUrl = parts[0];
+    if (displayImageUrl === 'deleted') {
+      isErased = true;
+    }
   }
 
   // 기제출된 예전 데이터의 수학 오인식을 보정하기 위해, 렌더링 시점에 퀘스트 제목 키워드를 매칭하여 분석 리포트를 동적으로 재생성합니다.
@@ -63,7 +66,15 @@ export const AIReadingModal: React.FC<AIReadingModalProps> = ({
         {/* 메인 내용 영역 */}
         <div className="space-y-4 mb-6 max-h-[60vh] overflow-y-auto pr-1">
           {/* 자녀가 올린 스캔/촬영 이미지 */}
-          {displayImageUrl && (
+          {isErased ? (
+            <div className="bg-slate-950/80 rounded-2xl p-6 border border-slate-800 text-center space-y-2">
+              <span className="text-2xl">🛡️</span>
+              <p className="text-xs font-bold text-slate-200">개인정보 보호를 위해 원본 이미지 파일이 영구 삭제되었습니다.</p>
+              <p className="text-[10px] text-slate-500 font-semibold leading-relaxed">
+                부모 승인 완료/반려 처리 또는 24시간 TTL 자동 소멸 처리에 따라 서버와 스토리지에서 완벽히 파기되었습니다.
+              </p>
+            </div>
+          ) : displayImageUrl && (
             <div>
               <p className="text-[10px] text-slate-400 font-bold mb-1.5">✓ 전송된 실시간 인증 사진/스캔본</p>
               <img 
