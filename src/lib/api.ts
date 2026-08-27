@@ -342,15 +342,17 @@ export const api = {
   },
   
   updateProfile: async (profile: Profile): Promise<Profile[]> => {
+    // 로컬 스토리지 실시간 캐시 업데이트 (데이터 정합성 동기화)
+    const list = getStored(KEYS.PROFILES, DEFAULT_PROFILES);
+    const idx = list.findIndex(p => p.id === profile.id);
+    if (idx !== -1) {
+      list[idx] = profile;
+    } else {
+      list.push(profile);
+    }
+    setStored(KEYS.PROFILES, list);
+
     if (!isSupabaseConfigured) {
-      const list = getStored(KEYS.PROFILES, DEFAULT_PROFILES);
-      const idx = list.findIndex(p => p.id === profile.id);
-      if (idx !== -1) {
-        list[idx] = profile;
-      } else {
-        list.push(profile);
-      }
-      setStored(KEYS.PROFILES, list);
       return list;
     }
 
@@ -376,30 +378,12 @@ export const api = {
 
       const { error } = await supabase.from('profiles').upsert(dbPayload);
       if (error) {
-        console.error("Supabase updateProfile error (falling back to LocalStorage):", error);
+        console.error("Supabase updateProfile error:", error);
         handleSupabaseError(error);
-        // Fallback to LocalStorage
-        const list = getStored(KEYS.PROFILES, DEFAULT_PROFILES);
-        const idx = list.findIndex(p => p.id === profile.id);
-        if (idx !== -1) {
-          list[idx] = profile;
-        } else {
-          list.push(profile);
-        }
-        setStored(KEYS.PROFILES, list);
-        return list;
       }
       return api.getProfiles();
     } catch (e) {
-      console.error("Supabase updateProfile Exception (falling back to LocalStorage):", e);
-      const list = getStored(KEYS.PROFILES, DEFAULT_PROFILES);
-      const idx = list.findIndex(p => p.id === profile.id);
-      if (idx !== -1) {
-        list[idx] = profile;
-      } else {
-        list.push(profile);
-      }
-      setStored(KEYS.PROFILES, list);
+      console.error("Supabase updateProfile Exception:", e);
       return list;
     }
   },

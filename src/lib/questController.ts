@@ -53,6 +53,11 @@ export async function parentApproveQuest(questId: string, approveStatus: 'approv
   if (childIdx === -1) return;
   let child = profiles[childIdx];
 
+  // 자녀 프로필에 stats 객체가 없거나 null일 경우 초기화하여 스탯 가산 시 런타임 크래시(TypeError) 방지
+  if (!child.stats) {
+    child.stats = { intelligence: 10, willpower: 10, autonomy: 10, cooperation: 10, sensibility: 10 };
+  }
+
   // 즉시 원본 이미지 파기 트리거 작동 (Auto-Delete Trigger)
   if (quest.imageUrl) {
     const parts = quest.imageUrl.split('##');
