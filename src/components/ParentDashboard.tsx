@@ -237,41 +237,14 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
       return { cat, total, completed, rate };
     });
 
-    // 기본 시뮬레이션용 데모 데이터 결합 (데이터가 적을 때 가이드 제공)
-    const finalWeekTotal = weekTotal || 8;
-    const finalWeekCompleted = weekCompleted || 6;
-    const finalWeekRate = weekTotal > 0 ? weekRate : 75;
-
-    const finalMonthTotal = monthTotal || 32;
-    const finalMonthCompleted = monthCompleted || 26;
-    const finalMonthRate = monthTotal > 0 ? monthRate : 81;
-
-    // 카테고리 기여도 보정
-    const finalCatAnalysis = catAnalysis.map(c => {
-      if (c.total === 0) {
-        let demoTotal = 5;
-        let demoCompleted = 4;
-        if (c.cat === '독서') { demoTotal = 6; demoCompleted = 6; }
-        else if (c.cat === '학습') { demoTotal = 10; demoCompleted = 9; }
-        else if (c.cat === '청소') { demoTotal = 4; demoCompleted = 2; }
-        return {
-          cat: c.cat,
-          total: demoTotal,
-          completed: demoCompleted,
-          rate: Math.round((demoCompleted / demoTotal) * 100)
-        };
-      }
-      return c;
-    });
-
     return {
-      weekTotal: finalWeekTotal,
-      weekCompleted: finalWeekCompleted,
-      weekRate: finalWeekRate,
-      monthTotal: finalMonthTotal,
-      monthCompleted: finalMonthCompleted,
-      monthRate: finalMonthRate,
-      catAnalysis: finalCatAnalysis
+      weekTotal,
+      weekCompleted,
+      weekRate,
+      monthTotal,
+      monthCompleted,
+      monthRate,
+      catAnalysis
     };
   };
 
