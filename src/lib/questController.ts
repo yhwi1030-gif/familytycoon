@@ -42,7 +42,13 @@ export async function parentApproveQuest(questId: string, approveStatus: 'approv
 
   const quest = quests[questIdx];
   const profiles = await api.getProfiles();
-  const childIdx = profiles.findIndex(p => p.role === 'child');
+  let childIdx = -1;
+  if (quest.childId) {
+    childIdx = profiles.findIndex(p => p.id === quest.childId);
+  }
+  if (childIdx === -1) {
+    childIdx = profiles.findIndex(p => p.role === 'child');
+  }
   
   if (childIdx === -1) return;
   let child = profiles[childIdx];

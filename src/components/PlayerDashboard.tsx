@@ -1752,7 +1752,7 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                 NO
               </button>
               <button
-                onClick={() => {
+                onClick={async () => {
                   const q = confirmQuest;
                   setConfirmQuest(null);
                   if (requiresPhoto(q)) {
@@ -1760,8 +1760,8 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                     setCameraMode('idle');
                     setUploadedFile(null);
                   } else {
-                    childRequestQuestApproval(q.id, q.title, '', child.id, child.name);
-                    loadData();
+                    await childRequestQuestApproval(q.id, q.title, '', child.id, child.name);
+                    await loadData();
                     alert(`🛡️ [인증 완료] [${q.title}] 인증 요청을 길드마스터에게 전송했습니다.`);
                   }
                 }}
