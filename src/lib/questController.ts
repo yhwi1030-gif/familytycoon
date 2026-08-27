@@ -79,17 +79,13 @@ export async function parentApproveQuest(questId: string, approveStatus: 'approv
       child.gold += quest.rewardGold;
     }
 
-    // 스트레스(피로도) 조정
-    if (quest.type === 'main') {
-      child.stress = Math.max(0, child.stress - 5);
-    } else if (quest.type === 'self') {
-      child.stress = Math.max(0, child.stress - 10); // 셀프 미션은 완료 시 10 스트레스 완화
+    // 스트레스(피로도) 조정: 모든 퀘스트는 노동/집중이 필요하므로 수행 완료 시 피로도가 증가합니다.
+    if (quest.category === '학습') {
+      child.stress = Math.min(100, child.stress + 15); // 학습은 피로도 +15
+    } else if (quest.category === '독서') {
+      child.stress = Math.min(100, child.stress + 5);  // 독서는 피로도 +5
     } else {
-      if (quest.category === '학습') {
-        child.stress = Math.min(100, child.stress + 10); // 학습 퀘스트는 수행 시 스트레스 10 증가 규칙 준수
-      } else {
-        child.stress = Math.max(0, child.stress - 10);
-      }
+      child.stress = Math.min(100, child.stress + 10); // 심부름, 청소, 셀프 미션 등 일반/돌발 미션은 피로도 +10
     }
 
     // 게임 엔진 연동 스탯 보정
