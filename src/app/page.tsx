@@ -20,11 +20,18 @@ export default function Home() {
   }, []);
 
   const handleSelectProfile = (profile: Profile) => {
+    // 이전 사용자의 흔적이 남지 않도록 로컬 세션 키를 명확히 초기화 후 신규 식별자 바인딩
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('ff_current_user_id');
+      localStorage.setItem('ff_current_user_id', profile.id);
+    }
     setCurrentUser(profile);
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('ff_current_user_id');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('ff_current_user_id');
+    }
     setCurrentUser(null);
   };
 
