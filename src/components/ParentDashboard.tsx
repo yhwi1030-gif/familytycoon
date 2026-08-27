@@ -201,7 +201,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
       await api.addNotification({
         message: `⚡ 길드마스터가 새로운 ${data.type === 'main' ? '메인' : '돌발'} 미션 [${data.title}]을 발행했습니다!`,
         type: 'general',
-        meta: { childId: selectedChildId || undefined }
+        meta: { childId: selectedChildId || undefined, childName: child?.name || undefined }
       });
     }
     await loadData();
@@ -328,7 +328,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
     await api.addNotification({
       message: chosenMessage,
       type: 'cheer',
-      meta: { childId: selectedChildId || undefined }
+      meta: { childId: selectedChildId || undefined, childName: childName }
     });
     
     setCheeringStatus(questTitle);
@@ -838,7 +838,14 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
                   notifications.map(n => (
                     <div key={n.id} className="p-2.5 rounded-xl bg-white/85 border border-[#EBE6DD] text-[11px] text-slate-800 shadow-sm flex justify-between items-center gap-2">
                       <div className="flex-1">
-                        <span className="text-slate-400 text-[9px] block mb-0.5 font-bold">{new Date(n.createdAt).toLocaleTimeString()}</span>
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          <span className="text-slate-400 text-[9px] font-bold">{new Date(n.createdAt).toLocaleTimeString()}</span>
+                          {n.meta?.childName && (
+                            <span className="text-[8px] font-black px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-600 border border-emerald-100">
+                              👤 {n.meta.childName}
+                            </span>
+                          )}
+                        </div>
                         <p className="font-semibold leading-relaxed text-slate-700">{n.message}</p>
                       </div>
                        {n.type === 'quest_request' && n.targetId && (() => {
