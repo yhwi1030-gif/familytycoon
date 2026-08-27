@@ -381,6 +381,11 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
     e.preventDefault();
     if (!selfQuestTitle.trim()) return;
 
+    if (selfQuestGold > 500) {
+      alert("⚠️ 셀프 모험으로 제안 가능한 최대 보상은 500G입니다!");
+      return;
+    }
+
     await api.addQuest({
       title: selfQuestTitle,
       category: '기타',
@@ -1345,11 +1350,11 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase">목표 보상 설정 (골드)</label>
+                <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase">목표 보상 설정 (골드, 최대 500G)</label>
                 <input
                   type="number"
                   min="100"
-                  max="1000"
+                  max="500"
                   step="50"
                   value={selfQuestGold}
                   onChange={(e) => setSelfQuestGold(Number(e.target.value))}
@@ -1654,11 +1659,11 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase">목표 보상 설정 (골드)</label>
+                <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase">목표 보상 설정 (골드, 최대 500G)</label>
                 <input
                   type="number"
                   min="100"
-                  max="1000"
+                  max="500"
                   step="50"
                   value={selfQuestGold}
                   onChange={(e) => setSelfQuestGold(Number(e.target.value))}
