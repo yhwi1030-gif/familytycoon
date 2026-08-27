@@ -386,18 +386,27 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
       return;
     }
 
-    await api.addQuest({
+    const newQ = await api.addQuest({
       title: selfQuestTitle,
       category: '기타',
       type: 'self',
       rewardType: 'both',
       rewardExp: 30,
-      rewardGold: selfQuestGold
+      rewardGold: selfQuestGold,
+      childId: child.id,
+      childName: child.name
     });
 
     await api.addNotification({
       message: `🧚‍♀️ 자녀가 주도적으로 셀프 퀘스트 [${selfQuestTitle}]을 스스로 설계하여 도전 중입니다.`,
-      type: 'self_quest_proposal'
+      type: 'self_quest_proposal',
+      targetId: newQ.id,
+      meta: {
+        childName: child.name,
+        childId: child.id,
+        questTitle: selfQuestTitle,
+        proposedGold: selfQuestGold
+      }
     });
 
     setSelfQuestTitle('');
