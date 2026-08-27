@@ -747,48 +747,25 @@ export const api = {
   },
 
   // 시스템 리셋 데모 기능
+  // 모든 데이터 완전 소거 및 회원가입 유도 리셋 기능
   resetToDefault: async (): Promise<void> => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem(KEYS.PROFILES, JSON.stringify(DEFAULT_PROFILES));
-      localStorage.setItem(KEYS.QUESTS, JSON.stringify(DEFAULT_QUESTS));
-      localStorage.setItem(KEYS.STORE_ITEMS, JSON.stringify(DEFAULT_STORE_ITEMS));
-      localStorage.setItem(KEYS.NOTIFICATIONS, JSON.stringify(DEFAULT_NOTIFICATIONS));
+      localStorage.setItem(KEYS.PROFILES, JSON.stringify([]));
+      localStorage.setItem(KEYS.QUESTS, JSON.stringify([]));
+      localStorage.setItem(KEYS.STORE_ITEMS, JSON.stringify([]));
+      localStorage.setItem(KEYS.NOTIFICATIONS, JSON.stringify([]));
       localStorage.removeItem(KEYS.CURRENT_USER_ID);
       localStorage.removeItem('ff_quest_icons');
+      localStorage.removeItem('ff_notified_quest_ids');
+      localStorage.removeItem('ff_notified_noti_ids');
+      localStorage.removeItem('ff_notified_cheer_ids');
 
       if (isSupabaseConfigured) {
-        // Supabase 초기화 데이터 엎어치기
         try {
           await supabase.from('profiles').delete().neq('id', 'keep_all');
           await supabase.from('quests').delete().neq('id', 'keep_all');
           await supabase.from('store_items').delete().neq('id', 'keep_all');
           await supabase.from('notifications').delete().neq('id', 'keep_all');
-
-          for (const p of DEFAULT_PROFILES) {
-            await supabase.from('profiles').insert({
-              id: p.id,
-              role: p.role,
-              name: p.name,
-              avatar: p.avatar,
-              pin: p.pin,
-              title: p.title,
-              level: p.level,
-              exp: p.exp,
-              gold: p.gold,
-              stress: p.stress,
-              style: p.style,
-              child_class: p.childClass,
-              stats: p.stats
-            });
-          }
-
-          for (const q of DEFAULT_QUESTS) {
-            await supabase.from('quests').insert(mapQuestToDB(q));
-          }
-
-          for (const s of DEFAULT_STORE_ITEMS) {
-            await supabase.from('store_items').insert(s);
-          }
         } catch (err) {
           console.error("Supabase reset error:", err);
         }
