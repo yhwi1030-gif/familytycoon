@@ -503,8 +503,10 @@ export const api = {
       }
     }
 
+    // 데이터 정합성 동기화를 위해 로컬 스토리지 캐시를 항상 최신으로 실시간 업데이트
+    setStored(KEYS.QUESTS, quests);
+
     if (!isSupabaseConfigured) {
-      setStored(KEYS.QUESTS, quests);
       return;
     }
 
@@ -515,12 +517,10 @@ export const api = {
         if (error) {
           console.error("Supabase upsert quest error:", error);
           handleSupabaseError(error);
-          throw error; // 강제로 catch 블록으로 이동시켜 로컬 스토리지 폴백 수행
         }
       }
     } catch (e) {
       console.error("Supabase saveQuests Exception:", e);
-      setStored(KEYS.QUESTS, quests);
     }
   },
 
