@@ -381,6 +381,18 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
     e.preventDefault();
     if (!selfQuestTitle.trim()) return;
 
+    const todayStr = new Date().toDateString();
+    const todaySelfQuests = quests.filter(q => 
+      q.type === 'self' && 
+      q.childId === child.id &&
+      q.createdAt && new Date(q.createdAt).toDateString() === todayStr
+    );
+
+    if (todaySelfQuests.length >= 2) {
+      alert("오늘 도전할 수 있는 횟수를 다 썼어요! 내일 다시 도전해 봐요.");
+      return;
+    }
+
     if (selfQuestGold > 500) {
       alert("⚠️ 셀프 모험으로 제안 가능한 최대 보상은 500G입니다!");
       return;
