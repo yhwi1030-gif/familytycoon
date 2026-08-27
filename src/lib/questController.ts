@@ -71,40 +71,45 @@ export async function parentApproveQuest(questId: string, approveStatus: 'approv
     // 퀘스트 완료 처리
     quest.status = 'completed';
     
+    // 퀘스트에 지정된 경험치와 골드를 누락 없이 100% 직접 누적 가산
+    if (quest.rewardExp && quest.rewardExp > 0) {
+      child.exp += quest.rewardExp;
+    }
+    if (quest.rewardGold && quest.rewardGold > 0) {
+      child.gold += quest.rewardGold;
+    }
+
+    // 스트레스(피로도) 조정
+    if (quest.type === 'main') {
+      child.stress = Math.max(0, child.stress - 5);
+    } else if (quest.type === 'self') {
+      child.stress = Math.max(0, child.stress - 10); // 셀프 미션은 완료 시 10 스트레스 완화
+    } else {
+      if (quest.category === '학습') {
+        child.stress = Math.min(100, child.stress + 10); // 학습 퀘스트는 수행 시 스트레스 10 증가 규칙 준수
+      } else {
+        child.stress = Math.max(0, child.stress - 10);
+      }
+    }
+
     // 게임 엔진 연동 스탯 보정
     if (quest.rewardStats && Object.keys(quest.rewardStats).length > 0) {
-      if (!child.stats) {
-        child.stats = { intelligence: 10, willpower: 10, autonomy: 10, cooperation: 10, sensibility: 10 };
-      }
       Object.entries(quest.rewardStats).forEach(([statKey, val]) => {
         if (child.stats && statKey in child.stats) {
           (child.stats as any)[statKey] += val;
         }
       });
-      if (quest.type === 'main') {
-        child.stress = Math.max(0, child.stress - 5);
-        child.exp += quest.rewardExp;
-      } else {
-        child.stress = Math.max(0, child.stress - 10);
-        child.gold += quest.rewardGold;
-      }
     } else {
+      // 카테고리별 기본 보너스 스탯 설정
       if (quest.category === '독서') {
         child.stats!.intelligence += 15;
         child.stats!.willpower += 20;
-        child.stress = Math.max(0, child.stress - 10);
-        child.exp += quest.rewardExp;
       } else if (quest.category === '학습') {
         child.stats!.intelligence += 20;
         child.stats!.willpower += 15;
-        child.stress = Math.min(100, child.stress + 10);
-        child.exp += quest.rewardExp;
       } else {
-        // 심부름/청소 등 돌발 미션
         child.stats!.autonomy += 15;
         child.stats!.cooperation += 15;
-        child.stress = Math.max(0, child.stress - 15);
-        child.gold += quest.rewardGold;
       }
     }
 
