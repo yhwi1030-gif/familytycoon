@@ -33,6 +33,11 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
   const [tempSignupData, setTempSignupData] = useState<{ name: string; password: string; email: string } | null>(null);
   const [showPassword, setShowPassword] = useState(false);
 
+  // 길드마스터 비밀번호 로그인(인증) 상태
+  const [passwordInput, setPasswordInput] = useState('');
+  const [passwordError, setPasswordError] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
   // 인트로 시작 페이지 대기 유무
   const [showIntro, setShowIntro] = useState(true);
   const [loadingPercent, setLoadingPercent] = useState(0);
@@ -480,6 +485,77 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
               * 입장하기 버튼을 누르면 캐릭터 선택 및 프로필 로드 화면으로 진입합니다.
             </p>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  // --- 길드마스터 비밀번호 인증화면 (로그인 보안 강화) ---
+  const parentWithPassword = profiles.find(p => p.role === 'parent' && p.password);
+  if (parentWithPassword && !isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-[#FAF8F5] text-slate-800 flex flex-col items-center justify-center p-6 select-none relative overflow-hidden">
+        {/* 네온 배경 장식 */}
+        <div className="absolute top-1/4 left-1/4 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-pink-500/10 rounded-full blur-3xl" />
+
+        <div className="max-w-md w-full bg-white/20 border border-[#EBE6DD] backdrop-blur-md rounded-3xl p-6 shadow-xl z-10 space-y-6">
+          <div className="text-center space-y-2">
+            <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mx-auto border border-indigo-200 text-3xl">
+              🛡️
+            </div>
+            <h2 className="text-2xl font-black text-slate-800 font-bw">길드마스터 비밀번호 인증</h2>
+            <p className="text-xs text-slate-500 font-medium font-sans leading-relaxed">
+              길드 멤버 관리에 진입하기 위해 가입 시 설정한<br />
+              <strong>길드마스터 비밀번호</strong>를 입력해 주세요.
+            </p>
+          </div>
+
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            if (passwordInput === parentWithPassword.password) {
+              setIsAuthenticated(true);
+              setPasswordError(false);
+            } else {
+              setPasswordError(true);
+              setPasswordInput('');
+            }
+          }} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">비밀번호</label>
+              <input
+                type="password"
+                required
+                value={passwordInput}
+                onChange={e => { setPasswordInput(e.target.value); setPasswordError(false); }}
+                placeholder="가입 시 비밀번호를 입력하세요"
+                className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-white/80 text-xs font-bold text-slate-800 outline-none focus:border-indigo-500 transition shadow-sm"
+              />
+              {passwordError && (
+                <p className="text-xs text-rose-500 font-bold mt-1">⚠️ 비밀번호가 일치하지 않습니다.</p>
+              )}
+            </div>
+
+            <div className="pt-2 space-y-2">
+              <button
+                type="submit"
+                className="w-full py-3.5 bg-[#644EB0] hover:bg-[#523d9c] text-white font-extrabold text-xs rounded-2xl transition duration-300 transform active:scale-95 shadow-md shadow-[#644EB0]/10"
+              >
+                🔓 인증 및 모험 진입
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowIntro(true);
+                  setPasswordInput('');
+                  setPasswordError(false);
+                }}
+                className="w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs rounded-2xl transition"
+              >
+                처음으로 돌아가기
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     );
