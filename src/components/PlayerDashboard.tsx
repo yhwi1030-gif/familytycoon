@@ -1096,6 +1096,10 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                             <span className="text-xs text-indigo-600 font-bold bg-indigo-50 px-3 py-1.5 rounded-xl border border-indigo-200 animate-pulse">
                               ⌛ 검수 대기중
                             </span>
+                          ) : q.status === 'pending' ? (
+                            <span className="text-xs text-amber-600 font-bold bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-200 animate-pulse">
+                              ⌛ 제안 승인 대기중
+                            </span>
                           ) : (
                             <div className="flex items-center gap-2">
                               <button

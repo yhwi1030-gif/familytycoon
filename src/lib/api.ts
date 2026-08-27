@@ -542,10 +542,11 @@ export const api = {
 
   addQuest: async (quest: Omit<Quest, 'id' | 'status'>): Promise<Quest> => {
     const isFuture = quest.scheduledDate ? new Date(quest.scheduledDate).toDateString() !== new Date().toDateString() && new Date(quest.scheduledDate) > new Date() : false;
+    const initialStatus = (quest.type === 'self' || isFuture) ? 'pending' : 'active';
     const newQuest: Quest = {
       ...quest,
       id: 'q_' + Math.random().toString(36).substr(2, 9),
-      status: isFuture ? 'pending' : 'active',
+      status: initialStatus,
       createdAt: new Date().toISOString()
     };
 
