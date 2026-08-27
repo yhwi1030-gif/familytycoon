@@ -35,7 +35,7 @@ export async function childRequestQuestApproval(questId: string, title: string, 
 }
 
 // 2. 부모 -> 자녀: 퀘스트 승인 완료 (경험치/골드 배정)
-export async function parentApproveQuest(questId: string, approveStatus: 'approve' | 'retry') {
+export async function parentApproveQuest(questId: string, approveStatus: 'approve' | 'retry', activeChildId?: string) {
   const quests = await api.getQuests();
   const questIdx = quests.findIndex(q => q.id === questId);
   if (questIdx === -1) return;
@@ -43,7 +43,10 @@ export async function parentApproveQuest(questId: string, approveStatus: 'approv
   const quest = quests[questIdx];
   const profiles = await api.getProfiles();
   let childIdx = -1;
-  if (quest.childId) {
+  if (activeChildId) {
+    childIdx = profiles.findIndex(p => p.id === activeChildId);
+  }
+  if (childIdx === -1 && quest.childId) {
     childIdx = profiles.findIndex(p => p.id === quest.childId);
   }
   if (childIdx === -1) {

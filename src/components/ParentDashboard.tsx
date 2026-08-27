@@ -142,14 +142,14 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
       setIsReadingModalOpen(true);
     } else {
       // 일반 승인 처리
-      await parentApproveQuest(q.id, 'approve');
+      await parentApproveQuest(q.id, 'approve', selectedChildId || undefined);
       await loadData();
     }
   };
 
   const handleAIApprove = async () => {
     if (selectedQuest) {
-      await parentApproveQuest(selectedQuest.id, 'approve');
+      await parentApproveQuest(selectedQuest.id, 'approve', selectedChildId || undefined);
       setIsReadingModalOpen(false);
       setSelectedQuest(null);
       await loadData();
@@ -158,7 +158,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
 
   const handleAIReject = async () => {
     if (selectedQuest) {
-      await parentApproveQuest(selectedQuest.id, 'retry');
+      await parentApproveQuest(selectedQuest.id, 'retry', selectedChildId || undefined);
       setIsReadingModalOpen(false);
       setSelectedQuest(null);
       await loadData();
@@ -186,7 +186,9 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
         rewardGold: data.type === 'flash' ? data.rewardValue : 0,
         dueTime: data.dueTime,
         iconUrl: data.iconUrl,
-        rewardStats: data.rewardStats
+        rewardStats: data.rewardStats,
+        childId: selectedChildId || undefined,
+        childName: child?.name || undefined
       });
       // 알림 전송
       await api.addNotification({

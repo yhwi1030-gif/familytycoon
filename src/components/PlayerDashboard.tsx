@@ -121,8 +121,11 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
     const qList = await api.getQuests();
     const todayStr = new Date().toDateString();
     
-    // 예약 발송 퀘스트 필터링 적용 (오늘 날짜 발송분만 노출)
+    // 예약 발송 퀘스트 및 로그인 자녀 필터링 적용 (오늘 날짜 발송분 및 본인 소유/공용 퀘스트만 노출)
     const filteredQuests = qList.filter(q => {
+      if (q.childId && q.childId !== user.id) {
+        return false;
+      }
       const qDate = new Date(q.createdAt || new Date()).toDateString();
       if (q.scheduledDate) {
         return new Date(q.scheduledDate).toDateString() === todayStr;
