@@ -370,7 +370,7 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
 
   const handleNegotiationSubmit = async () => {
     if (activeNegotiateQuest) {
-      await childCounterProposeQuest(activeNegotiateQuest.id, negotiateGold);
+      await childCounterProposeQuest(activeNegotiateQuest.id, negotiateGold, child.id);
       setActiveNegotiateQuest(null);
       await loadData();
       alert(`🤝 길드마스터에게 보상 조정 (${negotiateGold}G) 협상 요청을 전달했습니다.`);
@@ -470,7 +470,7 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
       return;
     }
 
-    const success = await childRequestGoldPayout(payoutAmount);
+    const success = await childRequestGoldPayout(payoutAmount, child.id);
     if (success) {
       setIsPayoutOpen(false);
       await loadData();
@@ -738,18 +738,24 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                 💬 길드마스터 전령 메시지 수신함
               </h3>
               <div className="space-y-2 max-h-56 overflow-y-auto">
-                {notifications.filter(n => n.message.includes('"')).length === 0 ? (
-                  <div className="text-center py-8 text-slate-400 text-xs font-bold italic">
-                    아직 수신된 전령 메시지가 없습니다.
-                  </div>
-                ) : (
-                  notifications.filter(n => n.message.includes('"')).map(n => (
-                    <div key={n.id} className="p-3 bg-white/80 border border-[#EBE6DD] rounded-2xl text-xs font-semibold leading-relaxed text-slate-800 shadow-sm">
-                      <p className="text-[9px] text-indigo-600 mb-1 font-bold">{new Date(n.createdAt).toLocaleTimeString()}</p>
-                      {n.message}
+                {(() => {
+                  const childNotis = notifications.filter(n => 
+                    n.message.includes('"') && 
+                    (!n.meta?.childId || n.meta.childId === user.id)
+                  );
+                  return childNotis.length === 0 ? (
+                    <div className="text-center py-8 text-slate-400 text-xs font-bold italic">
+                      아직 수신된 전령 메시지가 없습니다.
                     </div>
-                  ))
-                )}
+                  ) : (
+                    childNotis.map(n => (
+                      <div key={n.id} className="p-3 bg-white/80 border border-[#EBE6DD] rounded-2xl text-xs font-semibold leading-relaxed text-slate-800 shadow-sm">
+                        <p className="text-[9px] text-indigo-600 mb-1 font-bold">{new Date(n.createdAt).toLocaleTimeString()}</p>
+                        {n.message}
+                      </div>
+                    ))
+                  );
+                })()}
               </div>
             </div>
           </div>

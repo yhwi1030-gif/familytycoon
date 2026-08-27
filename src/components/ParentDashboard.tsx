@@ -200,7 +200,8 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
       // 알림 전송
       await api.addNotification({
         message: `⚡ 길드마스터가 새로운 ${data.type === 'main' ? '메인' : '돌발'} 미션 [${data.title}]을 발행했습니다!`,
-        type: 'general'
+        type: 'general',
+        meta: { childId: selectedChildId || undefined }
       });
     }
     await loadData();
@@ -289,7 +290,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
           await api.saveQuests(allQuests);
         }
         const profiles = await api.getProfiles();
-        const childIdx = profiles.findIndex(p => p.role === 'child');
+        const childIdx = selectedChildId ? profiles.findIndex(p => p.id === selectedChildId) : profiles.findIndex(p => p.role === 'child');
         if (childIdx !== -1) {
           profiles[childIdx].stress = Math.max(0, profiles[childIdx].stress - 5);
           await api.updateProfile(profiles[childIdx]);
@@ -326,7 +327,8 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
     
     await api.addNotification({
       message: chosenMessage,
-      type: 'cheer'
+      type: 'cheer',
+      meta: { childId: selectedChildId || undefined }
     });
     
     setCheeringStatus(questTitle);
@@ -336,14 +338,21 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
   // 상점 교환/이용권 수락 및 거절 처리
   const handleResolveNotification = async (noti: AppNotification, action: 'approve' | 'reject') => {
     const profiles = await api.getProfiles();
-    const childIdx = profiles.findIndex(p => p.role === 'child');
+    let childIdx = -1;
+    if (noti.meta?.childId) {
+      childIdx = profiles.findIndex(p => p.id === noti.meta.childId);
+    }
+    if (childIdx === -1) {
+      childIdx = profiles.findIndex(p => p.role === 'child');
+    }
     const child = childIdx !== -1 ? profiles[childIdx] : null;
 
     if (action === 'approve') {
       // 1. 승인 알림 추가
       await api.addNotification({
         message: `🎉 [승인 완료] ${noti.message.replace('요청했습니다.', '건이 최종 승인 완료되었습니다.')}`,
-        type: 'general'
+        type: 'general',
+        meta: { childId: noti.meta?.childId || undefined }
       });
 
       // 2. 상점 아이템 구매 완료 처리 및 자녀 인벤토리(가방) 추가 연동
@@ -366,7 +375,8 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
       if (noti.type === 'item_use_request' && noti.meta?.itemName) {
         await api.addNotification({
           message: `🎟️ [사용 승인 완료] 자녀가 요청한 [${noti.meta.itemName}] 실물 사용이 승인 정산 완료되었습니다.`,
-          type: 'general'
+          type: 'general',
+          meta: { childId: noti.meta?.childId || undefined }
         });
       }
     } else {
@@ -383,7 +393,8 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
       if (noti.type === 'item_use_request' && noti.meta?.itemName) {
         await api.addNotification({
           message: `⚠️ [사용 반려] 자녀의 [${noti.meta.itemName}] 사용이 반려되었습니다. (아이템 복구 필요시 자녀 인벤토리에 환원)`,
-          type: 'general'
+          type: 'general',
+          meta: { childId: noti.meta?.childId || undefined }
         });
         
         // 아이템 소모 롤백 처리
@@ -396,7 +407,8 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
       // 반려 알림 추가
       await api.addNotification({
         message: `⚠️ [협상/반려] ${noti.message.replace('요청했습니다.', '건이 조정 반려/협상 보류 처리되었습니다.')}`,
-        type: 'general'
+        type: 'general',
+        meta: { childId: noti.meta?.childId || undefined }
       });
     }
     await api.resolveNotification(noti.id);
