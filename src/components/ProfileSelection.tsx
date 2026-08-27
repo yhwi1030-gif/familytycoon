@@ -43,6 +43,11 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
   }, []);
 
   const handleStartAdventure = () => {
+    if (profiles.length === 0) {
+      alert("⚠️ 등록된 패밀리 모험가 프로필이 존재하지 않습니다. 먼저 회원가입을 통해 새 계정을 생성해 주세요!");
+      handleStartSignup();
+      return;
+    }
     setShowLoading(true);
     let current = 0;
     const interval = setInterval(() => {
