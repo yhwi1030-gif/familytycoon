@@ -389,28 +389,22 @@ export const api = {
   },
 
   deleteProfile: async (id: string): Promise<Profile[]> => {
+    const localList = getStored<Profile[]>(KEYS.PROFILES, DEFAULT_PROFILES);
+    const filtered = localList.filter(p => p.id !== id);
+    setStored(KEYS.PROFILES, filtered);
+
     if (!isSupabaseConfigured) {
-      const localList = getStored<Profile[]>(KEYS.PROFILES, DEFAULT_PROFILES);
-      const filtered = localList.filter(p => p.id !== id);
-      setStored(KEYS.PROFILES, filtered);
       return filtered;
     }
 
     try {
       const { error } = await supabase.from('profiles').delete().eq('id', id);
       if (error) {
-        console.error("Supabase deleteProfile error (falling back to LocalStorage):", error);
-        const localList = getStored<Profile[]>(KEYS.PROFILES, DEFAULT_PROFILES);
-        const filtered = localList.filter(p => p.id !== id);
-        setStored(KEYS.PROFILES, filtered);
-        return filtered;
+        console.error("Supabase deleteProfile error:", error);
       }
       return api.getProfiles();
     } catch (e) {
-      console.error("Supabase deleteProfile Exception (falling back to LocalStorage):", e);
-      const localList = getStored<Profile[]>(KEYS.PROFILES, DEFAULT_PROFILES);
-      const filtered = localList.filter(p => p.id !== id);
-      setStored(KEYS.PROFILES, filtered);
+      console.error("Supabase deleteProfile Exception:", e);
       return filtered;
     }
   },

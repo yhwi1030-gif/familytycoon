@@ -227,9 +227,9 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
   };
 
   // 모의 데이터 초기화 리셋 단추
-  const handleReset = () => {
+  const handleReset = async () => {
     if (confirm("모든 데이터를 초기 기본 세팅으로 리셋하시겠습니까?")) {
-      api.resetToDefault();
+      await api.resetToDefault();
     }
   };
 
