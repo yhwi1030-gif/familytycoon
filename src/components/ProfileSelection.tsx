@@ -503,7 +503,7 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
                   onClick={handleStartDemo}
                   className="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold text-[17px] font-bw rounded-2xl transition duration-300 transform active:scale-95 shadow-lg shadow-amber-500/20 tracking-wider flex items-center justify-center gap-2"
                 >
-                  🌟 시연용 체험하기 (가입/로그인 우회)
+                  🌟 체험하기
                 </button>
               </div>
             ) : (
