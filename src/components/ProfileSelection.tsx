@@ -19,6 +19,7 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState('');
   const [editPin, setEditPin] = useState('');
+  const [editPassword, setEditPassword] = useState('');
   const [onboardingRole, setOnboardingRole] = useState<'parent' | 'child' | null>(null);
   
   // 회원가입 전용 페이지 전환 상태 및 폼 필드 (성인만 회원가입 가능)
@@ -102,6 +103,7 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
     setSelectedProfile(p);
     setEditName(p.name);
     setEditPin(p.pin);
+    setEditPassword(p.password || '');
     setIsEditing(true);
   };
 
@@ -109,15 +111,25 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
     e.preventDefault();
     if (!selectedProfile) return;
 
+    if (selectedProfile.role === 'parent' && editPassword) {
+      const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&._\-])[A-Za-z\d@$!%*#?&._\-]{8,}$/;
+      if (!passwordRegex.test(editPassword)) {
+        alert("⚠️ 비밀번호는 영문, 숫자, 특수문자를 포함하여 8자리 이상이어야 합니다.");
+        return;
+      }
+    }
+
     const updated = {
       ...selectedProfile,
       name: editName,
-      pin: editPin
+      pin: editPin,
+      password: selectedProfile.role === 'parent' ? (editPassword || undefined) : undefined
     };
     const list = await api.updateProfile(updated);
     setProfiles(list);
     setIsEditing(false);
     setSelectedProfile(null);
+    setEditPassword('');
   };
 
   const handleDeleteProfile = async (id: string) => {
@@ -758,6 +770,19 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
                   required
                 />
               </div>
+
+              {selectedProfile.role === 'parent' && (
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase">로그인 비밀번호 (8자 이상 영문/숫자/특수문자)</label>
+                  <input
+                    type="password"
+                    value={editPassword}
+                    onChange={(e) => setEditPassword(e.target.value)}
+                    placeholder="변경할 새 비밀번호"
+                    className="w-full bg-slate-950 border border-slate-850 rounded-xl p-3 text-sm text-slate-200 outline-none focus:border-indigo-500 font-bold"
+                  />
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-2 pt-2">
                 <button
