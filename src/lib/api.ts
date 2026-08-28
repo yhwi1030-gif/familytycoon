@@ -70,15 +70,7 @@ const DEFAULT_PROFILES: Profile[] = [
   }
 ];
 
-const DEFAULT_QUESTS: Quest[] = [
-  { id: 'q1', type: 'main', title: '매일 학습지 풀기', category: '학습', rewardType: 'exp', rewardExp: 20, rewardGold: 0, status: 'active', streakCount: 3, childId: 'child1', childName: '민우 (꼬마 전사)', iconUrl: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=120&auto=format&fit=crop' },
-  { id: 'q2', type: 'main', title: '하루 30분 독서하기', category: '독서', rewardType: 'exp', rewardExp: 15, rewardGold: 0, status: 'active', streakCount: 5, childId: 'child1', childName: '민우 (꼬마 전사)', iconUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=120&auto=format&fit=crop' },
-  { id: 'q3', type: 'main', title: '학원 숙제 끝내기', category: '학습', rewardType: 'exp', rewardExp: 20, rewardGold: 0, status: 'active', streakCount: 2, childId: 'child1', childName: '민우 (꼬마 전사)', iconUrl: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=120&auto=format&fit=crop' },
-  { id: 'q4', type: 'main', title: '기상하기', category: '생활', rewardType: 'exp', rewardExp: 10, rewardGold: 0, status: 'active', childId: 'child1', childName: '민우 (꼬마 전사)', iconUrl: 'https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=120&auto=format&fit=crop' },
-  { id: 'q5', type: 'main', title: '이불 정리하기', category: '생활', rewardType: 'exp', rewardExp: 10, rewardGold: 0, status: 'active', childId: 'child1', childName: '민우 (꼬마 전사)', iconUrl: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=120&auto=format&fit=crop' },
-  { id: 'q6', type: 'main', title: '양치질하기', category: '생활', rewardType: 'exp', rewardExp: 10, rewardGold: 0, status: 'active', childId: 'child1', childName: '민우 (꼬마 전사)', iconUrl: 'https://images.unsplash.com/photo-1559599189-fe84dea4eb79?w=120&auto=format&fit=crop' },
-  { id: 'q7', type: 'flash', title: '우유 사오기', category: '심부름', rewardType: 'gold', rewardExp: 0, rewardGold: 500, status: 'active', dueTime: '18:30', childId: 'child1', childName: '민우 (꼬마 전사)', iconUrl: 'https://images.unsplash.com/photo-1528750955906-c98b84384950?w=120&auto=format&fit=crop' }
-];
+const DEFAULT_QUESTS: Quest[] = [];
 
 const DEFAULT_STORE_ITEMS: StoreItem[] = [
   { id: 's1', name: '[아바타] 기본 티셔츠', price: 300, requiredLevel: 1, type: 'ingame', status: 'available', description: '초반 성취감 부여를 위한 아바타 기본 꾸미기 의상', imageUrl: '/tshirt.jfif' },
