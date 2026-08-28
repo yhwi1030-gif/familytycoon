@@ -53,6 +53,7 @@ export interface Quest {
   childName?: string; // 요청을 보낸 자녀 모험가 이름
   createdAt?: string; // 퀘스트 생성일자
   iconUrl?: string; // Upstage AI 생성 2D 로우폴리 아이콘
+  feedback?: string; // 반려 피드백 코멘트
   rewardStats?: Partial<Stats>; // 이 퀘스트 클리어 시 추가 지급할 스탯 능력치 보너스
   sweetCheered?: boolean; // 다정한 메시지 스트레스 감소 1회성 검증용 플래그
 }

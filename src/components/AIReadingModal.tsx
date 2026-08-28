@@ -7,7 +7,7 @@ interface AIReadingModalProps {
   isOpen: boolean;
   onClose: () => void;
   onApprove: () => void;
-  onReject: () => void;
+  onReject: (feedback: string) => void;
 }
 
 export const AIReadingModal: React.FC<AIReadingModalProps> = ({
@@ -17,6 +17,8 @@ export const AIReadingModal: React.FC<AIReadingModalProps> = ({
   onApprove,
   onReject
 }) => {
+  const [rejectFeedback, setRejectFeedback] = React.useState('');
+
   if (!isOpen || !quest) return null;
 
   let displayImageUrl = quest.imageUrl || '';
@@ -121,17 +123,33 @@ export const AIReadingModal: React.FC<AIReadingModalProps> = ({
             </p>
           </div>
 
+          {/* 반려 피드백 입력란 */}
+          <div className="bg-slate-950/80 rounded-2xl p-4 border border-slate-800 space-y-1.5">
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              📝 반려 피드백 코멘트 (선택 사항)
+            </label>
+            <textarea
+              value={rejectFeedback}
+              onChange={e => setRejectFeedback(e.target.value)}
+              placeholder="자녀가 올바르게 보강할 수 있도록 반려 이유를 적어주세요. (예: 글씨를 좀 더 단정하게 써주세요)"
+              className="w-full h-16 bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none focus:border-indigo-500 font-medium resize-none"
+            />
+          </div>
+
           {/* 반려 시 경고 */}
           <div className="flex items-center gap-2 p-3 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-400 text-[10px] font-medium">
             <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-            반려 시 자녀의 도덕성/끈기는 향상되지만 반발 스트레스가 +15 가중됩니다.
+            반려 시 자녀의 도덕성/끈기는 향상되지만 반발 스트레스가 +10 가중됩니다.
           </div>
         </div>
 
         {/* 액션 버튼 */}
         <div className="grid grid-cols-2 gap-3 border-t border-slate-800 pt-4">
           <button
-            onClick={onReject}
+            onClick={() => {
+              onReject(rejectFeedback);
+              setRejectFeedback(''); // Clear feedback on reject
+            }}
             className="w-full py-3 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white font-bold transition text-xs shadow-md"
           >
             ❌ 다시 하기 반려

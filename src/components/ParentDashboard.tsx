@@ -144,13 +144,9 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
   }, []);
 
   const handleQuestAction = async (q: Quest) => {
-    if ((q.category === '독서' || q.category === '학습') && q.status === 'request_approval') {
+    if (q.status === 'request_approval') {
       setSelectedQuest(q);
       setIsReadingModalOpen(true);
-    } else {
-      // 일반 승인 처리
-      await parentApproveQuest(q.id, 'approve', selectedChildId || undefined);
-      await loadData();
     }
   };
 
@@ -163,9 +159,9 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
     }
   };
 
-  const handleAIReject = async () => {
+  const handleAIReject = async (feedback: string) => {
     if (selectedQuest) {
-      await parentApproveQuest(selectedQuest.id, 'retry', selectedChildId || undefined);
+      await parentApproveQuest(selectedQuest.id, 'retry', selectedChildId || undefined, feedback);
       setIsReadingModalOpen(false);
       setSelectedQuest(null);
       await loadData();

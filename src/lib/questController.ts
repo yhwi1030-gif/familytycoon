@@ -35,7 +35,7 @@ export async function childRequestQuestApproval(questId: string, title: string, 
 }
 
 // 2. 부모 -> 자녀: 퀘스트 승인 완료 (경험치/골드 배정)
-export async function parentApproveQuest(questId: string, approveStatus: 'approve' | 'retry', activeChildId?: string) {
+export async function parentApproveQuest(questId: string, approveStatus: 'approve' | 'retry', activeChildId?: string, feedback?: string) {
   const quests = await api.getQuests();
   const questIdx = quests.findIndex(q => q.id === questId);
   if (questIdx === -1) return;
@@ -130,12 +130,21 @@ export async function parentApproveQuest(questId: string, approveStatus: 'approv
     child.stats!.willpower = Math.max(0, child.stats!.willpower - 5);
     child.stress = Math.min(100, child.stress + 10); // 반려 스트레스
     
+    if (feedback) {
+      quest.feedback = feedback;
+    }
+    
     await api.updateProfile(child);
+    
+    const rejectMessage = feedback 
+      ? `❌ [${quest.title}] 건이 반려되었습니다. 사유: "${feedback}"`
+      : `❌ [${quest.title}] 건이 반려되었습니다. 다시 수행하여 사진을 재전송해 주세요.`;
+
     await addMockNotification(
       'quest_rejected',
-      `❌ [${quest.title}] 건이 반려되었습니다. '다시 읽기' 퀘스트가 제안되었습니다.`,
+      rejectMessage,
       questId,
-      { childId: child.id, childName: child.name }
+      { childId: child.id, childName: child.name, feedback }
     );
   }
 

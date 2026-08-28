@@ -777,7 +777,7 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
               <div className="space-y-2 max-h-56 overflow-y-auto">
                 {(() => {
                   const childNotis = notifications.filter(n => 
-                    n.message.includes('"') && 
+                    (n.message.includes('"') || n.type === 'quest_approved' || n.type === 'quest_rejected' || n.type === 'gold_approved' || n.type === 'gold_rejected' || n.type === 'general') && 
                     (!n.meta?.childId || n.meta.childId === user.id)
                   );
                   return childNotis.length === 0 ? (

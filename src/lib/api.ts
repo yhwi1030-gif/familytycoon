@@ -155,6 +155,7 @@ const mapQuestToDB = (q: any) => {
   const meta: any = {};
   if (q.rewardStats) meta.rewardStats = q.rewardStats;
   if (q.sweetCheered !== undefined) meta.sweetCheered = q.sweetCheered;
+  if (q.feedback) meta.feedback = q.feedback;
   if (Object.keys(meta).length > 0) {
     packedDueTime = `${packedDueTime}||${JSON.stringify(meta)}`;
   }
@@ -183,6 +184,7 @@ const mapQuestFromDB = (q: any): Quest => {
   let scheduledDate: string | undefined;
   let rewardStats: Partial<Stats> | undefined;
   let sweetCheered: boolean | undefined;
+  let feedback: string | undefined;
 
   if (rawDueTime.includes('||')) {
     const mainParts = rawDueTime.split('||');
@@ -197,7 +199,10 @@ const mapQuestFromDB = (q: any): Quest => {
       if (parsed.sweetCheered !== undefined) {
         sweetCheered = parsed.sweetCheered;
       }
-      if (!parsed.rewardStats && !parsed.sweetCheered) {
+      if (parsed.feedback) {
+        feedback = parsed.feedback;
+      }
+      if (!parsed.rewardStats && !parsed.sweetCheered && !parsed.feedback) {
         rewardStats = parsed;
       }
     } catch (e) {
@@ -225,6 +230,7 @@ const mapQuestFromDB = (q: any): Quest => {
     scheduledDate: scheduledDate,
     rewardStats: rewardStats,
     sweetCheered: sweetCheered,
+    feedback: feedback,
     imageUrl: q.image_url || q.imageUrl,
     createdAt: q.created_at || q.createdAt,
     iconUrl: localIcon || q.icon_url || q.iconUrl
