@@ -69,6 +69,28 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
     }, 150);
   };
 
+  const handleStartDemo = async () => {
+    setShowLoading(true);
+    let current = 0;
+    const interval = setInterval(() => {
+      current += 10;
+      setLoadingPercent(current);
+      if (current >= 100) {
+        clearInterval(interval);
+      }
+    }, 150);
+
+    await api.setupDemoData();
+    const list = await api.getProfiles();
+    setProfiles(list);
+    setIsAuthenticated(true); // 비밀번호 프리패스 허용
+    
+    setTimeout(() => {
+      setShowIntro(false);
+      setShowLoading(false);
+    }, 1500);
+  };
+
   const handleStartSignup = async () => {
     // 신규 가족 회원가입 시 기존 완성형 데모 데이터는 공란(empty) 상태로 초기화합니다.
     await api.clearAllData();
@@ -476,6 +498,12 @@ export const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) 
                   className="w-full py-4 bg-[#644EB0] hover:bg-[#523d9c] text-white font-extrabold text-[17px] font-bw rounded-2xl transition duration-300 transform active:scale-95 shadow-lg shadow-[#644EB0]/20 tracking-wider flex items-center justify-center gap-2"
                 >
                   🎮 입장하기 (로그인)
+                </button>
+                <button
+                  onClick={handleStartDemo}
+                  className="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold text-[17px] font-bw rounded-2xl transition duration-300 transform active:scale-95 shadow-lg shadow-amber-500/20 tracking-wider flex items-center justify-center gap-2"
+                >
+                  🌟 시연용 체험하기 (가입/로그인 우회)
                 </button>
               </div>
             ) : (
