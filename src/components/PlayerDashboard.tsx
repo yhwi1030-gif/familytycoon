@@ -214,6 +214,31 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
   // 퀘스트 완료 여부 묻기 YES/NO 모달 팝업 상태
   const [confirmQuest, setConfirmQuest] = useState<Quest | null>(null);
 
+  const getAutoMatchedPhotoUrl = (q: Quest): string => {
+    const titleLower = q.title.toLowerCase();
+    const cat = q.category;
+    
+    if (cat === '독서' || titleLower.includes('독서') || titleLower.includes('책') || titleLower.includes('읽기')) {
+      return 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=400&q=80'; // 책 읽기
+    }
+    if (titleLower.includes('수학') || titleLower.includes('산수') || titleLower.includes('연산') || titleLower.includes('수력') || titleLower.includes('원리셈')) {
+      return 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=400&q=80'; // 수학 수식
+    }
+    if (titleLower.includes('영어') || titleLower.includes('영단어') || titleLower.includes('english') || titleLower.includes('단어')) {
+      return 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=400&q=80'; // 영어 필기
+    }
+    if (cat === '학습' || titleLower.includes('공부') || titleLower.includes('학습') || titleLower.includes('과제') || titleLower.includes('숙제')) {
+      return 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=400&q=80'; // 공부 필기노트
+    }
+    if (cat === '청소' || cat === '생활' || titleLower.includes('청소') || titleLower.includes('정리') || titleLower.includes('정돈') || titleLower.includes('이불')) {
+      return 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=400&q=80'; // 정돈/청소 세제
+    }
+    if (cat === '반려동물' || titleLower.includes('강아지') || titleLower.includes('고양이') || titleLower.includes('산책') || titleLower.includes('동물')) {
+      return 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=400&q=80'; // 강아지/반려견
+    }
+    return 'https://images.unsplash.com/photo-1484480974693-2ca0a72f384c?auto=format&fit=crop&w=400&q=80'; // 다이어리/체크리스트
+  };
+
   const requiresPhoto = (q: Quest) => {
     const t = q.title.toLowerCase();
     return q.category === '학습' || q.category === '독서' || t.includes('학습지') || t.includes('독서') || t.includes('책 읽기') || t.includes('책읽기') || t.includes('기록장');
@@ -304,7 +329,7 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
 
       const displayUrl = cameraMode === 'upload' && uploadedFileUrl 
         ? uploadedFileUrl 
-        : 'https://picsum.photos/400/300';
+        : getAutoMatchedPhotoUrl(activeCameraQuest);
       const payloadUrl = `${displayUrl}##${encodeURIComponent(parsedText)}`;
 
       await childRequestQuestApproval(
@@ -1237,11 +1262,19 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
             </div>
 
             {/* 카메라 뷰 모사 구역 */}
-            <div className="aspect-[4/3] bg-slate-950 border border-slate-850 rounded-2xl flex flex-col items-center justify-center text-slate-600 relative overflow-hidden shadow-inner select-none">
-              <Camera className="w-12 h-12 text-slate-700 animate-pulse mb-2" />
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">LIVE CAMERA VIEW MOCK</span>
-              <div className="absolute inset-x-0 bottom-0 bg-black/60 py-2 text-[10px] text-slate-400 font-bold border-t border-slate-900">
-                [화면을 터치하거나 확인 단추를 눌러 캡쳐]
+            <div className="aspect-[4/3] bg-slate-950 border border-slate-850 rounded-2xl relative overflow-hidden shadow-inner select-none">
+              <img 
+                src={getAutoMatchedPhotoUrl(activeCameraQuest)} 
+                alt="Camera live mock preview" 
+                className="w-full h-full object-cover brightness-90 contrast-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent flex flex-col justify-end p-3 text-left">
+                <span className="text-[10px] font-black text-emerald-400 flex items-center gap-1 bg-emerald-950/80 border border-emerald-500/30 px-2 py-1 rounded-lg w-max mb-1">
+                  ✨ 시연용 매칭 사진 자동 캡쳐 로드 완료
+                </span>
+                <span className="text-[9px] font-medium text-slate-300">
+                  [{activeCameraQuest.category}] 퀘스트 성격에 완벽히 매치되는 고품질 검증 사진을 자동 매핑했습니다.
+                </span>
               </div>
             </div>
 
