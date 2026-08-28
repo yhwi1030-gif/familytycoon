@@ -1928,8 +1928,8 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
               📣
             </div>
             <div>
-              <h3 className="text-lg font-black text-indigo-450 font-bw">📣 길드마스터의 독려 메시지</h3>
-              <p className="text-xs text-slate-350 mt-1">길드마스터로부터 특별 지령이 도착했습니다.</p>
+              <h3 className="text-lg font-black text-amber-400 font-bw">📣 길드마스터의 콕콕 찌르기 👉</h3>
+              <p className="text-xs text-slate-300 mt-1 font-bold">길드마스터로부터 특별 지령이 도착했습니다.</p>
             </div>
             
             <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 text-left">
