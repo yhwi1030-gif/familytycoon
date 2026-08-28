@@ -1397,6 +1397,21 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
             </div>
 
             <form onSubmit={handleSelfQuestSubmit} className="space-y-4">
+              {/* 시연용 원클릭 퀵 템플릿 */}
+              <div className="bg-slate-950/80 rounded-xl p-3 border border-slate-800 flex items-center justify-between gap-2 mb-2">
+                <span className="text-[10px] font-bold text-amber-400">⚡ 시연 퀵 템플릿</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelfQuestTitle('30분 줄넘기 하기');
+                    setSelfQuestGold(300);
+                  }}
+                  className="py-1 px-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-[10px] rounded-lg transition"
+                >
+                  🏃‍♂️ [30분 줄넘기 하기] 세팅
+                </button>
+              </div>
+
               <div>
                 <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase">스스로 만들 모험 이름</label>
                 <input
@@ -1706,6 +1721,21 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
             </div>
 
             <form onSubmit={handleSelfQuestSubmit} className="space-y-4">
+              {/* 시연용 원클릭 퀵 템플릿 */}
+              <div className="bg-slate-950/80 rounded-xl p-3 border border-slate-800 flex items-center justify-between gap-2 mb-2">
+                <span className="text-[10px] font-bold text-amber-400">⚡ 시연 퀵 템플릿</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelfQuestTitle('30분 줄넘기 하기');
+                    setSelfQuestGold(300);
+                  }}
+                  className="py-1 px-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-[10px] rounded-lg transition"
+                >
+                  🏃‍♂️ [30분 줄넘기 하기] 세팅
+                </button>
+              </div>
+
               <div>
                 <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase">스스로 만들 모험 이름</label>
                 <input

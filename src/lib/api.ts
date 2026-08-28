@@ -448,10 +448,37 @@ export const api = {
       }
     }
 
+    // 일자 변경 시 시연 편의를 위한 퀘스트 상태 초기 활성화 리셋 검증
+    const todayStr = new Date().toDateString();
+    const lastResetDate = typeof window !== 'undefined' ? localStorage.getItem('ff_last_quest_reset_date') : null;
+    let isDayChanged = false;
+    let hasChanges = false;
+
+    if (typeof window !== 'undefined') {
+      if (!lastResetDate) {
+        localStorage.setItem('ff_last_quest_reset_date', todayStr);
+      } else if (lastResetDate !== todayStr) {
+        isDayChanged = true;
+        localStorage.setItem('ff_last_quest_reset_date', todayStr);
+      }
+    }
+
+    if (isDayChanged) {
+      quests = quests.map(q => {
+        const isFuture = q.scheduledDate && new Date(q.scheduledDate).setHours(0,0,0,0) > new Date().setHours(0,0,0,0);
+        return {
+          ...q,
+          status: isFuture ? 'pending' as const : 'active' as const,
+          imageUrl: undefined,
+          feedback: undefined
+        };
+      });
+      hasChanges = true;
+    }
+
     // 예약 발송 및 TTL 이미지 소멸 처리
     const nowMs = Date.now();
     const TTL_MS = 24 * 60 * 60 * 1000; // 24시간 이미지 보관 한계
-    let hasChanges = false;
 
     const updatedQuests = quests.map(q => {
       let currentQ = { ...q };

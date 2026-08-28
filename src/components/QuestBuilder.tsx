@@ -80,6 +80,47 @@ export const QuestBuilder: React.FC<QuestBuilderProps> = ({ onAddQuests, onClose
     setTitle('');
   };
 
+  const handleAddTemplateSet = (templateType: 'daily' | 'flash') => {
+    if (templateType === 'daily') {
+      const dailySet = [
+        {
+          title: '수학 학습지 2장 풀기',
+          category: '학습',
+          type: 'main' as const,
+          rewardValue: 20,
+          rewardStats: getAutoStats('수학 학습지 2장 풀기', '학습')
+        },
+        {
+          title: '30분 독서하기',
+          category: '독서',
+          type: 'main' as const,
+          rewardValue: 20,
+          rewardStats: getAutoStats('30분 독서하기', '독서')
+        },
+        {
+          title: '하교 후 샤워하기',
+          category: '생활',
+          type: 'main' as const,
+          rewardValue: 20,
+          rewardStats: getAutoStats('하교 후 샤워하기', '생활')
+        }
+      ];
+      setTempQuests([...tempQuests, ...dailySet]);
+    } else {
+      const flashSet = [
+        {
+          title: '현관 신발 정리하기',
+          category: '청소',
+          type: 'flash' as const,
+          rewardValue: 500,
+          dueTime: '20:00',
+          rewardStats: getAutoStats('현관 신발 정리하기', '청소')
+        }
+      ];
+      setTempQuests([...tempQuests, ...flashSet]);
+    }
+  };
+
   const handleRemoveFromList = (idx: number) => {
     setTempQuests(tempQuests.filter((_, i) => i !== idx));
   };
@@ -254,6 +295,39 @@ export const QuestBuilder: React.FC<QuestBuilderProps> = ({ onAddQuests, onClose
 
             {/* 오른쪽 열: 퀘스트 입력 폼 */}
             <div className={`${tempQuests.length > 0 ? 'md:col-span-7' : 'w-full'} space-y-4`}>
+              {/* 시연용 원클릭 퀵 템플릿 세트 */}
+              <div className="bg-slate-950/80 rounded-2xl p-4 border border-slate-800 space-y-2.5 mb-4">
+                <span className="text-[10px] font-black text-amber-400 flex items-center gap-1 uppercase tracking-wider">
+                  ⚡ 시연용 원클릭 퀵 템플릿 세트
+                </span>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleAddTemplateSet('daily')}
+                    className="py-2.5 px-3 bg-indigo-950/40 hover:bg-indigo-900/50 border border-indigo-900/30 text-[10px] font-bold text-indigo-300 rounded-xl transition duration-200 text-left flex flex-col justify-between"
+                  >
+                    <span className="font-extrabold text-[11px] text-white">📅 일일루틴 3종 세트</span>
+                    <span className="text-[9px] text-indigo-400 mt-1 leading-relaxed">
+                      - 수학 학습지 2장 풀기<br />
+                      - 30분 독서하기<br />
+                      - 하교 후 샤워하기
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAddTemplateSet('flash')}
+                    className="py-2.5 px-3 bg-emerald-950/40 hover:bg-emerald-900/50 border border-emerald-900/30 text-[10px] font-bold text-emerald-300 rounded-xl transition duration-200 text-left flex flex-col justify-between"
+                  >
+                    <span className="font-extrabold text-[11px] text-white">⚡ 돌발 1종 세트</span>
+                    <span className="text-[9px] text-emerald-400 mt-1 leading-relaxed">
+                      - 현관 신발 정리하기<br />
+                      (보상 500G 즉시 지급)<br />
+                      &nbsp;
+                    </span>
+                  </button>
+                </div>
+              </div>
+
               <form onSubmit={(e) => { e.preventDefault(); handleAddToList(); }} className="space-y-4">
                 {/* 퀘스트 타입 */}
                 <div>
