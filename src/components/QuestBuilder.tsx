@@ -24,6 +24,36 @@ export const QuestBuilder: React.FC<QuestBuilderProps> = ({ onAddQuests, onClose
   // 임시 보관 퀘스트 큐 리스트
   const [tempQuests, setTempQuests] = useState<Array<{ title: string; category: string; type: 'main' | 'flash'; rewardValue: number; dueTime?: string; scheduledDate?: string; rewardStats?: Partial<Stats> }>>([]);
 
+  // 사용자 지정 자주 만든 퀘스트 맞춤형 팩 리스트
+  const [frequentQuests, setFrequentQuests] = useState<Array<{ title: string; category: string; type: 'main' | 'flash'; rewardValue: number }>>(() => {
+    if (typeof window !== 'undefined') {
+      const raw = localStorage.getItem('ff_frequent_quests');
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          return Object.entries(parsed)
+            .map(([title, val]: [string, any]) => ({
+              title,
+              category: val.category,
+              type: val.type,
+              rewardValue: val.rewardValue,
+              count: val.count
+            }))
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 3);
+        } catch (e) {
+          return [];
+        }
+      }
+    }
+    // 디폴트 자주 쓰는 추천 미션 세트
+    return [
+      { title: '양치질하기', category: '생활', type: 'main', rewardValue: 10 },
+      { title: '수학 학습지 2장 풀기', category: '학습', type: 'main', rewardValue: 20 },
+      { title: '30분 독서하기', category: '독서', type: 'main', rewardValue: 20 }
+    ];
+  });
+
   // Upstage AI 이미지 생성 시뮬레이션 상태
   const [isGeneratingIcon, setIsGeneratingIcon] = useState(false);
   const [generationStep, setGenerationStep] = useState(0);
@@ -181,6 +211,24 @@ export const QuestBuilder: React.FC<QuestBuilderProps> = ({ onAddQuests, onClose
         };
       });
 
+      // 발행 완료한 퀘스트 목록의 빈도수를 트래킹하여 사용자 맞춤형 추천팩에 집계
+      if (typeof window !== 'undefined') {
+        try {
+          const raw = localStorage.getItem('ff_frequent_quests');
+          const freq = raw ? JSON.parse(raw) : {};
+          processedQuests.forEach(q => {
+            const t = q.title.trim();
+            if (!t) return;
+            if (freq[t]) {
+              freq[t].count += 1;
+            } else {
+              freq[t] = { count: 1, category: q.category, type: q.type, rewardValue: q.rewardValue };
+            }
+          });
+          localStorage.setItem('ff_frequent_quests', JSON.stringify(freq));
+        } catch (e) {}
+      }
+
       onAddQuests(processedQuests);
       setIsGeneratingIcon(false);
       onClose();
@@ -326,6 +374,38 @@ export const QuestBuilder: React.FC<QuestBuilderProps> = ({ onAddQuests, onClose
                     </span>
                   </button>
                 </div>
+
+                {/* 나만의 맞춤형 추천 팩 */}
+                {frequentQuests.length > 0 && (
+                  <div className="pt-2 border-t border-slate-800/80 space-y-1.5">
+                    <span className="text-[9px] font-bold text-indigo-400 flex items-center gap-1 uppercase tracking-wider">
+                      👤 나만의 맞춤형 추천 팩 (자주 만든 미션)
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {frequentQuests.map((fq, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => {
+                            setTempQuests([
+                              ...tempQuests,
+                              {
+                                title: fq.title,
+                                category: fq.category,
+                                type: fq.type,
+                                rewardValue: fq.rewardValue,
+                                rewardStats: getAutoStats(fq.title, fq.category)
+                              }
+                            ]);
+                          }}
+                          className="py-1 px-2.5 bg-slate-900 hover:bg-slate-850 border border-slate-800 text-[10px] font-bold text-slate-350 rounded-lg transition duration-200 active:scale-95 flex items-center gap-1"
+                        >
+                          ⭐ {fq.title}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <form onSubmit={(e) => { e.preventDefault(); handleAddToList(); }} className="space-y-4">
