@@ -295,10 +295,10 @@ export const QuestBuilder: React.FC<QuestBuilderProps> = ({ onAddQuests, onClose
 
             {/* 오른쪽 열: 퀘스트 입력 폼 */}
             <div className={`${tempQuests.length > 0 ? 'md:col-span-7' : 'w-full'} space-y-4`}>
-              {/* 시연용 원클릭 퀵 템플릿 세트 */}
+              {/* 원클릭 AI 퀘스트 팩 */}
               <div className="bg-slate-950/80 rounded-2xl p-4 border border-slate-800 space-y-2.5 mb-4">
                 <span className="text-[10px] font-black text-amber-400 flex items-center gap-1 uppercase tracking-wider">
-                  ⚡ 시연용 원클릭 퀵 템플릿 세트
+                  ⚡ 원클릭 AI 퀘스트 팩
                 </span>
                 <div className="grid grid-cols-2 gap-2">
                   <button
