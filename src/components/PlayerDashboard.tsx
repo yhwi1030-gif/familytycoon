@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { api } from '@/lib/api';
+import { api, DEFAULT_STORE_ITEMS, getDefaultItemImage } from '@/lib/api';
 import { childRequestQuestApproval, childRequestGoldPayout, childCounterProposeQuest } from '@/lib/questController';
 import { Profile, Quest, StoreItem, AppNotification } from '@/types';
 import { getStressStatus, getPassiveBuffs } from '@/lib/gameEngine';
@@ -177,7 +177,7 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
     const nList = await api.getNotifications();
     setNotifications(nList);
 
-    // 신규 독려 알림 실시간 감지 (LocalStorage 기반 영구 중복 차단)
+    // 신규 독려/승인/반려 알림 실시간 감지 (LocalStorage 기반 영구 중복 차단)
     const notifiedCheerIdsStr = typeof window !== 'undefined' ? (localStorage.getItem('ff_notified_cheer_ids') || '[]') : '[]';
     let notifiedCheerIds: string[] = [];
     try {
@@ -186,21 +186,17 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
       notifiedCheerIds = [];
     }
 
-    if (isFirstLoadCheer.current) {
-      isFirstLoadCheer.current = false;
-      const initialCheerIds = nList.filter(n => n.type === 'cheer').map(n => n.id);
-      const mergedCheerIds = Array.from(new Set([...notifiedCheerIds, ...initialCheerIds]));
+    const newCheers = nList.filter(n => 
+      (n.type === 'cheer' || n.type === 'quest_approved' || n.type === 'quest_rejected') && 
+      !n.resolved && 
+      !notifiedCheerIds.includes(n.id) &&
+      (!n.meta?.childId || n.meta.childId === user.id)
+    );
+    if (newCheers.length > 0) {
+      setNewCheerNoti(newCheers[0]);
+      const updatedNotifiedCheerIds = Array.from(new Set([...notifiedCheerIds, ...newCheers.map(n => n.id)]));
       if (typeof window !== 'undefined') {
-        localStorage.setItem('ff_notified_cheer_ids', JSON.stringify(mergedCheerIds));
-      }
-    } else {
-      const newCheers = nList.filter(n => n.type === 'cheer' && !notifiedCheerIds.includes(n.id));
-      if (newCheers.length > 0) {
-        setNewCheerNoti(newCheers[0]);
-        const updatedNotifiedCheerIds = Array.from(new Set([...notifiedCheerIds, ...newCheers.map(n => n.id)]));
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('ff_notified_cheer_ids', JSON.stringify(updatedNotifiedCheerIds));
-        }
+        localStorage.setItem('ff_notified_cheer_ids', JSON.stringify(updatedNotifiedCheerIds));
       }
     }
   };
@@ -219,24 +215,24 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
     const cat = q.category;
     
     if (cat === '독서' || titleLower.includes('독서') || titleLower.includes('책') || titleLower.includes('읽기')) {
-      return 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=400&q=80'; // 책 읽기
+      return '/독서록_샘플.jpg'; // 지정된 샘플 이미지 활용
     }
     if (titleLower.includes('수학') || titleLower.includes('산수') || titleLower.includes('연산') || titleLower.includes('수력') || titleLower.includes('원리셈')) {
-      return 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=400&q=80'; // 수학 수식
+      return '/수학문제집_샘플.jpg'; // 지정된 샘플 이미지 활용
     }
     if (titleLower.includes('영어') || titleLower.includes('영단어') || titleLower.includes('english') || titleLower.includes('단어')) {
-      return 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=400&q=80'; // 영어 필기
+      return 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=600&q=80'; // 영어 필기용 공책 및 펜 흔적 (인물 없음)
     }
     if (cat === '학습' || titleLower.includes('공부') || titleLower.includes('학습') || titleLower.includes('과제') || titleLower.includes('숙제')) {
-      return 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=400&q=80'; // 공부 필기노트
+      return 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=600&q=80'; // 손글씨 공부 흔적 노트 (인물 없음)
     }
     if (cat === '청소' || cat === '생활' || titleLower.includes('청소') || titleLower.includes('정리') || titleLower.includes('정돈') || titleLower.includes('이불')) {
-      return 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=400&q=80'; // 정돈/청소 세제
+      return 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80'; // 정돈/청소 세제
     }
     if (cat === '반려동물' || titleLower.includes('강아지') || titleLower.includes('고양이') || titleLower.includes('산책') || titleLower.includes('동물')) {
-      return 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=400&q=80'; // 강아지/반려견
+      return 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=600&q=80'; // 강아지/반려견
     }
-    return 'https://images.unsplash.com/photo-1484480974693-2ca0a72f384c?auto=format&fit=crop&w=400&q=80'; // 다이어리/체크리스트
+    return 'https://images.unsplash.com/photo-1484480974693-2ca0a72f384c?auto=format&fit=crop&w=600&q=80'; // 다이어리/체크리스트
   };
 
   const requiresPhoto = (q: Quest) => {
@@ -473,11 +469,13 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
     setTimeout(async () => {
       // 1. 골드 차감 및 자녀 인벤토리에 아이템 즉시 직행 추가
       const currentInventory = child.inventory || [];
+      const updatedInventory = [...currentInventory, item.id];
       const updatedChild = { 
         ...child, 
         gold: child.gold - item.price,
-        inventory: [...currentInventory, item.id]
+        inventory: updatedInventory
       };
+      setChild(updatedChild);
       await api.updateProfile(updatedChild);
 
       // 2. 상점 아이템 상태를 'purchased'로 갱신 (부모 결재 스킵)
@@ -492,8 +490,9 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
       });
 
       setIsGeneratingItemIcon(false);
+      setActiveTab('home'); // 홈 탭으로 자동 전환하여 가방에서 바로 확인
       await loadData();
-      alert(`🛍️ [Upstage Solar Pro 3.0] 고화질 아이템 리소스 렌더링이 완료되었습니다! 가방(🎒)을 열어 사용해 보세요.`);
+      alert(`🛍️ [Upstage Solar Pro 3.0] AI 생성 쿠폰이 인벤토리에 지급되었습니다! 홈 화면의 아이템 가방(🎒)에서 확인하세요.`);
     }, 3200);
   };
 
@@ -666,7 +665,8 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                     <div className="grid grid-cols-3 gap-2.5 my-auto">
                       {Array.from({ length: 9 }).map((_, idx) => {
                         const itemId = (child.inventory || [])[idx];
-                        const item = itemId ? storeItems.find(i => i.id === itemId) : null;
+                        const item = itemId ? (storeItems.find(i => i.id === itemId) || DEFAULT_STORE_ITEMS.find(i => i.id === itemId)) : null;
+                        const itemImg = item ? (item.imageUrl || getDefaultItemImage(item.id, item.name)) : '';
                         
                         return (
                           <button
@@ -685,6 +685,7 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                                 const updatedInventory = [...(child.inventory || [])];
                                 updatedInventory.splice(idx, 1);
                                 const updatedChild = { ...child, inventory: updatedInventory };
+                                setChild(updatedChild);
                                 await api.updateProfile(updatedChild);
                                 await loadData();
                                 alert(`🔔 [전령 발송] 마스터에게 [${item.name}] 사용 전령 메시지를 전달했습니다!`);
@@ -692,26 +693,28 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                             }}
                             className={`aspect-square rounded-2xl border flex flex-col items-center justify-center p-1.5 transition-all duration-300 relative group shadow-sm ${
                               item
-                                ? 'bg-white border-indigo-200 hover:bg-[#FAF8F5] hover:border-indigo-400 hover:scale-105 active:scale-95'
+                                ? 'bg-white border-indigo-200 hover:bg-[#FAF8F5] hover:border-indigo-400 hover:scale-105 active:scale-95 cursor-pointer ring-2 ring-indigo-500/20'
                                 : 'bg-[#FAF8F5]/30 border-[#EBE6DD] cursor-default'
                             }`}
-                            title={item ? `${item.name} (클릭 시 사용)` : '빈 슬롯'}
+                            title={item ? `${item.name} (클릭 시 사용 요청)` : '빈 슬롯'}
                           >
                             {item ? (
-                              <div className="w-full h-full relative flex flex-col items-center justify-between">
-                                {item.imageUrl ? (
+                              <div className="w-full h-full relative flex flex-col items-center justify-between overflow-hidden rounded-xl">
+                                {itemImg ? (
                                   <img 
-                                    src={item.imageUrl} 
+                                    src={itemImg} 
                                     alt={item.name} 
-                                    className="w-full h-full object-cover rounded-xl"
+                                    className="w-full h-full object-cover rounded-xl transition-transform duration-300 group-hover:scale-110"
                                   />
                                 ) : (
-                                  <span className="text-xl select-none mt-1">
-                                    {item.type === 'coupon' ? '🎟️' : item.type === 'real' ? '💵' : '📦'}
-                                  </span>
+                                  <div className="w-full h-full bg-indigo-50/60 flex items-center justify-center rounded-xl">
+                                    <span className="text-2xl select-none">
+                                      {item.type === 'coupon' ? '🎟️' : item.type === 'real' ? '💵' : '📦'}
+                                    </span>
+                                  </div>
                                 )}
-                                <div className="absolute bottom-0 left-0 right-0 bg-white/90 py-0.5 rounded-b-xl border-t border-slate-100">
-                                  <span className="text-[7px] text-slate-800 font-extrabold truncate w-full text-center block px-1">
+                                <div className="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xs py-0.5 rounded-b-xl border-t border-slate-100 shadow-xs">
+                                  <span className="text-[8px] text-slate-800 font-extrabold truncate w-full text-center block px-1">
                                     {item.name.replace('[쿠폰] ', '').replace('[패스] ', '').replace('[용돈] ', '').replace('[식품] ', '').replace('[아바타] ', '').replace('[외식] ', '')}
                                   </span>
                                 </div>
@@ -1064,6 +1067,12 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                               ⏱️ {q.dueTime || '18:00'} 마감
                             </span>
                           </div>
+                          {q.feedback && (
+                            <div className="mt-2 p-2 bg-indigo-50 border border-indigo-100 rounded-xl text-left max-w-md">
+                              <p className="text-[9px] font-bold text-[#644EB0]">💬 길드마스터 피드백:</p>
+                              <p className="text-[10px] text-slate-800 font-black leading-normal mt-0.5">"{q.feedback}"</p>
+                            </div>
+                          )}
                         </div>
 
                         <div className="flex items-center gap-2">
@@ -1147,6 +1156,12 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                               스스로 설계한 모험
                             </span>
                           </div>
+                          {q.feedback && (
+                            <div className="mt-2 p-2 bg-indigo-50 border border-indigo-100 rounded-xl text-left max-w-md">
+                              <p className="text-[9px] font-bold text-[#644EB0]">💬 길드마스터 피드백:</p>
+                              <p className="text-[10px] text-slate-800 font-black leading-normal mt-0.5">"{q.feedback}"</p>
+                            </div>
+                          )}
                         </div>
 
                         <div className="flex items-center gap-2">
@@ -1587,10 +1602,12 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
             {cameraMode === 'capture' && (
               <div className="space-y-4">
                 <div className="aspect-[4/3] bg-slate-950 border border-slate-850 rounded-2xl flex flex-col items-center justify-center text-slate-600 relative overflow-hidden shadow-inner select-none">
-                  <Camera className="w-12 h-12 text-slate-700 animate-pulse mb-2" />
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">LIVE CAMERA VIEW MOCK</span>
-                  
-                  <div className="absolute inset-x-0 bottom-0 bg-black/60 py-2 text-[10px] text-slate-400 font-bold border-t border-slate-900">
+                  <img src={getAutoMatchedPhotoUrl(activeCameraQuest)} alt="Camera view preview" className="absolute inset-0 w-full h-full object-cover" />
+                  <div className="relative z-10 flex flex-col items-center justify-center bg-black/30 w-full h-full hover:bg-black/10 transition-colors cursor-pointer" onClick={handleCameraCaptureConfirm}>
+                    <Camera className="w-12 h-12 text-white/90 animate-pulse mb-2 drop-shadow-lg" />
+                    <span className="text-[10px] font-bold text-white uppercase tracking-widest drop-shadow-md">LIVE CAMERA VIEW</span>
+                  </div>
+                  <div className="absolute inset-x-0 bottom-0 z-20 bg-black/70 py-2 text-[10px] text-slate-200 font-bold border-t border-slate-900 text-center">
                     [화면을 터치하여 실시간 인증 샷 캡쳐]
                   </div>
                 </div>
@@ -1845,6 +1862,12 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
               <span className="text-3xl">🛡️</span>
               <h3 className="text-sm font-extrabold text-slate-800 mt-2">[{confirmQuest.title}]</h3>
               <p className="text-xs text-slate-500 mt-1 font-bold">해당 퀘스트를 완료했나요?</p>
+              {confirmQuest.feedback && (
+                <div className="mt-2.5 p-2 bg-indigo-50 border border-indigo-100 rounded-xl text-left">
+                  <p className="text-[9px] font-bold text-[#644EB0]">💬 이전 피드백:</p>
+                  <p className="text-[10px] text-slate-800 font-black leading-normal mt-0.5">"{confirmQuest.feedback}"</p>
+                </div>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-3 pt-2">
               <button
@@ -1925,11 +1948,23 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-in fade-in duration-300">
           <div className="w-full max-w-sm bg-gradient-to-b from-[#1E1B4B] to-[#0F0E26] border border-amber-500/40 rounded-3xl p-6 shadow-2xl text-center space-y-4 animate-in zoom-in duration-200 border-2">
             <div className="w-16 h-16 rounded-full bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-4xl mx-auto animate-bounce">
-              📣
+              {newCheerNoti.type === 'quest_approved' ? '🎉' : newCheerNoti.type === 'quest_rejected' ? '❌' : '📣'}
             </div>
             <div>
-              <h3 className="text-lg font-black text-amber-400 font-bw">📣 길드마스터의 콕콕 찌르기 👉</h3>
-              <p className="text-xs text-slate-300 mt-1 font-bold">길드마스터로부터 특별 지령이 도착했습니다.</p>
+              <h3 className="text-lg font-black text-amber-400 font-bw">
+                {newCheerNoti.type === 'quest_approved' 
+                  ? '💚 퀘스트 승인 완료!' 
+                  : newCheerNoti.type === 'quest_rejected' 
+                  ? '⚠️ 퀘스트 다시 하기 반려' 
+                  : '📣 길드마스터의 콕콕 찌르기 👉'}
+              </h3>
+              <p className="text-xs text-slate-300 mt-1 font-bold">
+                {newCheerNoti.type === 'quest_approved'
+                  ? '축하합니다! 모험 완료 보고가 승인되었습니다.'
+                  : newCheerNoti.type === 'quest_rejected'
+                  ? '아쉽지만 보강 지시가 내려졌습니다. 확인 후 다시 제출하세요!'
+                  : '길드마스터로부터 특별 지령이 도착했습니다.'}
+              </p>
             </div>
             
             <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 text-left">
@@ -1939,10 +1974,14 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
             </div>
 
             <button
-              onClick={() => setNewCheerNoti(null)}
-              className="w-full py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white font-black rounded-xl text-xs shadow-lg transition active:scale-95 flex items-center justify-center gap-1"
+              onClick={async () => {
+                await api.resolveNotification(newCheerNoti.id);
+                setNewCheerNoti(null);
+                await loadData();
+              }}
+              className="w-full py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white font-black rounded-xl text-xs shadow-lg transition active:scale-95 flex items-center justify-center gap-1 cursor-pointer"
             >
-              🛡️ 임무 완수하러 가기
+              {newCheerNoti.type === 'quest_approved' ? '🪙 보상 수령 완료' : '🛡️ 임무 확인 완료'}
             </button>
           </div>
         </div>

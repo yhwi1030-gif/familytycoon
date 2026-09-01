@@ -72,7 +72,7 @@ const DEFAULT_PROFILES: Profile[] = [
 
 const DEFAULT_QUESTS: Quest[] = [];
 
-const DEFAULT_STORE_ITEMS: StoreItem[] = [
+export const DEFAULT_STORE_ITEMS: StoreItem[] = [
   { id: 's1', name: '[아바타] 기본 티셔츠', price: 300, requiredLevel: 1, type: 'ingame', status: 'available', description: '초반 성취감 부여를 위한 아바타 기본 꾸미기 의상', imageUrl: '/tshirt.jfif' },
   { id: 's2', name: '[식품] 편의점 최애 간식 교환권', price: 400, requiredLevel: 2, type: 'coupon', status: 'available', description: '가게 부담 없는 소액 체득 단계 쿠폰', imageUrl: '/snack.jfif' },
   { id: 's3', name: '[쿠폰] 오늘 하루 30분 늦게 자기', price: 200, requiredLevel: 1, type: 'coupon', status: 'available', description: '비재화성 생활 밀착형 보상권', imageUrl: '/sleep.jfif' },
@@ -247,6 +247,40 @@ const mapNotiFromDB = (n: any): AppNotification => ({
   createdAt: n.created_at || n.createdAt || new Date().toISOString(),
   targetId: n.target_id || n.targetId,
   meta: n.meta
+});
+
+export const getDefaultItemImage = (id?: string, name?: string): string => {
+  if (id === 's1' || (name && name.includes('티셔츠'))) return '/tshirt.jfif';
+  if (id === 's2' || (name && name.includes('간식'))) return '/snack.jfif';
+  if (id === 's3' || (name && (name.includes('늦게 자기') || name.includes('늦잠')))) return '/sleep.jfif';
+  if (id === 's4' || (name && name.includes('5,000'))) return '/money5k.jfif';
+  if (id === 's5' || (name && name.includes('PC방'))) return '/pcpass.jfif';
+  if (id === 's6' || (name && (name.includes('면제권') || name.includes('방패')))) return '/shield.jfif';
+  if (id === 's7' || (name && name.includes('10,000'))) return '/money10k.jfif';
+  if (id === 's8' || (name && (name.includes('치킨') || name.includes('피자')))) return '/chicken.jfif';
+  return '';
+};
+
+export const mapStoreItemToDB = (item: any) => ({
+  id: item.id,
+  name: item.name,
+  price: item.price,
+  required_level: item.requiredLevel ?? item.required_level ?? 1,
+  type: item.type,
+  status: item.status,
+  description: item.description,
+  image_url: item.imageUrl || item.image_url || getDefaultItemImage(item.id, item.name)
+});
+
+export const mapStoreItemFromDB = (item: any): StoreItem => ({
+  id: item.id,
+  name: item.name,
+  price: item.price,
+  requiredLevel: item.required_level ?? item.requiredLevel ?? 1,
+  type: item.type,
+  status: item.status,
+  description: item.description,
+  imageUrl: item.image_url || item.imageUrl || getDefaultItemImage(item.id, item.name)
 });
 
 // 로컬 스토리지로 완전 우회하는 도우미 (Supabase 연동 실패 시의 폴백)
@@ -586,80 +620,92 @@ export const api = {
   // --- 상점 관련 API ---
   getStoreItems: async (): Promise<StoreItem[]> => {
     if (!isSupabaseConfigured) {
-      return getStored(KEYS.STORE_ITEMS, DEFAULT_STORE_ITEMS);
+      const items = getStored<StoreItem[]>(KEYS.STORE_ITEMS, DEFAULT_STORE_ITEMS);
+      return items.map(mapStoreItemFromDB);
     }
 
     try {
       const { data, error } = await supabase.from('store_items').select('*');
       if (error) {
         console.error("Supabase getStoreItems error:", error);
-        return getStored(KEYS.STORE_ITEMS, DEFAULT_STORE_ITEMS);
+        const items = getStored<StoreItem[]>(KEYS.STORE_ITEMS, DEFAULT_STORE_ITEMS);
+        return items.map(mapStoreItemFromDB);
       }
-      return (data || []) as StoreItem[];
+      return (data || []).map(mapStoreItemFromDB) as StoreItem[];
     } catch (e) {
       console.error("Supabase getStoreItems Exception:", e);
-      return getStored(KEYS.STORE_ITEMS, DEFAULT_STORE_ITEMS);
+      const items = getStored<StoreItem[]>(KEYS.STORE_ITEMS, DEFAULT_STORE_ITEMS);
+      return items.map(mapStoreItemFromDB);
     }
   },
 
   saveStoreItems: async (items: StoreItem[]): Promise<void> => {
+    const mapped = items.map(mapStoreItemFromDB);
     if (!isSupabaseConfigured) {
-      setStored(KEYS.STORE_ITEMS, items);
+      setStored(KEYS.STORE_ITEMS, mapped);
       return;
     }
 
     try {
-      for (const item of items) {
-        await supabase.from('store_items').upsert(item);
+      for (const item of mapped) {
+        await supabase.from('store_items').upsert(mapStoreItemToDB(item));
       }
+      setStored(KEYS.STORE_ITEMS, mapped);
     } catch (e) {
       console.error("Supabase saveStoreItems Exception:", e);
-      setStored(KEYS.STORE_ITEMS, items);
+      setStored(KEYS.STORE_ITEMS, mapped);
     }
   },
 
   updateStoreItem: async (item: StoreItem): Promise<StoreItem[]> => {
+    const formatted = mapStoreItemFromDB(item);
     if (!isSupabaseConfigured) {
       const items = getStored<StoreItem[]>(KEYS.STORE_ITEMS, DEFAULT_STORE_ITEMS);
-      const idx = items.findIndex(i => i.id === item.id);
+      const idx = items.findIndex(i => i.id === formatted.id);
       if (idx !== -1) {
-        items[idx] = item;
-        setStored(KEYS.STORE_ITEMS, items);
+        items[idx] = formatted;
+      } else {
+        items.push(formatted);
       }
-      return items;
+      setStored(KEYS.STORE_ITEMS, items);
+      return items.map(mapStoreItemFromDB);
     }
 
     try {
-      const { error } = await supabase.from('store_items').upsert(item);
+      const { error } = await supabase.from('store_items').upsert(mapStoreItemToDB(formatted));
       if (error) {
         console.error("Supabase updateStoreItem error:", error);
         const items = getStored<StoreItem[]>(KEYS.STORE_ITEMS, DEFAULT_STORE_ITEMS);
-        const idx = items.findIndex(i => i.id === item.id);
+        const idx = items.findIndex(i => i.id === formatted.id);
         if (idx !== -1) {
-          items[idx] = item;
-          setStored(KEYS.STORE_ITEMS, items);
+          items[idx] = formatted;
+        } else {
+          items.push(formatted);
         }
-        return items;
+        setStored(KEYS.STORE_ITEMS, items);
+        return items.map(mapStoreItemFromDB);
       }
       return api.getStoreItems();
     } catch (e) {
       console.error("Supabase updateStoreItem Exception:", e);
       const items = getStored<StoreItem[]>(KEYS.STORE_ITEMS, DEFAULT_STORE_ITEMS);
-      const idx = items.findIndex(i => i.id === item.id);
+      const idx = items.findIndex(i => i.id === formatted.id);
       if (idx !== -1) {
-        items[idx] = item;
-        setStored(KEYS.STORE_ITEMS, items);
+        items[idx] = formatted;
+      } else {
+        items.push(formatted);
       }
-      return items;
+      setStored(KEYS.STORE_ITEMS, items);
+      return items.map(mapStoreItemFromDB);
     }
   },
 
   addStoreItem: async (item: Omit<StoreItem, 'id' | 'status'>): Promise<StoreItem> => {
-    const newItem: StoreItem = {
+    const newItem: StoreItem = mapStoreItemFromDB({
       ...item,
       id: 's_' + Math.random().toString(36).substr(2, 9),
       status: 'available'
-    };
+    });
 
     if (!isSupabaseConfigured) {
       const items = getStored<StoreItem[]>(KEYS.STORE_ITEMS, DEFAULT_STORE_ITEMS);
@@ -669,7 +715,7 @@ export const api = {
     }
 
     try {
-      const { error } = await supabase.from('store_items').insert(newItem);
+      const { error } = await supabase.from('store_items').insert(mapStoreItemToDB(newItem));
       if (error) {
         console.error("Supabase addStoreItem error:", error);
         const items = getStored<StoreItem[]>(KEYS.STORE_ITEMS, DEFAULT_STORE_ITEMS);

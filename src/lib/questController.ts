@@ -79,14 +79,10 @@ export async function parentApproveQuest(questId: string, approveStatus: 'approv
       child.gold += quest.rewardGold;
     }
 
-    // 스트레스(피로도) 조정: 모든 퀘스트는 노동/집중이 필요하므로 수행 완료 시 피로도가 증가합니다.
-    if (quest.category === '학습') {
-      child.stress = Math.min(100, child.stress + 15); // 학습은 피로도 +15
-    } else if (quest.category === '독서') {
-      child.stress = Math.min(100, child.stress + 5);  // 독서는 피로도 +5
-    } else {
-      child.stress = Math.min(100, child.stress + 10); // 심부름, 청소, 셀프 미션 등 일반/돌발 미션은 피로도 +10
-    }
+    // 스트레스(피로도) 조정: 퀘스트 경험치(exp) * 0.2 수준으로 피로도 산정
+    const expValue = (quest.rewardExp && quest.rewardExp > 0) ? quest.rewardExp : 15;
+    const stressIncrease = Math.max(1, Math.round(expValue * 0.2));
+    child.stress = Math.min(100, child.stress + stressIncrease);
 
     // 게임 엔진 연동 스탯 보정
     if (quest.rewardStats && Object.keys(quest.rewardStats).length > 0) {
@@ -117,12 +113,21 @@ export async function parentApproveQuest(questId: string, approveStatus: 'approv
       await addMockNotification('general', `🎉 ${child.name}이가 레벨 ${child.level}에 도달했습니다! 새로운 상점 물건이 해금됩니다.`, child.id, { childId: child.id });
     }
 
+    if (feedback) {
+      quest.feedback = feedback;
+    }
+
     await api.updateProfile(child);
+
+    const approveMessage = feedback 
+      ? `💚 길드마스터가 [${quest.title}] 승인을 수락하였습니다. 보상이 정상 지급되었습니다! 피드백: "${feedback}"`
+      : `💚 길드마스터가 [${quest.title}] 승인을 수락하였습니다. 보상이 정상 지급되었습니다!`;
+
     await addMockNotification(
       'quest_approved',
-      `💚 길드마스터가 [${quest.title}] 승인을 수락하였습니다. 보상이 정상 지급되었습니다!`,
+      approveMessage,
       questId,
-      { childId: child.id, childName: child.name }
+      { childId: child.id, childName: child.name, feedback }
     );
   } else {
     // 반려 처리
@@ -179,6 +184,11 @@ export async function childCounterProposeQuest(questId: string, proposedGold: nu
     'self_quest_proposal',
     `🤝 자녀가 돌발 미션 [${quest.title}]에 대한 보상 골드를 ${proposedGold}G로 역제안(밀당)해왔습니다.`,
     questId,
-    { proposedGold, childId: childId || quest.childId, childName: quest.childName || (childId ? '자녀' : '') }
+    { 
+      proposedGold, 
+      childId: childId || quest.childId, 
+      childName: quest.childName || (childId ? '자녀' : ''),
+      questTitle: quest.title
+    }
   );
 }

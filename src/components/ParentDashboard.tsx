@@ -27,6 +27,10 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
   const [newNegotiationNoti, setNewNegotiationNoti] = useState<AppNotification | null>(null);
   const isFirstLoadNoti = React.useRef(true);
 
+  // 자녀 완료인증 알림 실시간 팝업 수신 상태
+  const [newQuestRequestNoti, setNewQuestRequestNoti] = useState<AppNotification | null>(null);
+  const isFirstLoadRequest = React.useRef(true);
+
   // 셀프 퀘스트 제안 반려/조정 모달 상태
   const [isCounterProposalOpen, setIsCounterProposalOpen] = useState(false);
   const [counterQuestTitle, setCounterQuestTitle] = useState('');
@@ -115,21 +119,30 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
       notifiedNotiIds = [];
     }
 
-    if (isFirstLoadNoti.current) {
-      isFirstLoadNoti.current = false;
-      const initialActiveNotiIds = nList.filter(n => n.type === 'self_quest_proposal').map(n => n.id);
-      const mergedNotiIds = Array.from(new Set([...notifiedNotiIds, ...initialActiveNotiIds]));
+    const newNegotiations = nList.filter(n => n.type === 'self_quest_proposal' && !n.resolved && !notifiedNotiIds.includes(n.id));
+    if (newNegotiations.length > 0) {
+      setNewNegotiationNoti(newNegotiations[0]);
+      const updatedNotifiedNotiIds = Array.from(new Set([...notifiedNotiIds, ...newNegotiations.map(n => n.id)]));
       if (typeof window !== 'undefined') {
-        localStorage.setItem('ff_notified_noti_ids', JSON.stringify(mergedNotiIds));
+        localStorage.setItem('ff_notified_noti_ids', JSON.stringify(updatedNotifiedNotiIds));
       }
-    } else {
-      const newNegotiations = nList.filter(n => n.type === 'self_quest_proposal' && !notifiedNotiIds.includes(n.id));
-      if (newNegotiations.length > 0) {
-        setNewNegotiationNoti(newNegotiations[0]);
-        const updatedNotifiedNotiIds = Array.from(new Set([...notifiedNotiIds, ...newNegotiations.map(n => n.id)]));
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('ff_notified_noti_ids', JSON.stringify(updatedNotifiedNotiIds));
-        }
+    }
+
+    // 신규 자녀 퀘스트 완료 인증 요청 실시간 팝업 감지
+    const notifiedQuestIdsStr = typeof window !== 'undefined' ? (localStorage.getItem('ff_notified_quest_ids') || '[]') : '[]';
+    let notifiedQuestIds: string[] = [];
+    try {
+      notifiedQuestIds = JSON.parse(notifiedQuestIdsStr);
+    } catch (e) {
+      notifiedQuestIds = [];
+    }
+
+    const newRequests = nList.filter(n => n.type === 'quest_request' && !n.resolved && !notifiedQuestIds.includes(n.id));
+    if (newRequests.length > 0) {
+      setNewQuestRequestNoti(newRequests[0]);
+      const updatedNotifiedQuestIds = Array.from(new Set([...notifiedQuestIds, ...newRequests.map(n => n.id)]));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('ff_notified_quest_ids', JSON.stringify(updatedNotifiedQuestIds));
       }
     }
   };
@@ -150,9 +163,9 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
     }
   };
 
-  const handleAIApprove = async () => {
+  const handleAIApprove = async (feedback?: string) => {
     if (selectedQuest) {
-      await parentApproveQuest(selectedQuest.id, 'approve', selectedChildId || undefined);
+      await parentApproveQuest(selectedQuest.id, 'approve', selectedChildId || undefined, feedback);
       setIsReadingModalOpen(false);
       setSelectedQuest(null);
       await loadData();
@@ -536,6 +549,26 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
     await loadData();
   };
 
+  const handleGoToVerify = async (noti: AppNotification) => {
+    if (noti.targetId) {
+      const q = quests.find(item => item.id === noti.targetId);
+      if (q) {
+        setSelectedQuest(q);
+        setIsReadingModalOpen(true);
+      } else {
+        // 만약 현재 quests 필터에 안 걸려있을 수 있으므로 전체 로드해봄
+        const allQuests = await api.getQuests();
+        const found = allQuests.find(item => item.id === noti.targetId);
+        if (found) {
+          setSelectedQuest(found);
+          setIsReadingModalOpen(true);
+        }
+      }
+    }
+    setNewQuestRequestNoti(null);
+  };
+
+
   return (
     <div className="min-h-screen bg-[#FAF8F5] text-slate-800 font-sans pb-16">
       
@@ -757,29 +790,12 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
                         </div>
                         <h4 className="text-sm font-extrabold text-slate-800 mt-1.5">{q.title}</h4>
                       </div>
-                      {q.type === 'self' ? (
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleRejectSelfQuestProposal(q)}
-                            className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-xl transition"
-                          >
-                            거절
-                          </button>
-                          <button
-                            onClick={() => handleApproveSelfQuestProposal(q)}
-                            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition shadow active:scale-95 flex items-center gap-1"
-                          >
-                            🛡️ 제안 수락
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => handleQuestAction(q)}
-                          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition shadow-md"
-                        >
-                          {q.category === '독서' ? '✨ AI 독서 치트키' : '완료 승인'}
-                        </button>
-                      )}
+                      <button
+                        onClick={() => handleQuestAction(q)}
+                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition shadow-md flex items-center gap-1 active:scale-95"
+                      >
+                        {q.category === '독서' ? '✨ AI 독서 치트키' : '검수하기'}
+                      </button>
                     </div>
                   ))
                 )}
@@ -1487,56 +1503,42 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
             </div>
             <div>
               <h3 className="text-lg font-black text-amber-400 font-bw">
-                {newNegotiationNoti.type === 'self_quest_proposal'
-                  ? `🤝 ${newNegotiationNoti.meta?.childName || '자녀'}이의 셀프 퀘스트 요청 알림`
-                  : '🤝 골드 역제안(밀당) 도착!'}
+                {newNegotiationNoti.message.includes('돌발 미션') || newNegotiationNoti.message.includes('역제안')
+                  ? '🤝 골드 역제안(밀당) 도착!'
+                  : `🤝 ${newNegotiationNoti.meta?.childName || '자녀'}이의 셀프 퀘스트 요청 알림`}
               </h3>
               <p className="text-xs text-slate-300 mt-1">
-                {newNegotiationNoti.type === 'self_quest_proposal'
-                  ? '자녀가 스스로 설계한 새로운 모험 제안이 도착했습니다.'
-                  : '자녀로부터 새로운 보상 협상 요청이 들어왔습니다.'}
+                {newNegotiationNoti.message.includes('돌발 미션') || newNegotiationNoti.message.includes('역제안')
+                  ? '자녀로부터 새로운 보상 협상 요청이 들어왔습니다.'
+                  : '자녀가 스스로 설계한 새로운 모험 제안이 도착했습니다.'}
               </p>
             </div>
             
             <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 text-left space-y-2">
-              {newNegotiationNoti.type === 'self_quest_proposal' ? (
-                <div className="space-y-1 text-xs text-slate-350">
-                  <p className="font-semibold text-slate-200">📋 퀘스트 내용:</p>
-                  <p className="bg-slate-950 p-2 rounded-lg border border-slate-850 font-bold mb-2">
-                    {newNegotiationNoti.meta?.questTitle || '내용 없음'}
-                  </p>
-                  <div className="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-850">
-                    <span className="text-[10px] text-slate-400 font-bold font-sans">제안된 골드 보상:</span>
-                    <span className="text-sm font-black text-amber-400">{newNegotiationNoti.meta?.proposedGold || 0} G</span>
-                  </div>
+              <div className="space-y-1 text-xs text-slate-355">
+                <p className="font-semibold text-slate-200">📋 퀘스트 내용:</p>
+                <p className="bg-slate-950 p-2 rounded-lg border border-slate-850 font-black mb-2 text-indigo-400 text-xs">
+                  {newNegotiationNoti.meta?.questTitle || newNegotiationNoti.message.match(/\[([^\]]+)\]/)?.[1] || '내용 없음'}
+                </p>
+                <div className="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-850">
+                  <span className="text-[10px] text-slate-400 font-bold font-sans">제안된 골드 보상:</span>
+                  <span className="text-sm font-black text-amber-400">{newNegotiationNoti.meta?.proposedGold || 0} G</span>
                 </div>
-              ) : (
-                <>
-                  <p className="text-xs text-slate-300 leading-relaxed font-medium">
-                    {newNegotiationNoti.message}
-                  </p>
-                  {newNegotiationNoti.meta?.proposedGold && (
-                    <div className="mt-3 flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-850">
-                      <span className="text-[10px] text-slate-400 font-bold font-sans">제안된 골드 보상:</span>
-                      <span className="text-sm font-black text-amber-400">{newNegotiationNoti.meta.proposedGold} G</span>
-                    </div>
-                  )}
-                </>
-              )}
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-2.5 pt-2">
               <button
                 onClick={() => handleApproveNegotiation(newNegotiationNoti)}
-                className="py-3 bg-emerald-650 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition shadow-md flex items-center justify-center gap-1 active:scale-95"
+                className="py-3 bg-emerald-650 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition shadow-md flex items-center justify-center gap-1 active:scale-95 cursor-pointer"
               >
                 ✅ 제안 수락
               </button>
               <button
                 onClick={() => handleRejectNegotiation(newNegotiationNoti)}
-                className="py-3 bg-rose-650 hover:bg-rose-550 text-white font-bold rounded-xl text-xs transition shadow-md flex items-center justify-center gap-1 active:scale-95"
+                className="py-3 bg-rose-650 hover:bg-rose-550 text-white font-bold rounded-xl text-xs transition shadow-md flex items-center justify-center gap-1 active:scale-95 cursor-pointer"
               >
-                {newNegotiationNoti.type === 'self_quest_proposal' ? '❌ 제안 반려' : '❌ 제안 거절'}
+                {!(newNegotiationNoti.message.includes('돌발 미션') || newNegotiationNoti.message.includes('역제안')) ? '❌ 제안 반려' : '❌ 제안 거절'}
               </button>
             </div>
             <button
@@ -1548,6 +1550,52 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
           </div>
         </div>
       )}
+
+      {/* 자녀의 퀘스트 수행 완료/인증 실시간 알림 팝업 모달 */}
+      {newQuestRequestNoti && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+          <div className="w-full max-w-sm bg-gradient-to-b from-[#1E1B4B] to-[#0F0E26] border border-amber-500/40 rounded-3xl p-6 shadow-2xl text-center space-y-4 animate-in zoom-in duration-200 border-2">
+            <div className="w-16 h-16 rounded-full bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-4xl mx-auto animate-bounce">
+              📣
+            </div>
+            <div>
+              <h3 className="text-lg font-black text-amber-400 font-bw">
+                🔔 퀘스트 인증 요청 도착!
+              </h3>
+              <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                자녀 모험가가 과제를 완료하고 사진 인증 검수를 요청했습니다.
+              </p>
+            </div>
+            
+            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 text-left space-y-2">
+              <div className="space-y-1 text-xs text-slate-300 font-semibold leading-relaxed">
+                <p className="text-[10px] text-slate-400">요청 메시지:</p>
+                <p className="text-slate-100 font-bold mb-1.5">{newQuestRequestNoti.message}</p>
+                <p className="text-[10px] text-slate-400">수행 미션:</p>
+                <p className="bg-slate-950 p-2 rounded-lg border border-slate-850 font-extrabold text-indigo-400">
+                  {newQuestRequestNoti.meta?.title || '퀘스트'}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5 pt-2">
+              <button
+                onClick={() => handleGoToVerify(newQuestRequestNoti)}
+                className="py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition shadow-md flex items-center justify-center gap-1 active:scale-95 cursor-pointer"
+              >
+                🔍 검수하러 가기
+              </button>
+              <button
+                onClick={() => setNewQuestRequestNoti(null)}
+                className="py-3 bg-slate-800 hover:bg-slate-750 text-slate-350 font-bold rounded-xl text-xs transition shadow-md flex items-center justify-center gap-1 active:scale-95 cursor-pointer"
+              >
+                닫기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       {/* 셀프 퀘스트 제안 반려 및 수정(조정) 팝업 모달 */}
       {isCounterProposalOpen && counterQuestTarget && (
