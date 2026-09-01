@@ -72,3 +72,103 @@ export function applyQuestSuccessEffects(child: Profile, category: string): { up
   updatedChild.stats = stats;
   return { updatedChild, logs };
 }
+
+export interface QuestBalancingAnalysis {
+  isExcessive: boolean;
+  standardGold: number;
+  difficultyGrade: '루틴/가벼움' | '보통/집중' | '고난이도/도전';
+  feedback: string;
+  suggestedGold: number;
+  suggestedDetailedTitle: string;
+  suggestedSubTask: string;
+  parentTemplates: Array<{
+    type: '보상 조율형' | '미션 보강형' | '성장 격려형';
+    title: string;
+    adjustedGold: number;
+    adjustedTitle: string;
+    message: string;
+  }>;
+}
+
+/**
+ * AI 퀘스트 밸런싱 가이드라인 엔진
+ * 난이도 대비 보상이 과도할 경우 AI가 보상 조율이나 세부 미션 추가를 먼저 제안하고,
+ * 부모에게 감정적 거절 대신 합리적인 '추천 수정 제안 문구' 템플릿을 제공합니다.
+ */
+export function analyzeQuestBalancing(title: string, proposedGold: number, category?: string): QuestBalancingAnalysis {
+  const t = (title || '').toLowerCase();
+  
+  // 1. 난이도 및 표준 권장 보상 산정
+  let difficultyGrade: '루틴/가벼움' | '보통/집중' | '고난이도/도전' = '보통/집중';
+  let standardGold = 200;
+  let suggestedSubTask = '';
+  
+  if (t.includes('기상') || t.includes('양치') || t.includes('물 마시기') || t.includes('인사') || t.includes('신발') || t.includes('비타민') || t.includes('손 씻기') || t.includes('식사')) {
+    difficultyGrade = '루틴/가벼움';
+    standardGold = 100;
+    suggestedSubTask = '3일 연속 규칙 지키기 및 부모 확인 받기';
+  } else if (t.includes('수학') || t.includes('영어') || t.includes('오답') || t.includes('단어') || t.includes('독서') || t.includes('시험') || t.includes('코딩') || t.includes('1시간') || t.includes('문제집') || t.includes('학습지')) {
+    difficultyGrade = '고난이도/도전';
+    standardGold = 350;
+    suggestedSubTask = '핵심 풀이과정 2문제 자필 정리 및 인증샷 첨부';
+  } else if (t.includes('줄넘기') || t.includes('운동') || t.includes('달리기') || t.includes('스트레칭')) {
+    difficultyGrade = '보통/집중';
+    standardGold = 250;
+    suggestedSubTask = '100회 2세트 완수 후 땀방울/기록 인증샷 남기기';
+  } else if (t.includes('청소') || t.includes('정리') || t.includes('이불') || t.includes('심부름') || t.includes('설거지') || t.includes('분리수거') || t.includes('방청소')) {
+    difficultyGrade = '보통/집중';
+    standardGold = 200;
+    suggestedSubTask = '전/후 비교 사진 촬영 및 분리수거함 비우기 포함';
+  } else {
+    difficultyGrade = '보통/집중';
+    standardGold = 200;
+    suggestedSubTask = '시작 전/후 30분 집중 루틴 및 최종 결과물 인증';
+  }
+
+  // 2. 보상 과도 여부 판정 (표준 가이드의 1.35배 초과 시 또는 400G 이상인 경우)
+  const isExcessive = proposedGold > standardGold * 1.35 || (proposedGold >= 400 && difficultyGrade !== '고난이도/도전');
+  
+  const suggestedDetailedTitle = title.includes('(') 
+    ? title 
+    : `${title} (${suggestedSubTask.split(' ')[0]} ${suggestedSubTask.split(' ')[1] || ''} 추가)`;
+
+  const midpointGold = Math.max(100, Math.round((proposedGold + standardGold) / 2 / 50) * 50);
+
+  // 3. 부모를 위한 '추천 수정 제안 문구' 템플릿 (합리적 협상 리터러시)
+  const parentTemplates = [
+    {
+      type: '보상 조율형' as const,
+      title: '🎯 적정 보상 조율',
+      adjustedGold: standardGold,
+      adjustedTitle: title,
+      message: `도전 의지는 정말 칭찬해! 다만 난이도를 고려해 이번엔 ${standardGold}G로 도전하고, 완벽히 성공하면 다음엔 보상을 더 올려볼까?`
+    },
+    {
+      type: '미션 보강형' as const,
+      title: '📋 세부 조건 보강',
+      adjustedGold: proposedGold,
+      adjustedTitle: suggestedDetailedTitle,
+      message: `${proposedGold}G 보상을 받으려면 조금 더 구체적인 기준("${suggestedSubTask}")이 추가되면 좋을 것 같아! 수정해서 도전해볼까?`
+    },
+    {
+      type: '성장 격려형' as const,
+      title: '🌱 성장/협상 타협',
+      adjustedGold: midpointGold,
+      adjustedTitle: title,
+      message: `스스로 모험을 계획한 점이 정말 멋져! 약속 시간을 정확히 지키는 조건으로 ${midpointGold}G에 멋지게 협상하자!`
+    }
+  ];
+
+  return {
+    isExcessive,
+    standardGold,
+    difficultyGrade,
+    feedback: isExcessive 
+      ? `⚠️ [AI 밸런싱 권고] ${difficultyGrade} 난이도 대비 제안된 보상(${proposedGold}G)이 다소 높습니다. (적정 가이드: ${standardGold}G)`
+      : `✨ [AI 밸런싱 적합] ${difficultyGrade} 난이도에 알맞은 균형 잡힌 보상(${proposedGold}G)입니다.`,
+    suggestedGold: standardGold,
+    suggestedDetailedTitle,
+    suggestedSubTask,
+    parentTemplates
+  };
+}

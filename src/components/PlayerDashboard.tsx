@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { api, DEFAULT_STORE_ITEMS, getDefaultItemImage } from '@/lib/api';
 import { childRequestQuestApproval, autoApproveRoutineQuest, childRequestGoldPayout, childCounterProposeQuest } from '@/lib/questController';
 import { Profile, Quest, StoreItem, AppNotification } from '@/types';
-import { getStressStatus, getPassiveBuffs } from '@/lib/gameEngine';
+import { getStressStatus, getPassiveBuffs, analyzeQuestBalancing } from '@/lib/gameEngine';
 import { RadarChart } from '@/components/RadarChart';
 import {
   Award, Zap, CheckCircle2, ShieldAlert, Coins, HelpCircle,
@@ -1317,54 +1317,78 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
       )}
 
       {/* 밀당 골드 협상하기 모달 */}
-      {activeNegotiateQuest && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="w-full max-w-sm bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-2xl space-y-6">
-            <div className="text-center">
-              <span className="inline-flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 px-2.5 py-0.5 rounded-full text-[10px] font-bold mb-2">
-                🤝 퀘스트 보상 밀당(협상하기)
-              </span>
-              <h3 className="text-md font-bold text-white">[{activeNegotiateQuest.title}]</h3>
-              <p className="text-xs text-slate-400 mt-1">길드마스터가 제안한 {activeNegotiateQuest.rewardGold}G 보상에 대해 협상을 진행해 보세요.</p>
-            </div>
-
-            <div className="space-y-4 bg-slate-950/60 p-4 rounded-2xl border border-slate-850">
-              <div className="flex justify-between items-center font-bold text-xs">
-                <span className="text-slate-400">제안 금액</span>
-                <span className="text-amber-400 text-md font-black">{negotiateGold} G</span>
+      {/* 퀘스트 보상 협상(밀당) 모달 */}
+      {activeNegotiateQuest && (() => {
+        const negBalancing = analyzeQuestBalancing(activeNegotiateQuest.title, negotiateGold, activeNegotiateQuest.category);
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+            <div className="w-full max-w-sm bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-2xl space-y-5">
+              <div className="text-center">
+                <span className="inline-flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 px-2.5 py-0.5 rounded-full text-[10px] font-bold mb-2">
+                  🤝 퀘스트 보상 밀당(협상하기)
+                </span>
+                <h3 className="text-md font-bold text-white">[{activeNegotiateQuest.title}]</h3>
+                <p className="text-xs text-slate-400 mt-1">길드마스터가 제안한 {activeNegotiateQuest.rewardGold}G 보상에 대해 협상을 진행해 보세요.</p>
               </div>
-              <input
-                type="range"
-                min={activeNegotiateQuest.rewardGold}
-                max={activeNegotiateQuest.rewardGold * 2}
-                step={50}
-                value={negotiateGold}
-                onChange={(e) => setNegotiateGold(Number(e.target.value))}
-                className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
-              />
-              <div className="flex justify-between text-[9px] text-slate-500 font-bold">
-                <span>최소 {activeNegotiateQuest.rewardGold}G</span>
-                <span>최대 {activeNegotiateQuest.rewardGold * 2}G</span>
-              </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => setActiveNegotiateQuest(null)}
-                className="py-3 bg-slate-800 text-slate-350 font-bold rounded-xl text-xs"
-              >
-                취소
-              </button>
-              <button
-                onClick={handleNegotiationSubmit}
-                className="py-3 bg-indigo-600 text-white font-bold rounded-xl text-xs shadow-md"
-              >
-                ⚡ 보상 협상 요청
-              </button>
+              <div className="space-y-3 bg-slate-950/60 p-4 rounded-2xl border border-slate-850">
+                <div className="flex justify-between items-center font-bold text-xs">
+                  <span className="text-slate-400">제안 금액</span>
+                  <span className="text-amber-400 text-md font-black">{negotiateGold} G</span>
+                </div>
+                <input
+                  type="range"
+                  min={activeNegotiateQuest.rewardGold}
+                  max={activeNegotiateQuest.rewardGold * 2}
+                  step={50}
+                  value={negotiateGold}
+                  onChange={(e) => setNegotiateGold(Number(e.target.value))}
+                  className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                />
+                <div className="flex justify-between text-[9px] text-slate-500 font-bold">
+                  <span>최소 {activeNegotiateQuest.rewardGold}G</span>
+                  <span>최대 {activeNegotiateQuest.rewardGold * 2}G</span>
+                </div>
+              </div>
+
+              {/* AI 퀘스트 밸런싱 가이드라인 피드백 */}
+              <div className={`p-3 rounded-2xl border text-[11px] font-semibold space-y-1.5 ${negBalancing.isExcessive ? 'bg-amber-950/30 border-amber-500/30 text-amber-200' : 'bg-emerald-950/30 border-emerald-500/30 text-emerald-200'}`}>
+                <div className="flex items-center gap-1.5 font-bold text-xs">
+                  <span>🤖 AI 밸런싱 가이드:</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700">{negBalancing.difficultyGrade}</span>
+                </div>
+                <p className="text-[10px] leading-relaxed text-slate-300">{negBalancing.feedback}</p>
+                {negBalancing.isExcessive && (
+                  <div className="pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setNegotiateGold(negBalancing.suggestedGold)}
+                      className="w-full py-1.5 px-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 rounded-xl text-[10px] font-bold transition flex items-center justify-center gap-1"
+                    >
+                      🪙 AI 추천 적정 보상({negBalancing.suggestedGold}G)으로 조율하기
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => setActiveNegotiateQuest(null)}
+                  className="py-3 bg-slate-800 text-slate-350 font-bold rounded-xl text-xs"
+                >
+                  취소
+                </button>
+                <button
+                  onClick={handleNegotiationSubmit}
+                  className="py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs shadow-md transition"
+                >
+                  ⚡ 보상 협상 요청
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Upstage Solar Pro 3.0 아이템 아이콘 생성기 모달 */}
       {isGeneratingItemIcon && (
@@ -1408,79 +1432,115 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
       )}
 
       {/* 셀프 퀘스트 빌더 모달 */}
-      {isSelfQuestOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="w-full max-w-sm bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-2xl">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-md font-bold text-white">🧚‍♀️ 셀프 모험 설계 (Self-Quest)</h3>
-              <button onClick={() => setIsSelfQuestOpen(false)} className="text-slate-400 hover:text-white transition text-lg">&times;</button>
+      {isSelfQuestOpen && (() => {
+        const balancing = analyzeQuestBalancing(selfQuestTitle, selfQuestGold);
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+            <div className="w-full max-w-sm bg-slate-900 border border-slate-850 rounded-3xl p-6 shadow-2xl space-y-4">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-md font-bold text-white">🧚‍♀️ 셀프 모험 설계 (Self-Quest)</h3>
+                <button onClick={() => setIsSelfQuestOpen(false)} className="text-slate-400 hover:text-white transition text-lg">&times;</button>
+              </div>
+
+              <form onSubmit={handleSelfQuestSubmit} className="space-y-3.5">
+                {/* 시연용 원클릭 퀵 템플릿 */}
+                <div className="bg-slate-950/80 rounded-xl p-3 border border-slate-800 flex items-center justify-between gap-2">
+                  <span className="text-[10px] font-bold text-amber-400">⚡ 시연 퀵 템플릿</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelfQuestTitle('30분 줄넘기 하기');
+                      setSelfQuestGold(300);
+                    }}
+                    className="py-1 px-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-[10px] rounded-lg transition"
+                  >
+                    🏃‍♂️ [30분 줄넘기 하기] 세팅
+                  </button>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase">스스로 만들 모험 이름</label>
+                  <input
+                    type="text"
+                    placeholder="예: 30분 동안 수학 오답 정리하기"
+                    value={selfQuestTitle}
+                    onChange={(e) => setSelfQuestTitle(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-850 rounded-xl p-3 text-sm text-slate-200 outline-none focus:border-emerald-500 font-bold"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase">목표 보상 설정 (골드, 최대 500G)</label>
+                  <input
+                    type="number"
+                    min="100"
+                    max="500"
+                    step="50"
+                    value={selfQuestGold}
+                    onChange={(e) => setSelfQuestGold(Number(e.target.value))}
+                    className="w-full bg-slate-950 border border-slate-850 rounded-xl p-3 text-sm text-slate-200 outline-none focus:border-emerald-500 font-bold"
+                    required
+                  />
+                </div>
+
+                {/* AI 퀘스트 밸런싱 가이드라인 카드 */}
+                <div className={`p-3.5 rounded-2xl border text-[11px] space-y-2 ${balancing.isExcessive ? 'bg-amber-950/40 border-amber-500/40 text-amber-200' : 'bg-slate-950/60 border-slate-800 text-slate-300'}`}>
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-[11px] text-indigo-400 flex items-center gap-1">
+                      🤖 AI 퀘스트 밸런싱 가이드
+                    </span>
+                    <span className="text-[9px] px-2 py-0.5 rounded-full bg-slate-900 border border-slate-700 text-slate-400 font-extrabold">
+                      난이도: {balancing.difficultyGrade}
+                    </span>
+                  </div>
+                  <p className="text-[10px] leading-relaxed font-medium">{balancing.feedback}</p>
+                  
+                  {balancing.isExcessive && (
+                    <div className="space-y-1.5 pt-1 border-t border-amber-500/20">
+                      <p className="text-[9px] font-bold text-amber-350">💡 AI의 밸런싱 개선 제안 (택1):</p>
+                      <div className="grid grid-cols-1 gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setSelfQuestGold(balancing.suggestedGold)}
+                          className="py-1.5 px-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 rounded-xl text-[10px] font-bold transition text-left flex items-center justify-between"
+                        >
+                          <span>🪙 [보상 조율] 적정 보상인 {balancing.suggestedGold}G로 변경하기</span>
+                          <span className="text-[9px] font-black text-amber-400">적용</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSelfQuestTitle(balancing.suggestedDetailedTitle)}
+                          className="py-1.5 px-2 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/40 text-indigo-300 rounded-xl text-[10px] font-bold transition text-left flex items-center justify-between"
+                        >
+                          <span className="truncate max-w-[220px]">📋 [세부 미션 추가] "{balancing.suggestedSubTask}" 추가</span>
+                          <span className="text-[9px] font-black text-indigo-400 shrink-0">적용</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setIsSelfQuestOpen(false)}
+                    className="py-3 bg-slate-800 text-slate-350 font-bold rounded-xl text-xs hover:bg-slate-750 transition"
+                  >
+                    취소
+                  </button>
+                  <button
+                    type="submit"
+                    className="py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs shadow-md transition"
+                  >
+                    ⚡ 스스로 모험 제안
+                  </button>
+                </div>
+              </form>
             </div>
-
-            <form onSubmit={handleSelfQuestSubmit} className="space-y-4">
-              {/* 시연용 원클릭 퀵 템플릿 */}
-              <div className="bg-slate-950/80 rounded-xl p-3 border border-slate-800 flex items-center justify-between gap-2 mb-2">
-                <span className="text-[10px] font-bold text-amber-400">⚡ 시연 퀵 템플릿</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelfQuestTitle('30분 줄넘기 하기');
-                    setSelfQuestGold(300);
-                  }}
-                  className="py-1 px-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-[10px] rounded-lg transition"
-                >
-                  🏃‍♂️ [30분 줄넘기 하기] 세팅
-                </button>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase">스스로 만들 모험 이름</label>
-                <input
-                  type="text"
-                  placeholder="예: 30분 동안 수학 오답 정리하기"
-                  value={selfQuestTitle}
-                  onChange={(e) => setSelfQuestTitle(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-850 rounded-xl p-3 text-sm text-slate-200 outline-none focus:border-emerald-500 font-bold"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase">목표 보상 설정 (골드, 최대 500G)</label>
-                <input
-                  type="number"
-                  min="100"
-                  max="500"
-                  step="50"
-                  value={selfQuestGold}
-                  onChange={(e) => setSelfQuestGold(Number(e.target.value))}
-                  className="w-full bg-slate-950 border border-slate-850 rounded-xl p-3 text-sm text-slate-200 outline-none focus:border-emerald-500 font-bold"
-                  required
-                />
-              </div>
-
-              <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-850 text-[10px] text-slate-400 leading-relaxed">
-                💡 셀프 퀘스트는 하루 최대 2개만 전송할 수 있으며, 성공 시 경험치와 골드가 동시 지급됩니다. 무의미한 도배 방지를 위해 슬롯 제한이 적용됩니다.
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsSelfQuestOpen(false)}
-                  className="py-3 bg-slate-800 text-slate-350 font-bold rounded-xl text-xs"
-                >
-                  취소
-                </button>
-                <button
-                  type="submit"
-                  className="py-3 bg-emerald-600 text-white font-bold rounded-xl text-xs shadow-md"
-                >
-                  ⚡ 스스로 모험 제안
-                </button>
-              </div>
-            </form>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* 현금 정산 인출 모달 */}
       {isPayoutOpen && (

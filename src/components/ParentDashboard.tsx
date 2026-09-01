@@ -7,6 +7,7 @@ import { Profile, Quest, AppNotification, Stats } from '@/types';
 import { RadarChart } from '@/components/RadarChart';
 import { AIReadingModal } from '@/components/AIReadingModal';
 import { QuestBuilder } from '@/components/QuestBuilder';
+import { analyzeQuestBalancing } from '@/lib/gameEngine';
 import {
   TrendingUp, Award, Zap, AlertCircle, ShoppingBag, ShieldAlert,
   Clock, Plus, Check, RefreshCw, LogOut, CheckCircle, HelpCircle, ArrowRight, ArrowLeft
@@ -37,6 +38,8 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
   const [counterQuestGold, setCounterQuestGold] = useState(300);
   const [counterQuestTarget, setCounterQuestTarget] = useState<Quest | null>(null);
   const [counterNotiId, setCounterNotiId] = useState<string | null>(null);
+  const [counterMessage, setCounterMessage] = useState('');
+  const [selectedTemplateType, setSelectedTemplateType] = useState<string>('');
   
   // 모달 제어 상태
   const [isReadingModalOpen, setIsReadingModalOpen] = useState(false);
@@ -449,6 +452,9 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
         setCounterQuestTitle(quest.title);
         setCounterQuestGold(quest.rewardGold);
         setCounterNotiId(noti.id);
+        const balancing = analyzeQuestBalancing(quest.title, quest.rewardGold, quest.category);
+        setCounterMessage(balancing.parentTemplates[0].message);
+        setSelectedTemplateType(balancing.parentTemplates[0].type);
         setIsCounterProposalOpen(true);
         setNewNegotiationNoti(null); // 알림 모달 닫기
       }
@@ -474,18 +480,22 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
 
       await api.resolveNotification(counterNotiId);
 
-      // 자녀에게 알림 전송
+      // 자녀에게 알림 및 피드백 전송 (감정적 거절 대신 합리적 협상 문구 전달)
+      const feedbackText = counterMessage.trim() || `길드마스터가 셀프 퀘스트를 [${counterQuestTitle}] / [${counterQuestGold}G]로 조정하여 수락했습니다.`;
       await api.addNotification({
-        message: `🧚‍♀️ 길드마스터가 셀프 퀘스트 명칭을 [${counterQuestTitle}]으로 수정하고 보상 골드를 [${counterQuestGold}]G로 조정하여 최종 수락했습니다.`,
-        type: 'cheer'
+        message: `💬 [협상 수정 수락] "${feedbackText}"`,
+        type: 'cheer',
+        meta: { questTitle: counterQuestTitle, proposedGold: counterQuestGold, childId: quest.childId }
       });
 
-      alert(`🤝 셀프 퀘스트를 [${counterQuestTitle}] / [${counterQuestGold}G]로 수정하여 최종 승인했습니다.`);
+      alert(`🤝 셀프 퀘스트를 [${counterQuestTitle}] / [${counterQuestGold}G]로 수정 제안하여 수락했습니다.`);
     }
 
     setIsCounterProposalOpen(false);
     setCounterQuestTarget(null);
     setCounterNotiId(null);
+    setCounterMessage('');
+    setSelectedTemplateType('');
     await loadData();
   };
 
@@ -1532,13 +1542,13 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
                 onClick={() => handleApproveNegotiation(newNegotiationNoti)}
                 className="py-3 bg-emerald-650 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition shadow-md flex items-center justify-center gap-1 active:scale-95 cursor-pointer"
               >
-                ✅ 제안 수락
+                ✅ 원안 그대로 수락
               </button>
               <button
                 onClick={() => handleRejectNegotiation(newNegotiationNoti)}
-                className="py-3 bg-rose-650 hover:bg-rose-550 text-white font-bold rounded-xl text-xs transition shadow-md flex items-center justify-center gap-1 active:scale-95 cursor-pointer"
+                className="py-3 bg-indigo-650 hover:bg-indigo-550 text-white font-bold rounded-xl text-xs transition shadow-md flex items-center justify-center gap-1 active:scale-95 cursor-pointer"
               >
-                {!(newNegotiationNoti.message.includes('돌발 미션') || newNegotiationNoti.message.includes('역제안')) ? '❌ 제안 반려' : '❌ 제안 거절'}
+                ✍️ 수정 역제안 (템플릿)
               </button>
             </div>
             <button
@@ -1596,70 +1606,134 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout
         </div>
       )}
 
-
       {/* 셀프 퀘스트 제안 반려 및 수정(조정) 팝업 모달 */}
-      {isCounterProposalOpen && counterQuestTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4">
-          <div className="w-full max-w-sm bg-[#0F0E26] border border-purple-500/40 rounded-3xl p-6 shadow-2xl text-center space-y-4 animate-in zoom-in duration-200 border-2">
-            <div className="w-16 h-16 rounded-full bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-3xl mx-auto animate-pulse">
-              🧚‍♀️
-            </div>
-            <div>
-              <h3 className="text-md font-extrabold text-purple-400">🛡️ 제안 반려 및 내용 수정</h3>
-              <p className="text-[11px] text-slate-450 mt-1 leading-relaxed">
-                자녀의 셀프 미션 이름과 보상 골드를 조정하여 수락합니다.
-              </p>
-            </div>
-
-            <form onSubmit={handleCounterProposalSubmit} className="space-y-4 text-left">
+      {isCounterProposalOpen && counterQuestTarget && (() => {
+        const balancing = analyzeQuestBalancing(counterQuestTarget.title, counterQuestTarget.rewardGold, counterQuestTarget.category);
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4">
+            <div className="w-full max-w-md bg-[#0F0E26] border border-purple-500/40 rounded-3xl p-6 shadow-2xl text-center space-y-4 animate-in zoom-in duration-200 border-2 max-h-[90vh] overflow-y-auto">
+              <div className="w-14 h-14 rounded-full bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-3xl mx-auto animate-pulse">
+                🧚‍♀️
+              </div>
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 mb-1">수정할 퀘스트 이름</label>
-                <input
-                  type="text"
-                  value={counterQuestTitle}
-                  onChange={(e) => setCounterQuestTitle(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 outline-none focus:border-purple-500 font-bold"
-                  required
-                />
+                <h3 className="text-md font-extrabold text-purple-400 font-bw">🛡️ 합리적 협상 & 수정 제안 (역제안)</h3>
+                <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
+                  감정적인 거절 대신 AI 추천 템플릿을 활용해 아이에게 합리적인 협상 리터러시를 가르쳐주세요.
+                </p>
               </div>
 
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 mb-1">조정할 골드 보상 (최대 500G)</label>
-                <input
-                  type="number"
-                  min="100"
-                  max="500"
-                  step="50"
-                  value={counterQuestGold}
-                  onChange={(e) => setCounterQuestGold(Number(e.target.value))}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 outline-none focus:border-purple-500 font-bold"
-                  required
-                />
+              {/* AI 밸런싱 진단 요약 */}
+              <div className="bg-slate-950/80 border border-purple-500/20 rounded-2xl p-3.5 text-left space-y-1.5">
+                <div className="flex justify-between items-center text-xs font-bold text-slate-300">
+                  <span className="text-indigo-400 flex items-center gap-1">🤖 AI 퀘스트 밸런싱 진단</span>
+                  <span className="text-[9px] px-2 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800">
+                    난이도: {balancing.difficultyGrade}
+                  </span>
+                </div>
+                <p className="text-[10px] text-slate-300 leading-relaxed font-medium">
+                  {balancing.feedback}
+                </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsCounterProposalOpen(false);
-                    setCounterQuestTarget(null);
-                    setCounterNotiId(null);
-                  }}
-                  className="py-2.5 bg-slate-800 text-slate-300 font-bold rounded-xl text-xs"
-                >
-                  취소
-                </button>
-                <button
-                  type="submit"
-                  className="py-2.5 bg-[#8B5CF6] hover:bg-[#7C3AED] text-white font-bold rounded-xl text-xs transition shadow-md"
-                >
-                  수정하여 제안 수락
-                </button>
+              {/* 추천 수정 제안 문구 템플릿 (1클릭 선택) */}
+              <div className="space-y-2 text-left">
+                <label className="block text-[11px] font-bold text-amber-350">
+                  💡 추천 수정 제안 문구 템플릿 (클릭하여 자동 세팅):
+                </label>
+                <div className="grid grid-cols-1 gap-2">
+                  {balancing.parentTemplates.map((tpl, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => {
+                        setSelectedTemplateType(tpl.type);
+                        setCounterQuestGold(tpl.adjustedGold);
+                        setCounterQuestTitle(tpl.adjustedTitle);
+                        setCounterMessage(tpl.message);
+                      }}
+                      className={`p-3 rounded-2xl border text-left transition-all ${
+                        selectedTemplateType === tpl.type
+                          ? 'bg-purple-950/60 border-purple-400 shadow-md ring-1 ring-purple-400'
+                          : 'bg-slate-950/50 border-slate-800 hover:border-slate-700 text-slate-300'
+                      }`}
+                    >
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs font-black text-purple-300 flex items-center gap-1">
+                          {tpl.title}
+                        </span>
+                        <span className="text-[10px] font-extrabold text-amber-400 bg-amber-950/40 px-2 py-0.5 rounded-lg border border-amber-500/20">
+                          {tpl.adjustedGold} G
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-slate-300 leading-relaxed">"{tpl.message}"</p>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </form>
+
+              <form onSubmit={handleCounterProposalSubmit} className="space-y-3.5 text-left pt-1">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 mb-1">수정할 퀘스트 이름</label>
+                  <input
+                    type="text"
+                    value={counterQuestTitle}
+                    onChange={(e) => setCounterQuestTitle(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none focus:border-purple-500 font-bold"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 mb-1">조정할 골드 보상 (최대 500G)</label>
+                  <input
+                    type="number"
+                    min="100"
+                    max="500"
+                    step="50"
+                    value={counterQuestGold}
+                    onChange={(e) => setCounterQuestGold(Number(e.target.value))}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none focus:border-purple-500 font-bold"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 mb-1">자녀에게 보낼 협상 피드백 메시지</label>
+                  <textarea
+                    rows={2}
+                    value={counterMessage}
+                    onChange={(e) => setCounterMessage(e.target.value)}
+                    placeholder="아이에게 전할 따뜻하고 합리적인 협상 메시지를 적어주세요."
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none focus:border-purple-500 font-medium resize-none leading-relaxed"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsCounterProposalOpen(false);
+                      setCounterQuestTarget(null);
+                      setCounterNotiId(null);
+                      setCounterMessage('');
+                      setSelectedTemplateType('');
+                    }}
+                    className="py-2.5 bg-slate-800 hover:bg-slate-750 text-slate-350 font-bold rounded-xl text-xs transition"
+                  >
+                    취소
+                  </button>
+                  <button
+                    type="submit"
+                    className="py-2.5 bg-[#8B5CF6] hover:bg-[#7C3AED] text-white font-bold rounded-xl text-xs transition shadow-md flex items-center justify-center gap-1"
+                  >
+                    🤝 수정 제안 전송
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
     </div>
   );
