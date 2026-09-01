@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { api, DEFAULT_STORE_ITEMS, getDefaultItemImage } from '@/lib/api';
-import { childRequestQuestApproval, childRequestGoldPayout, childCounterProposeQuest } from '@/lib/questController';
+import { childRequestQuestApproval, autoApproveRoutineQuest, childRequestGoldPayout, childCounterProposeQuest } from '@/lib/questController';
 import { Profile, Quest, StoreItem, AppNotification } from '@/types';
 import { getStressStatus, getPassiveBuffs } from '@/lib/gameEngine';
 import { RadarChart } from '@/components/RadarChart';
@@ -237,7 +237,12 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
 
   const requiresPhoto = (q: Quest) => {
     const t = q.title.toLowerCase();
-    return q.category === '학습' || q.category === '독서' || t.includes('학습지') || t.includes('독서') || t.includes('책 읽기') || t.includes('책읽기') || t.includes('기록장');
+    const cat = q.category;
+    // 핵심 검증 퀘스트: 학습, 독서 및 문제집/학습지/독서록/단어장/시험 등 (부모 승인 큐로 전달)
+    return cat === '학습' || cat === '독서' || 
+           t.includes('학습지') || t.includes('독서') || t.includes('책 읽기') || t.includes('책읽기') || 
+           t.includes('기록장') || t.includes('문제집') || t.includes('수학') || t.includes('영어') || 
+           t.includes('국어') || t.includes('과제') || t.includes('숙제') || t.includes('단어장') || t.includes('오답');
   };
 
   const handleQuestCompleteClick = (q: Quest) => {
@@ -1093,12 +1098,12 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                               >
                                 🤝 협상하기
                               </button>
-                              <button
-                                onClick={() => handleQuestCompleteClick(q)}
-                                className="px-4 py-2 bg-[#644EB0] hover:bg-[#523e96] text-white text-xs font-bold rounded-xl transition shadow-md"
-                              >
-                                {requiresPhoto(q) ? '📸 사진 인증' : '완료 체크'}
-                              </button>
+                                <button
+                                  onClick={() => handleQuestCompleteClick(q)}
+                                  className="px-4 py-2 bg-[#644EB0] hover:bg-[#523e96] text-white text-xs font-bold rounded-xl transition shadow-md flex items-center gap-1"
+                                >
+                                  {requiresPhoto(q) ? '📸 사진 인증' : '⚡ 즉시 완료'}
+                                </button>
                             </div>
                           )}
                         </div>
@@ -1179,9 +1184,9 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                             <div className="flex items-center gap-2">
                               <button
                                 onClick={() => handleQuestCompleteClick(q)}
-                                className="px-4 py-2 bg-[#644EB0] hover:bg-[#523e96] text-white text-xs font-bold rounded-xl transition shadow-md"
+                                className="px-4 py-2 bg-[#644EB0] hover:bg-[#523e96] text-white text-xs font-bold rounded-xl transition shadow-md flex items-center gap-1"
                               >
-                                {requiresPhoto(q) ? '📸 사진 인증' : '완료 체크'}
+                                {requiresPhoto(q) ? '📸 사진 인증' : '⚡ 즉시 완료'}
                               </button>
                             </div>
                           )}
@@ -1885,9 +1890,10 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({ user, onLogout
                     setCameraMode('idle');
                     setUploadedFile(null);
                   } else {
-                    await childRequestQuestApproval(q.id, q.title, '', child.id, child.name);
+                    // 정형화된 일상 루틴은 조건 충족 시 자동 승인 처리 (보상 즉시 지급 및 피로도 최소화)
+                    await autoApproveRoutineQuest(q.id, child.id);
                     await loadData();
-                    alert(`🛡️ [인증 완료] [${q.title}] 인증 요청을 길드마스터에게 전송했습니다.`);
+                    alert(`🎉 [루틴 완료] [${q.title}] 일상 루틴 완수! 보상(${q.rewardExp ? q.rewardExp + ' EXP' : ''}${q.rewardGold ? ' ' + q.rewardGold + ' G' : ''})이 즉시 자동 지급되었습니다.`);
                   }
                 }}
                 className="w-full py-2 bg-[#644EB0] hover:bg-[#523e96] text-white font-bold rounded-xl text-xs transition shadow-md"

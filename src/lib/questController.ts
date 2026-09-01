@@ -34,6 +34,79 @@ export async function childRequestQuestApproval(questId: string, title: string, 
   }
 }
 
+// 1-1. 정형화된 일상 루틴 자동 완료 처리 (부모 승인 큐를 거치지 않고 즉시 보상 지급)
+export async function autoApproveRoutineQuest(questId: string, childId?: string) {
+  const quests = await api.getQuests();
+  const questIdx = quests.findIndex(q => q.id === questId);
+  if (questIdx === -1) return;
+
+  const quest = quests[questIdx];
+  const profiles = await api.getProfiles();
+  let childIdx = -1;
+  if (childId) {
+    childIdx = profiles.findIndex(p => p.id === childId);
+  }
+  if (childIdx === -1 && quest.childId) {
+    childIdx = profiles.findIndex(p => p.id === quest.childId);
+  }
+  if (childIdx === -1) {
+    childIdx = profiles.findIndex(p => p.role === 'child');
+  }
+  
+  if (childIdx === -1) return;
+  let child = profiles[childIdx];
+
+  if (!child.stats) {
+    child.stats = { intelligence: 10, willpower: 10, autonomy: 10, cooperation: 10, sensibility: 10 };
+  }
+
+  // 퀘스트 완료 처리
+  quest.status = 'completed';
+  
+  if (quest.rewardExp && quest.rewardExp > 0) {
+    child.exp += quest.rewardExp;
+  }
+  if (quest.rewardGold && quest.rewardGold > 0) {
+    child.gold += quest.rewardGold;
+  }
+
+  // 스트레스(피로도) 소폭 산정 (exp * 0.2)
+  const expValue = (quest.rewardExp && quest.rewardExp > 0) ? quest.rewardExp : 10;
+  const stressIncrease = Math.max(1, Math.round(expValue * 0.2));
+  child.stress = Math.min(100, child.stress + stressIncrease);
+
+  // 스탯 보정
+  if (quest.rewardStats && Object.keys(quest.rewardStats).length > 0) {
+    Object.entries(quest.rewardStats).forEach(([statKey, val]) => {
+      if (child.stats && statKey in child.stats) {
+        (child.stats as any)[statKey] += val;
+      }
+    });
+  } else {
+    child.stats.autonomy = (child.stats.autonomy || 10) + 10;
+    child.stats.cooperation = (child.stats.cooperation || 10) + 10;
+  }
+
+  // 경험치 누적 레벨업 판단
+  let requiredExp = child.level * 100;
+  while (child.exp >= requiredExp) {
+    child.exp -= requiredExp;
+    child.level += 1;
+    await addMockNotification('general', `🎉 ${child.name}이가 레벨 ${child.level}에 도달했습니다! 새로운 상점 물건이 해금됩니다.`, child.id, { childId: child.id });
+  }
+
+  await api.saveQuests(quests);
+  await api.updateProfile(child);
+
+  // 부모에게 루틴 자동 완료 알림 발송 (승인 큐는 거치지 않고 히스토리 로그만 남김)
+  await addMockNotification(
+    'general',
+    `⚡ [루틴 자동 완수] ${child.name} 모험가가 일상 루틴 [${quest.title}]을(를) 완수하여 보상이 자동 지급되었습니다.`,
+    quest.id,
+    { title: quest.title, childId: child.id, childName: child.name, autoCompleted: true }
+  );
+}
+
 // 2. 부모 -> 자녀: 퀘스트 승인 완료 (경험치/골드 배정)
 export async function parentApproveQuest(questId: string, approveStatus: 'approve' | 'retry', activeChildId?: string, feedback?: string) {
   const quests = await api.getQuests();
